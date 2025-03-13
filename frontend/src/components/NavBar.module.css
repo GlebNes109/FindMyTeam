@@ -1,0 +1,35 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #6dca51;
+    color: white;
+    padding: 10px 20px;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    font-size: 10px;
+}
+
+.navbar h1 {
+    margin: 0;
+}
+
+.navbarBtn {
+    background-color: #3f9328;
+    border: none;
+    color: white;
+    padding: 10px 30px;
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-right: 50px;
+}
+
+.navbarBtn:hover {
+    background-color: #2f6c1e;
+}
+
