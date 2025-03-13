@@ -1,0 +1,31 @@
+.btn-login-register {
+    background-color: #3f9328;
+    border: none;
+    color: white;
+    padding: 10px 30px;
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin: 10px;
+}
+
+.btn-login-register:hover {
+    background-color: #2f6c1e;
+}
+
+.text-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    /*padding: 10px 20px;*/
+}
+
+.main-content{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);}
