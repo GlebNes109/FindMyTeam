@@ -1,16 +1,16 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import Navbar from "./components/NavBar.jsx";
-
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Navbar from './components/NavBar.jsx'; // Импортируем Navbar
+import MainPage from './pages/MainPage.jsx';
 function App() {
     return (
-        <div>
+        <Router>
             <Navbar />
-            <h1>Добро пожаловать в FindMyTeam</h1>
-            <p>Здесь можно найти команду для олимпиад и проектов.</p>
-        </div>
+            <Routes>
+                <Route path="/" element={<MainPage />} />
+            </Routes>
+        </Router>
     );
 }
-export default App
+
+export default App;
