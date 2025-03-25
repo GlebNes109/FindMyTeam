@@ -3,9 +3,9 @@ endpoints:
 
 
 USER
-/api/user/login get??
-/api/user/logout get
-/api/user/signup post
+/api/user/login get
+/api/user/logout get ?????
++ /api/user/signup post
 /api/user/patch patch
 /api/user/delete delete
 /api/user/data get

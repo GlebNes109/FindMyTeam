@@ -13,3 +13,7 @@ class NewUser(BaseModel):
     email: str
     tg_nickname: str
     role: Role
+
+class SigninUser(BaseModel):
+    login: str
+    password: str
