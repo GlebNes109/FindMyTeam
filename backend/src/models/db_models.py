@@ -6,5 +6,5 @@ class UserDB(SQLModel, table=True):
     login: str = Field(unique=True)
     password_hash: str
     email: str
-    tg_nickname: str
+    tg_nickname: str = Field(unique=True)
     role: str
