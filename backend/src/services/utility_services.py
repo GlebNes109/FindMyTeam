@@ -5,8 +5,6 @@ from starlette.responses import JSONResponse
 import jwt
 from fastapi import Request, Depends, HTTPException, status
 from backend.src.config import settings
-from backend.src.repository.repository import Repository
-from backend.src.services.user_services import repository
 
 
 def make_http_error(code, text):
@@ -26,7 +24,7 @@ def create_hash(password):
     return sha256hash.hexdigest()
 
 def calculate_token_TTL():
-    TTL = time.time() + 14400 # 4 часа
+    TTL = time.time() + 60 * 60 # 1 час
     return TTL
 
 def get_token(request: Request):
@@ -34,7 +32,8 @@ def get_token(request: Request):
     a = str(headers.get("Authorization"))
     return a[7:]
 
-def get_user(self, token: str = Depends(get_token)):
+def get_user(token: str = Depends(get_token)):
+    from backend.src.repository.repository import Repository
     repository = Repository()
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])

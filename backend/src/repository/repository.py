@@ -17,6 +17,7 @@ class Repository:
     def __init__(self):
         try:
             SQLModel.metadata.create_all(engine)
+            # SQLModel.metadata.drop_all(engine)
             self.add_super_admin()
 
         except Exception as e:

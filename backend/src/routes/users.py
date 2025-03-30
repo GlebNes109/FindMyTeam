@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 
 from backend.src.models.api_models import NewUser, SigninUser, PatchUser
 from backend.src.services.user_services import UserService
-from backend.src.services.utility_services import gest_user
+from backend.src.services.utility_services import get_user
 
 router = APIRouter()
 user_service = UserService()
@@ -12,7 +12,7 @@ user_service = UserService()
 def add_new_user(new_user: NewUser):
     return user_service.add_new_user(new_user)
 
-@router.get("/signin", summary="Вход по логину/паролю", description="Вход по кредам и получение токена")
+@router.post("/signin", summary="Вход по логину/паролю", description="Вход по кредам и получение токена")
 def sign_in_user(user: SigninUser):
     return user_service.sign_in_user(user)
 
