@@ -1,4 +1,3 @@
-import Navbar from "../components/NavBar.jsx";
 import styles from "../styles/MainPage.module.css";
 import React from "react";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +12,7 @@ function MainPage() {
             <p>Здесь можно найти команду для олимпиад и проектов.</p>
             <div>
                 <button className={styles['btn-login-register']}
-                onClick={() => navigate("/login")}>Войти
+                onClick={() => navigate("/signin")}>Войти
             </button>
             </div>
             <div><button className={styles['btn-login-register']}

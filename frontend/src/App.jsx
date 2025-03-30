@@ -4,14 +4,16 @@ import Navbar from './components/NavBar.jsx'; // Импортируем Navbar
 import MainPage from './pages/MainPage.jsx';
 import LoginPage from "./pages/LoginPage.jsx";
 import RegPage from "./pages/RegistrationPage.jsx";
+import HomePage from "./pages/HomePage.jsx";
 function App() {
     return (
         <Router>
             <Navbar />
             <Routes>
                 <Route path="/" element={<MainPage />} />
-                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signin" element={<LoginPage />} />
                 <Route path="/signup" element={<RegPage />} />
+                <Route path="/homepage" element={<HomePage />} />
             </Routes>
         </Router>
     );
