@@ -32,3 +32,14 @@ class PatchUser(BaseModel):
     email: Optional[str] = None
     tg_nickname: Optional[str] = None
     role: Optional[Role] = None
+
+class NewTeam(BaseModel):
+    # captain_id: str
+    # members_login: Optional[list[str]] = None# логины участников команды
+    team_name: str
+    team_description: str
+    event_name: str # имя мероприятия
+
+class NewEvent(BaseModel):
+    event_name: str
+    event_description: str

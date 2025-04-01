@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     admins: list[str]
     secret_key: str
     algorithm: str
+    admin_password: str
+    admin_login: str
     class Config:
         env_file = ".env"
 

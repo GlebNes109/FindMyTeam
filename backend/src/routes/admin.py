@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Depends
 
-router = APIRouter()
+from backend.src.models.api_models import NewEvent
+from backend.src.routes.users import user_service
+from backend.src.services.admin_services import AdminService
+from backend.src.services.utility_services import get_user_id
 
-'''@router.post("/all_users", summary="Получение пользователей", description="Получение всех пользователей с пагинацией")
-def get_all_users(user_id: str = Depends(user_service.get_user)):
-    return user_service.add_new_user(new_user)'''
+router = APIRouter()
+admin_service = AdminService()
+
+@router.post("/add_event", summary="Получение пользователей", description="Получение всех пользователей с пагинацией")
+def add_event(new_event: NewEvent, admin_id: str = Depends(get_user_id)):
+    return admin_service.add_event(new_event, admin_id)

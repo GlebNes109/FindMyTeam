@@ -58,4 +58,4 @@ class UserService():
 
         repository.delete_user(user_id)
 
-        return JSONResponse(status_code=201, content=None)
+        return JSONResponse(status_code=204, content=None)

@@ -32,7 +32,7 @@ def get_token(request: Request):
     a = str(headers.get("Authorization"))
     return a[7:]
 
-def get_user(token: str = Depends(get_token)):
+def get_user_id(token: str = Depends(get_token)):
     from backend.src.repository.repository import Repository
     repository = Repository()
     try:
