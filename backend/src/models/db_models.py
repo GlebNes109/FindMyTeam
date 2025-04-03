@@ -1,27 +1,66 @@
+from enum import Enum
 from typing import Optional
 
 from sqlmodel import SQLModel, Field
 
-class UserDB(SQLModel, table=True):
+class Role(str, Enum):
+    USER = "USER"
+    ADMIN = "ADMIN"
+    SUPER_ADMIN = "SUPER_ADMIN"
+
+class UsersDB(SQLModel, table=True):
     __table_args__ = {"extend_existing": True}
     id: str = Field(primary_key=True)
     login: str = Field(unique=True)
     password_hash: str
     email: str
     tg_nickname: str = Field(unique=True)
-    role: str
+    role: Optional[Role] = Role.USER
 
-class TeamDB(SQLModel, table=True):
-    __table_args__ = {"extend_existing": True}
+class EventParticipationsDB(SQLModel, table=True):
     id: str = Field(primary_key=True)
-    captain_id: str
-    # members_login: Optional[list[str]] = None# логины участников команды
-    team_name: str = Field(unique=True)
-    team_description: str
-    event_id: str # айди мероприятия
+    event_id: str # = Field(foreign_key="events.id")
+    user_id: str # = Field(foreign_key="users.id")
+    track_id: str # = Field(foreign_key="eventtracks.id")
+    event_role: str
 
-class EventDB(SQLModel, table=True):
-    __table_args__ = {"extend_existing": True}
+class EventsDB(SQLModel, table=True):
     id: str = Field(primary_key=True)
-    event_name: str = Field(unique=True)
-    event_description: str
+    name: str
+    description: str
+    start_date: Optional[str]
+    end_date: Optional[str]
+
+class EventTracksDB(SQLModel, table=True):
+    id: str = Field(primary_key=True)
+    event_id: str # = Field(foreign_key="events.id")
+    name: str
+
+'''class UserRolesDB(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
+    name: str'''
+
+class TeamsDB(SQLModel, table=True):
+    id: str = Field(primary_key=True)
+    name: str
+    event_id: str # = Field(foreign_key="events.id")
+    teamlead_id: str # = Field(foreign_key="eventparticipations.id")
+    description: str
+
+class TeamMembersDB(SQLModel, table=True):
+    id: str = Field(primary_key=True)
+    team_id: str # = Field(foreign_key="teams.id", primary_key=True)
+    participant_id: int # = Field(foreign_key="eventparticipations.id", primary_key=True)
+
+class TeamVacanciesDB(SQLModel, table=True):
+    id: str = Field(primary_key=True)
+    team_id: str # = Field(foreign_key="teams.id")
+    event_track_id: int # = Field(foreign_key="eventtracks.id")
+    status: str
+
+class TeamInvitationDB(SQLModel, table=True):
+    id: str = Field(primary_key=True)
+    vacancy_id: int # = Field(foreign_key="teamvacancies.id")
+    participation_id: int # = Field(foreign_key="eventparticipations.id")
+    approved_by_teamlead: Optional[bool]
+    approved_by_participant: Optional[bool]

@@ -11,7 +11,7 @@ class AdminService():
         admin_db = repository.get_user_by_id(admin_id)
 
         if admin_db.role not in settings.admins:
-            make_http_error(403, "не админ")
+            return make_http_error(403, "не админ")
 
         res = repository.add_new_event(new_event)
 

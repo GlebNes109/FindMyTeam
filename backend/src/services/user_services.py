@@ -9,10 +9,9 @@ from backend.src.services.utility_services import make_http_error, create_jwt_to
 repository = Repository()
 class UserService():
     def add_new_user(self, new_user):
-        if new_user.role in settings.admins:
-            return make_http_error(400, "нельзя создать пользователя с ролью админ")
 
         user_id = repository.add_user(new_user)
+
         if not user_id:
             return make_http_error(409, "пользователь с таким логином уже есть")
 
@@ -43,9 +42,6 @@ class UserService():
 
         if not user_db:
             return make_http_error(404, "пользователь не найден")
-
-        if user.role in settings.admins:
-            return make_http_error(400, "пользователь не может стать админом")
 
         repository.patch_user(user, user_id)
         return JSONResponse(status_code=200, content="данные изменены успешно")

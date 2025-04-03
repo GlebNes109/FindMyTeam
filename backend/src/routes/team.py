@@ -9,5 +9,5 @@ router = APIRouter()
 team_service = TeamManagementService()
 
 @router.post("/add_team", summary="Добавление новой команды", description="Капитан добавляет новую команду")
-def add_new_user(new_team: NewTeam, captain_id: str = Depends(get_user_id)):
-    return team_service.add_new_team(new_team, captain_id)
+def add_new_user(new_team: NewTeam, teamlead_id: str = Depends(get_user_id)):
+    return team_service.add_new_team(new_team, teamlead_id)

@@ -54,7 +54,7 @@ const RegistrationPage = () => {
                 <div>
                     <select className={styles["select"]} id="options" value={role} onChange={(e) => setRole(e.target.value)}>
                         <option value="USER">Участник</option>
-                        <option value="TEAM_CAPTAIN">Капитан команды</option>
+                        <option value="TEAMLEAD">Капитан команды</option>
                     </select>
                 </div>
                 <button type="submit" className={styles["login-button"]} onClick={RegisterRequest}>Зарегистрироваться
