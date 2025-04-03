@@ -6,6 +6,17 @@ function HomePage() {
     const navigate = useNavigate();
     const [data, setData] = useState("");
 
+    const [formData, setFormData] = useState({
+        login: "",
+        password: "",
+        email: "",
+        tg_nickname: ""
+    });
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
     useEffect(() => {
         const token = localStorage.getItem("token");
 
@@ -36,15 +47,67 @@ function HomePage() {
 
     }, [navigate]);
 
+    const handleUpdate = () => {
+        fetch("http://localhost:8080/user/update", {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`
+            },
+            body: JSON.stringify(formData)
+        })
+            .then(res => res.json())
+            .then((data) => {
+                console.log("Данные обновлены", data);
+            })
+            .catch(error => console.error("Ошибка обновления:", error));
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        navigate("/signin");
+    };
+
+    const handleDelete = () => {
+        if (window.confirm("Вы уверены, что хотите удалить аккаунт?")) {
+            fetch("http://localhost:8080/user/delete", {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                }
+            })
+                .then(() => {
+                    localStorage.removeItem("token");
+                    navigate("/signup");
+                })
+                .catch(error => console.error("Ошибка удаления:", error));
+        }
+    };
+
     if (!data) {
         return <p>Загрузка...</p>;
     }
 
     return (
         <div className={styles['main-content']}>
-            <div className={styles['text-content']}>
-                <h1>Личный кабинет</h1>
-                {data.login}
+            <div className={styles.editSection}>
+                <div className={styles['fields-content']}>
+                <img className={styles} src="../assets/react.svg" alt="Аватар" />
+                <h2>{data.login}</h2>
+                <p>Email: {data.email}</p>
+                <p>Telegram: {data.tg_nickname}</p>
+                <button onClick={handleLogout} className={styles.button}>Выйти</button>
+                <button onClick={handleDelete} className={styles.button}>Удалить профиль</button></div>
+            </div>
+            <div className={styles.editSection}>
+                <div className={styles['fields-content']}>
+                    <h3>Изменить данные</h3>
+                    <input type="text" name="login" placeholder="Новый логин" className={styles["input-field"]} onChange={handleChange} />
+                <input type="password" name="password" placeholder="Новый пароль" className={styles["input-field"]} onChange={handleChange} />
+                <input type="email" name="email" placeholder="Новый email" className={styles["input-field"]} onChange={handleChange} />
+                <input type="text" name="tg_nickname" placeholder="Новый Telegram" className={styles["input-field"]} onChange={handleChange} />
+                <button onClick={handleUpdate} className={styles.button}>Сохранить</button>
+                </div>
             </div>
         </div>
     );
