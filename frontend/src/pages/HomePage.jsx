@@ -92,7 +92,7 @@ function HomePage() {
         <div className={styles['main-content']}>
             <div className={styles.editSection}>
                 <div className={styles['fields-content']}>
-                <img className={styles} src="../assets/react.svg" alt="Аватар" />
+                <img src="../assets/avatar.jpeg" alt="Аватар" />
                 <h2>{data.login}</h2>
                 <p>Email: {data.email}</p>
                 <p>Telegram: {data.tg_nickname}</p>
