@@ -29,10 +29,11 @@ class UserService():
     def get_user_data(self, user_id):
         user_db = repository.get_user_by_id(user_id)
         user = UserData(
+            id=user_db.id,
             login=user_db.login,
             email=user_db.email,
             tg_nickname=user_db.tg_nickname,
-            role=user_db.role
+            # role=user_db.role
         )
 
         return JSONResponse(status_code=200, content=user.model_dump())
@@ -55,3 +56,10 @@ class UserService():
         repository.delete_user(user_id)
 
         return JSONResponse(status_code=204, content=None)
+
+    def get_events(self, limit=10, offset=10):
+        all_events = repository.get_events(limit, offset)
+        if not all_events:
+            return make_http_error(404, "нет событий")
+
+        return JSONResponse(status_code=200, content=all_events.dict())

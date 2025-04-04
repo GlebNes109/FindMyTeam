@@ -12,12 +12,7 @@ class TeamManagementService():
         if not user_db:
             return make_http_error(404, "пользователь не найден")
 
-        event_id = repository.get_event_id_by_name(new_team.event_name)
-
-        if not event_id:
-            return make_http_error(404, "мероприятие не найдено")
-
-        res = repository.add_new_team(new_team, teamlead_id, event_id)
+        res = repository.add_new_team(new_team, teamlead_id, new_team.event_id)
 
         if not res:
             return make_http_error(409, "команда с такими данными уже есть")

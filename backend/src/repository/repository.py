@@ -6,8 +6,8 @@ from sqlmodel import SQLModel, Session, select
 from sqlalchemy import create_engine
 
 from backend.src.config import settings
-from backend.src.models.api_models import NewUser, NewTeam, NewEvent
-from backend.src.models.db_models import UsersDB, TeamsDB, EventsDB
+from backend.src.models.api_models import NewUser, NewTeam, NewEvent, EventData, EventTrack, AllEventsData
+from backend.src.models.db_models import UsersDB, TeamsDB, EventsDB, EventTracksDB
 from backend.src.services.utility_services import create_hash
 
 DATABASE_URL = f"postgresql://{settings.postgres_username}:{settings.postgres_password}@{settings.postgres_host}:{settings.postgres_port}/{settings.postgres_database}"
@@ -125,6 +125,14 @@ class Repository:
                 start_date=new_event.start_date,
                 end_date=new_event.end_date
             )
+            for i in range(len(new_event.event_tracks)):
+                event_track = EventTracksDB(
+                    id=str(uuid.uuid4()),
+                    event_id=event_id,
+                    name=new_event.event_tracks[i].name
+                )
+                session.add(event_track)
+
             session.add(event_db)
             # session.commit()
 
@@ -135,8 +143,33 @@ class Repository:
             except IntegrityError:
                 return False
 
-    def get_event_id_by_name(self, event_name):
+    def get_events(self, limit, offset):
+        with Session(engine) as session:
+            query = select(EventsDB).order_by(EventsDB.id)
+            events = session.exec(query).all()
+
+            all_events = []
+
+            for event_db in events:
+                tracks = session.exec(select(EventTracksDB.name).where(EventTracksDB.event_id == event_db.id)).all()
+
+                api_event = EventData(
+                    id=event_db.id,
+                    name=event_db.name,
+                    description=event_db.description,
+                    start_date=event_db.start_date,
+                    end_date=event_db.end_date,
+                    event_tracks=[EventTrack(name=track) for track in tracks]
+                )
+                all_events.append(api_event)
+
+        all_events_data = AllEventsData(
+            events=all_events
+        )
+        return all_events_data
+
+    '''def get_event_id_by_name(self, event_name):
         with Session(engine) as session:
             query = select(EventsDB.id).where(EventsDB.name == event_name)
             event_id = session.exec(query).first()
-            return event_id
+            return event_id'''
