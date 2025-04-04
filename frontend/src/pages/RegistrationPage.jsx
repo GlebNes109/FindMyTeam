@@ -37,7 +37,7 @@ const RegistrationPage = () => {
             .then((data) => {
                 // console.log("Токен:", data.token);
                 localStorage.setItem("token", data.token);
-                navigate('/homepage');})
+                navigate('/events');})
             .catch(error => console.error('Ошибка:', error));
     }
 

@@ -27,7 +27,7 @@ const LoginForm = () => {
             })
             .then((data) => {
                 localStorage.setItem("token", data.token);
-                navigate('/homepage');
+                navigate('/events');
                 // console.log("Токен в логине:", data.token);
             })
             .catch(error => console.error('Ошибка loginPage:', error));

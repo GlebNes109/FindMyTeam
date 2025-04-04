@@ -48,7 +48,7 @@ function HomePage() {
     }, [navigate]);
 
     const handleUpdate = () => {
-        fetch("http://localhost:8080/user/update", {
+        fetch("http://localhost:8080/user/patch", {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",

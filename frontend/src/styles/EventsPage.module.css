@@ -1,0 +1,77 @@
+.main-content{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;}
+
+.cardsList {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 800px;
+    margin-top: 70px;
+    margin-bottom: 60px;
+}
+
+.eventCard {
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+    border: #555555 solid 1px;
+}
+
+.eventCard p {
+    color: #cccccc;
+}
+
+.eventTracks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.track {
+    background: #6dca51;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 14px;
+}
+
+.header {
+    border-bottom: 2px solid #393939;
+}
+
+.button {
+    width: 100%;
+    max-width: 400px;
+    padding: 9px;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}
+
+.button:hover {
+    background-color: #4e4e4e;
+}
+
+.large-textarea {
+    width: 100%;
+    min-height: 150px;
+    max-height: 300px;
+    resize: vertical;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    overflow-y: auto;
+}
+
+.large-textarea:focus {
+    border-color: #4CAF50; /* Подсветка при фокусе */
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}

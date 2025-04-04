@@ -5,6 +5,7 @@ import MainPage from './pages/MainPage.jsx';
 import LoginPage from "./pages/LoginPage.jsx";
 import RegPage from "./pages/RegistrationPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
+import EventsPage from "./pages/EventsPage.jsx";
 function App() {
     return (
         <Router>
@@ -14,6 +15,7 @@ function App() {
                 <Route path="/signin" element={<LoginPage />} />
                 <Route path="/signup" element={<RegPage />} />
                 <Route path="/homepage" element={<HomePage />} />
+                <Route path="/events" element={<EventsPage />} />
             </Routes>
         </Router>
     );

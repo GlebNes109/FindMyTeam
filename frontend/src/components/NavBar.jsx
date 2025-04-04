@@ -9,8 +9,8 @@ function Navbar() {
         <nav className={styles.navbar}>
             <h1>FindMyTeam</h1>
             <div className={styles['navbar-buttons']}>
-            <button className={styles['navbar-btn']} onClick={() => navigate('/homepage')}>Личный кабинет</button>
-            <button className={styles['navbar-btn']} onClick={() => navigate('/homepage')}>Мероприятия</button>
+            <button className={styles['navbar-btn']} onClick={() => navigate('/')}>Личный r</button>
+            <button className={styles['navbar-btn']} onClick={() => navigate('/events')}>Мероприятия</button>
             <button className={styles['navbar-btn']} onClick={() => navigate('/homepage')}>Личный кабинет</button>
         </div>
         </nav>
