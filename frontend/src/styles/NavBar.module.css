@@ -17,16 +17,23 @@
     margin: 0;
 }
 
+.navbar-buttons {
+    display: flex;
+    margin-right: 30px;
+    gap: 5px;
+}
+
 .navbar-btn {
     background-color: #3f9328;
     border: none;
     color: white;
-    padding: 10px 30px;
+    padding: 8px 8px;
     text-align: center;
     font-size: 16px;
     cursor: pointer;
     transition: background-color 0.3s;
-    margin-right: 30px;
+    margin-right: 3px;
+    margin-left: 3px;
 }
 
 .navbar-btn:hover {
