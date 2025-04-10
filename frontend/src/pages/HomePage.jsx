@@ -1,6 +1,8 @@
 import styles from "../styles/HomePage.module.css";
 import React, {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
+import UserAvatar from '../assets/avatar.jpeg';
+
 
 function HomePage() {
     const navigate = useNavigate();
@@ -90,16 +92,25 @@ function HomePage() {
 
     return (
         <div className={styles['main-content']}>
-            <div className={styles.editSection}>
-                <div className={styles['fields-content']}>
-                <img src="../assets/avatar.jpeg" alt="Аватар" />
-                <h2>{data.login}</h2>
+            <div className={styles['user-info']}>
+                <div className={styles['user-info-content-left']}>
+                    <h2>Здравствуйте, {data.login}!</h2>
                 <p>Email: {data.email}</p>
                 <p>Telegram: {data.tg_nickname}</p>
-                <button onClick={handleLogout} className={styles.button}>Выйти</button>
-                <button onClick={handleDelete} className={styles.button}>Удалить профиль</button></div>
+                </div>
+            <div className={styles['user-info-content-right']}>
+                <button onClick={handleLogout} className={styles['button-exit']}>Выйти</button>
+                <button onClick={handleDelete} className={styles['button-delete']}>Удалить профиль</button>
+                <button onClick={handleUpdate} className={styles.button}>Редактировать профиль</button>
             </div>
-            <div className={styles.editSection}>
+
+            </div>
+            <div>
+            <h1>
+                Ваши мероприятия
+            </h1>
+        </div>
+            {/*<div className={styles.editSection}>
                 <div className={styles['fields-content']}>
                     <h3>Изменить данные</h3>
                     <input type="text" name="login" placeholder="Новый логин" className={styles["input-field"]} onChange={handleChange} />
@@ -108,7 +119,7 @@ function HomePage() {
                 <input type="text" name="tg_nickname" placeholder="Новый Telegram" className={styles["input-field"]} onChange={handleChange} />
                 <button onClick={handleUpdate} className={styles.button}>Сохранить</button>
                 </div>
-            </div>
+            </div>*/}
         </div>
     );
 }

@@ -8,6 +8,8 @@ const RegistrationEventModal = ({ isOpen, onClose, event}) => {
     const [event_role, setEventRole] = useState("PARTICIPANT");
     const [event_track, setEventTrack] = useState("");
     const [resume, setResume] = useState("");
+    const [team_name, setTeamName] = useState("");
+    const [team_description, setTeamDescription] = useState("");
     const navigate = useNavigate();
 
     if (!event) return null;
@@ -18,6 +20,23 @@ const RegistrationEventModal = ({ isOpen, onClose, event}) => {
             navigate('/signin');
             return;
         }
+
+        const requestBody = {
+            event_id: event.id,
+            event_role: event_role,
+            track_id: event_track,
+            resume: resume,
+        };
+
+
+        if (event_role === "TEAMLEAD") {
+            requestBody.team = {
+                name: team_name,
+                description: team_description
+            };
+        }
+
+
         fetch("http://localhost:8080/events/user/registration", {
 
             method: "POST",
@@ -25,16 +44,21 @@ const RegistrationEventModal = ({ isOpen, onClose, event}) => {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                event_id: event.id,
-                event_role: event_role,
-                track_id: event_track,
-                resume: resume,
-            }),
+            body:JSON.stringify(requestBody)
+            ,
         })
-            .then((res) => {
-                if (!res.ok) throw new Error("Ошибка регистрации");
-                return res.json();
+            .then((response) => {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        navigate('/signin');
+                        throw new Error("Ошибка регистрации");
+                    }
+                    else if (response.status === 400) {
+                        throw new Error("Ошибка регистрации");
+                    }
+                }
+                return response.json()
+
             })
             .then((data) => {
                 console.log("Успешно зарегистрирован:", data);
@@ -53,6 +77,23 @@ const RegistrationEventModal = ({ isOpen, onClose, event}) => {
                 value={resume}
                 onChange={(e) => setResume(e.target.value)}
             ></textarea>
+            <div className={`${styles_modal["team-fields"]} ${event_role === "TEAMLEAD" ? styles_modal["visible"] : ""}`}>
+                <input
+                    type="text"
+                    placeholder="Название команды"
+                    className={styles_modal["input-field"]}
+                    value={team_name}
+                    onChange={(e) => setTeamName(e.target.value)}
+                />
+                <textarea
+                    placeholder="Описание команды"
+                    className={styles_modal["large-textarea-modal"]}
+                    rows="5"
+                    maxLength="500"
+                    value={team_description}
+                    onChange={(e) => setTeamDescription(e.target.value)}
+                ></textarea>
+            </div>
             <div>
                 <select className={styles_modal["multi-select"]} id="options" value={event_role} onChange={(e) => setEventRole(e.target.value)}>
                     <option value="PARTICIPANT">Участник</option>
