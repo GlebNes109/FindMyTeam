@@ -28,8 +28,8 @@ class EventsDB(SQLModel, table=True):
     id: str = Field(primary_key=True)
     name: str
     description: str
-    start_date: Optional[str]
-    end_date: Optional[str]
+    start_date: str
+    end_date: str
 
 class EventTracksDB(SQLModel, table=True):
     id: str = Field(primary_key=True)
