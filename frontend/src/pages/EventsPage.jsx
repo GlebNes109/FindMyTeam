@@ -1,13 +1,18 @@
 import styles from "../styles/EventsPage.module.css";
+import styles_modal from "../styles/BaseModal.module.css";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import RegistrationEventModal from "./RegistrationEventModal.jsx";
+import RegistrationEventModal from "../components/RegistrationEventModal.jsx";
 
 
 function EventsPage() {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]); // Хранение списка событий
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [event_track, setEventTrack] = useState("");
+    const [selectedEvent, setSelectedEvent] = useState("");
+    const [event_role, setEventRole] = useState("");
+
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -47,21 +52,20 @@ function EventsPage() {
                                     <span key={track.id} className={styles.track}>{track.name}</span>
                                 ))}
                             </div>
-                            <button onClick={() => setIsModalOpen(true)} className={styles.button}>Зарегистрироваться на мероприятие</button>
+                            <button onClick={() => {setIsModalOpen(true); setSelectedEvent(event);}} className={styles.button}>Я учавствую</button>
                         </div>
                     ))}
                 </div>
             )}
-        <RegistrationEventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            <h3>Регистрация на мероприятие</h3>
-            <textarea
-                className={styles["large-textarea"]}
-                placeholder="Введите текст..."
-                rows="10"
-                maxLength="1000"
-            ></textarea>
-            <button type="submit" className={styles["login-button"]}>Подтвердить</button>
-        </RegistrationEventModal>
+            <RegistrationEventModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                event={selectedEvent}
+                event_role={event_role}
+                event_track={event_track}
+                setEventTrack={setEventTrack}
+                setEventRole={setEventRole}
+            />
         </div>
     );
 }

@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import styles from "../styles/RegEventModal.module.css";
+import styles from "../styles/BaseModal.module.css";
 
-const RegistrationEventModal = ({ isOpen, onClose, children }) => {
+const BaseModal = ({ isOpen, onClose, children}) => {
     if (!isOpen) return null;
 
     return ReactDOM.createPortal(
@@ -16,4 +16,4 @@ const RegistrationEventModal = ({ isOpen, onClose, children }) => {
     );
 };
 
-export default RegistrationEventModal;
+export default BaseModal;

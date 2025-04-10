@@ -15,12 +15,15 @@
 /* Само модальное окно */
 .modal {
     padding: 20px;
+    display: flex;
+    flex-direction: column;
     background-color: #252525;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     width: 400px;
     max-width: 80%;
     position: relative;
+    gap: 5px;
 }
 
 /* Кнопка закрытия */

@@ -44,7 +44,7 @@
 
 .button {
     width: 100%;
-    max-width: 400px;
+    max-width: 300px;
     padding: 9px;
     border: none;
     border-radius: 8px;
@@ -56,22 +56,4 @@
 
 .button:hover {
     background-color: #4e4e4e;
-}
-
-.large-textarea {
-    width: 100%;
-    min-height: 150px;
-    max-height: 300px;
-    resize: vertical;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    outline: none;
-    overflow-y: auto;
-}
-
-.large-textarea:focus {
-    border-color: #4CAF50; /* Подсветка при фокусе */
-    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
 }
