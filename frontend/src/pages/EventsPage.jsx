@@ -1,5 +1,4 @@
 import styles from "../styles/EventsPage.module.css";
-import styles_modal from "../styles/BaseModal.module.css";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RegistrationEventModal from "../components/RegistrationEventModal.jsx";
