@@ -70,3 +70,33 @@ select:focus {
     border-color: #6dca51;
     outline: none;
 }
+
+.link-button {
+    background: none;
+    border: none;
+    color: #5b5bff;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    transition: color 0.4s ease;
+
+}
+.link-button:hover {
+    color: #3a3aff;
+}
+
+.link-button:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.input-dark {
+    background-color: #333; /* Темный фон */
+    color: white; /* Белый текст */
+    border: 1px solid #555; /* Темная рамка */
+}
+
+.input-dark:focus {
+    background-color: #444; /* Немного светлее при фокусе */
+    border-color: #aaa; /* Светлая рамка при фокусе */
+}

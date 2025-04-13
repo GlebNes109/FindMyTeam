@@ -1,23 +1,13 @@
 import styles from "../styles/HomePage.module.css";
-import React, {useEffect, useState} from "react";
-import {useNavigate} from "react-router-dom";
-import UserAvatar from '../assets/avatar.jpeg';
-
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import PatchUserModal from "../components/PatchUserModal.jsx";
 
 function HomePage() {
     const navigate = useNavigate();
     const [data, setData] = useState("");
-
-    const [formData, setFormData] = useState({
-        login: "",
-        password: "",
-        email: "",
-        tg_nickname: ""
-    });
-
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    const [events, setEvents] = useState([]); // Состояние для хранения событий
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -27,6 +17,7 @@ function HomePage() {
             navigate('/signin');
         }
 
+        // Получаем данные пользователя
         fetch('http://localhost:8080/user/data', {
             method: 'GET',
             headers: {
@@ -40,30 +31,25 @@ function HomePage() {
                         Promise.reject("не авторизован");
                     }
                 }
-                return response.json()
+                return response.json();
             })
             .then(data => {
                 setData(data);
             })
             .catch(error => console.error('Ошибка HomePage:', error));
 
-    }, [navigate]);
-
-    const handleUpdate = () => {
-        fetch("http://localhost:8080/user/patch", {
-            method: "PATCH",
+        // Получаем события, в которых участвует пользователь
+        fetch('http://localhost:8080/events/user/get_user_events', {
+            method: 'GET',
             headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`
+                'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify(formData)
         })
-            .then(res => res.json())
-            .then((data) => {
-                console.log("Данные обновлены", data);
-            })
-            .catch(error => console.error("Ошибка обновления:", error));
-    };
+            .then((response) => response.json())
+            .then(events => setEvents(events || [])) // Устанавливаем события
+            .catch(error => console.error('Ошибка загрузки событий:', error));
+
+    }, [navigate]);
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -91,35 +77,54 @@ function HomePage() {
     }
 
     return (
-        <div className={styles['main-content']}>
+        <div className="container py-5">
             <div className={styles['user-info']}>
                 <div className={styles['user-info-content-left']}>
                     <h2>Здравствуйте, {data.login}!</h2>
-                <p>Email: {data.email}</p>
-                <p>Telegram: {data.tg_nickname}</p>
+                    <p>Email: {data.email}</p>
+                    <p>Telegram: {data.tg_nickname}</p>
                 </div>
-            <div className={styles['user-info-content-right']}>
-                <button onClick={handleLogout} className={styles['button-exit']}>Выйти</button>
-                <button onClick={handleDelete} className={styles['button-delete']}>Удалить профиль</button>
-                <button onClick={handleUpdate} className={styles.button}>Редактировать профиль</button>
+                <div className={styles['user-info-content-right']}>
+                    <button onClick={handleLogout} className="btn btn-warning mb-2">Выйти</button>
+                    <button onClick={handleDelete} className="btn btn-danger mb-2">Удалить профиль</button>
+                    <button className="btn btn-primary" onClick={() => { setIsModalOpen(true) }}>Редактировать профиль</button>
+                </div>
             </div>
 
+            <h1>Ваши мероприятия</h1>
+
+            {/* Секция с карточками мероприятий */}
+            <div className="row g-4">
+                {events.length === 0 ? (
+                    <p>Вы не участвуете в мероприятиях.</p>
+                ) : (
+                    events.map(event => (
+                        <div key={event.id} className="col-md-4">
+                            <div className={`card h-100 shadow-sm bg-dark border-2 ${styles['card-clickable']}`} onClick={() => navigate(`/home/myevent/${event.id}`)}>
+                                <div className="card-body">
+                                    <h5 className="card-title">{event.name}</h5>
+                                    <span className="badge bg-secondary me-2"> {event.event_role === "PARTICIPANT" ? "Участник" : "Тимлид"}</span>
+                                    <span className="badge bg-secondary me-2">{event.participant_track}</span>
+                                    <p className="card-text">{event.description}</p>
+                                    <p><b>Дата начала:</b> {event.start_date}</p>
+                                    <p><b>Дата окончания:</b> {event.end_date}</p>
+                                    {/*<div>
+                                        <b>Треки:</b>
+                                        {event.event_tracks.map(track => (
+                                            <span key={track.id} className="badge bg-secondary me-2">{track.name}</span>
+                                        ))}
+                                    </div>*/}
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
-            <div>
-            <h1>
-                Ваши мероприятия
-            </h1>
-        </div>
-            {/*<div className={styles.editSection}>
-                <div className={styles['fields-content']}>
-                    <h3>Изменить данные</h3>
-                    <input type="text" name="login" placeholder="Новый логин" className={styles["input-field"]} onChange={handleChange} />
-                <input type="password" name="password" placeholder="Новый пароль" className={styles["input-field"]} onChange={handleChange} />
-                <input type="email" name="email" placeholder="Новый email" className={styles["input-field"]} onChange={handleChange} />
-                <input type="text" name="tg_nickname" placeholder="Новый Telegram" className={styles["input-field"]} onChange={handleChange} />
-                <button onClick={handleUpdate} className={styles.button}>Сохранить</button>
-                </div>
-            </div>*/}
+
+            <PatchUserModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
         </div>
     );
 }

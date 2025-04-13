@@ -45,13 +45,14 @@ const RegistrationPage = () => {
         <div className={styles['main-content']}>
             <div className={styles['fields-content']}>
                 <h2>Регистрация</h2>
-                <input type="text" placeholder="Введите электронную почту" className={styles["input-field"]} value={email} onChange={(e) => setEmail(e.target.value)}/>
-                <input type="text" placeholder="Введите логин" className={styles["input-field"]} value={login} onChange={(e) => setLogin(e.target.value)}/>
-                <input type="text" placeholder="Введите tg никнейм для связи" className={styles["input-field"]} value={tg_nickname} onChange={(e) => setTg_nickname(e.target.value)}/>
-                <input type="password" placeholder="Введите пароль" className={styles["input-field"]} value={password} onChange={(e) => setPassword(e.target.value)}/>
-                <input type="password" placeholder="Повторите пароль" className={styles["input-field"]} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}/>
-                <button type="submit" className={styles["login-button"]} onClick={RegisterRequest}>Зарегистрироваться
+                <input type="text" placeholder="Введите электронную почту" className={`form-control ${styles['input-dark']}`} value={email} onChange={(e) => setEmail(e.target.value)}/>
+                <input type="text" placeholder="Введите логин" className={`form-control ${styles['input-dark']}`} value={login} onChange={(e) => setLogin(e.target.value)}/>
+                <input type="text" placeholder="Введите tg никнейм для связи" className={`form-control ${styles['input-dark']}`} value={tg_nickname} onChange={(e) => setTg_nickname(e.target.value)}/>
+                <input type="password" placeholder="Введите пароль" className={`form-control ${styles['input-dark']}`} value={password} onChange={(e) => setPassword(e.target.value)}/>
+                <input type="password" placeholder="Повторите пароль" className={`form-control ${styles['input-dark']}`} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}/>
+                <button type="submit" className="btn btn-primary"  onClick={RegisterRequest}>Зарегистрироваться
                 </button>
+                <button className={styles["link-button"]} onClick={() => navigate("/signin")}>Уже есть аккаунт?</button>
             </div>
         </div>
     );

@@ -1,7 +1,6 @@
 .main-content{
     display: flex;
     justify-content: center;
-    align-items: center;
     min-height: 100vh;}
 
 .cardsList {
@@ -17,7 +16,7 @@
     padding: 15px;
     border-radius: 8px;
     margin: 10px 0;
-    border: #555555 solid 1px;
+    border: #393939 solid 1px;
 }
 
 .eventCard p {
@@ -31,7 +30,8 @@
 }
 
 .track {
-    background: #6dca51;
+    border: solid 1px #0a58ca;
+    background: rgba(22, 51, 255, 0);
     color: white;
     padding: 5px 10px;
     border-radius: 15px;

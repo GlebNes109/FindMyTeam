@@ -5,9 +5,34 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React</title>
+      <link
+              href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+              rel="stylesheet"
+              integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+              crossorigin="anonymous"
+      >
+    <style>
+      /* Для включения темной темы */
+      body {
+        --bs-body-bg: #212529;
+        --bs-body-color: #f8f9fa;
+        --bs-link-color: #0d6efd;
+        --bs-link-hover-color: #0a58ca;
+        --bs-navbar-bg: #343a40;
+        --bs-navbar-color: #f8f9fa;
+        --bs-btn-primary-bg: #007bff;
+        --bs-btn-primary-border-color: #007bff;
+        --bs-btn-primary-color: #fff;
+        --bs-btn-secondary-bg: #6c757d;
+        --bs-btn-secondary-border-color: #6c757d;
+        --bs-btn-secondary-color: #fff;
+        /* Дополнительные стили для темной темы */
+      }
+    </style>
+
   </head>
-  <body>
-    <div id="root"></div>
+  <body class="bg-dark text-white">
+  <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <div id="modal-root"></div>
     <div id="modal"></div>

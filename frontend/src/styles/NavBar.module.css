@@ -24,18 +24,22 @@
 }
 
 .navbar-btn {
-    background-color: #3f9328;
+    background-color: rgba(63, 147, 40, 0);
     border: none;
     color: white;
     padding: 8px 8px;
     text-align: center;
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: color 0.3s;
     margin-right: 3px;
     margin-left: 3px;
 }
 
 .navbar-btn:hover {
-    background-color: #2f6c1e;
+    color: #e3e3e3;
+}
+
+.navbar-btn:focus:not(:focus-visible) {
+    outline: none;
 }

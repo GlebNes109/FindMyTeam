@@ -59,7 +59,7 @@
 .team-fields {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 10px;
     max-height: 0;
     overflow: hidden;
     opacity: 0;

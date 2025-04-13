@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import styles from "../styles/LoginRegisterPage.module.css";
 import {useNavigate} from "react-router-dom"; // Подключаем стили
 
-const LoginForm = () => {
+const LoginPage = () => {
     const [password, setPassword] = useState("");
     const [login, setLogin] = useState("");
     const navigate = useNavigate();
@@ -36,13 +36,17 @@ const LoginForm = () => {
     return (
         <div className={styles['main-content']}>
             <div className={styles['fields-content']}>
-            <h2>Вход в аккаунт</h2>
-                <input type="text" placeholder="Введите логин" className={styles["input-field"]} value={login} onChange={(e) => setLogin(e.target.value)}/>
-                <input type="password" placeholder="Введите пароль" className={styles["input-field"]} value={password} onChange={(e) => setPassword(e.target.value)}/>
-                <button type="submit" className={styles["login-button"]} onClick={LoginRequest}>Войти</button>
+                <h2>Вход в аккаунт</h2>
+                <input type="text" placeholder="Введите логин" className={`form-control ${styles['input-dark']}`} value={login}
+                       onChange={(e) => setLogin(e.target.value)}/>
+                <input type="password" placeholder="Введите пароль" className={`form-control ${styles['input-dark']}`} value={password}
+                       onChange={(e) => setPassword(e.target.value)}/>
+                <button type="submit"  className="btn btn-primary"  onClick={LoginRequest}>Войти</button>
+                <button className={styles["link-button"]} onClick={() => navigate("/signup")}>еще нет аккаунта?
+                    зарегистрируйтесь!</button>
             </div>
         </div>
     );
 };
 
-export default LoginForm;
+export default LoginPage;
