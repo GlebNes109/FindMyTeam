@@ -27,7 +27,3 @@ def patch_user(user: PatchUser, user_id: str = Depends(get_user_id)):
 @router.delete("/delete", summary="Удаление профиля", description="Удаление пользователя из бд")
 def delete_user(user_id: str = Depends(get_user_id)):
     return user_service.delete_user(user_id)
-
-@router.get("/events/get_all_events", summary="Получение всех ивентов", description="Доступно для юзеров и админов")
-def get_events():
-    return user_service.get_events()

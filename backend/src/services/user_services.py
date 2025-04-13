@@ -56,10 +56,3 @@ class UserService():
         repository.delete_user(user_id)
 
         return JSONResponse(status_code=204, content=None)
-
-    def get_events(self, limit=10, offset=10):
-        all_events = repository.get_events(limit, offset)
-        if not all_events:
-            return make_http_error(404, "нет событий")
-
-        return JSONResponse(status_code=200, content=all_events.dict())

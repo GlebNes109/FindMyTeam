@@ -6,8 +6,10 @@ from sqlmodel import SQLModel, Session, select
 from sqlalchemy import create_engine
 
 from backend.src.config import settings
-from backend.src.models.api_models import NewUser, NewTeam, NewEvent, EventData, EventTrack, AllEventsData
-from backend.src.models.db_models import UsersDB, TeamsDB, EventsDB, EventTracksDB
+from backend.src.models.api_models import NewUser, NewTeam, NewEvent, EventData, EventTrackData, NewEventParticipant, \
+    UserEventsData, TeamData, ParticipationData, VacancyData
+from backend.src.models.db_models import UsersDB, TeamsDB, EventsDB, EventTracksDB, EventParticipantsDB, TeamMembersDB, \
+    TeamVacanciesDB
 from backend.src.services.utility_services import create_hash
 
 DATABASE_URL = f"postgresql://{settings.postgres_username}:{settings.postgres_password}@{settings.postgres_host}:{settings.postgres_port}/{settings.postgres_database}"
@@ -145,13 +147,14 @@ class Repository:
 
     def get_events(self, limit, offset):
         with Session(engine) as session:
-            query = select(EventsDB).order_by(EventsDB.id)
+            query = select(EventsDB.id).order_by(EventsDB.name)
             events = session.exec(query).all()
 
             all_events = []
 
-            for event_db in events:
-                tracks = session.exec(select(EventTracksDB.name).where(EventTracksDB.event_id == event_db.id)).all()
+            for event_id in events:
+                api_event = self.get_event_by_id(event_id)
+                '''tracks = session.exec(select(EventTracksDB).where(EventTracksDB.event_id == event_db.id)).all()
 
                 api_event = EventData(
                     id=event_db.id,
@@ -159,17 +162,129 @@ class Repository:
                     description=event_db.description,
                     start_date=event_db.start_date,
                     end_date=event_db.end_date,
-                    event_tracks=[EventTrack(name=track) for track in tracks]
-                )
-                all_events.append(api_event)
+                    event_tracks=[EventTrackData(id=track.id,name=track.name) for track in tracks]
+                )'''
+                all_events.append(api_event.model_dump())
 
-        all_events_data = AllEventsData(
-            events=all_events
-        )
-        return all_events_data
+        return all_events
 
-    '''def get_event_id_by_name(self, event_name):
+    def add_new_participant(self, new_participant: NewEventParticipant, user_id):
         with Session(engine) as session:
-            query = select(EventsDB.id).where(EventsDB.name == event_name)
-            event_id = session.exec(query).first()
-            return event_id'''
+            participant_id = str(uuid.uuid4())
+            participant_db = EventParticipantsDB(
+                id=participant_id,
+                event_id=new_participant.event_id,
+                user_id=user_id,
+                track_id=new_participant.track_id,
+                event_role=new_participant.event_role,
+                resume=new_participant.resume
+            )
+
+            if new_participant.team:
+                team_id = str(uuid.uuid4())
+
+                team_db = TeamsDB(
+                    id=team_id,
+                    name=new_participant.team.name,
+                    event_id=new_participant.event_id,
+                    teamlead_id=participant_id,
+                    description=new_participant.team.description
+                )
+
+                team_member = TeamMembersDB(
+                    id=str(uuid.uuid4()),
+                    team_id=team_id,
+                    participant_id=participant_id
+                )
+                session.add(team_db)
+                session.add(team_member)
+
+            session.add(participant_db)
+            session.commit()
+
+    def get_user_events(self, user_id):
+        with Session(engine) as session:
+            query = select(EventsDB).join(EventParticipantsDB, EventParticipantsDB.event_id == EventsDB.id).where(EventParticipantsDB.user_id == user_id)
+            events = session.exec(query).all()
+            all_events = []
+
+            participants_db = session.exec(select(EventParticipantsDB).where(EventParticipantsDB.event_id == EventsDB.id)).all()
+
+            for event_db, participant_db in zip(events, participants_db):
+                tracks = session.exec(select(EventTracksDB).where(EventTracksDB.event_id == event_db.id)).all()
+                participant_track = session.exec(select(EventTracksDB).where(EventTracksDB.event_id == event_db.id and EventTracksDB.id == participant_db.track_id)).first().name
+                api_event = UserEventsData(
+                    id=event_db.id,
+                    name=event_db.name,
+                    description=event_db.description,
+                    start_date=event_db.start_date,
+                    end_date=event_db.end_date,
+                    event_tracks=[EventTrackData(id=track.id, name=track.name) for track in tracks],
+                    participant_id=participant_db.id,
+                    event_role=participant_db.event_role,
+                    resume=participant_db.resume,
+                    participant_track=participant_track
+                )
+                all_events.append(api_event.model_dump())
+
+            return all_events
+
+    def get_event_by_id(self, event_id):
+        with (Session(engine) as session):
+            event_db = session.exec(select(EventsDB).where(EventsDB.id == event_id)).first()
+            teams = session.exec(select(TeamsDB).where(TeamsDB.event_id == event_id)).all()
+
+            event_teams = []
+
+            for team in teams:
+                vacancies_db = session.exec(select(TeamVacanciesDB).where(TeamVacanciesDB.team_id == team.id)).all()
+                participants_db = session.exec(
+                    select(EventParticipantsDB)
+                    .join(TeamMembersDB, TeamMembersDB.participant_id == EventParticipantsDB.id)
+                    .where(TeamMembersDB.team_id == team.id)
+                ).all()
+                # track = session.exec(select(EventTracksDB).where(EventTracksDB.event_id == event_db.id)).first()
+                members = []
+                vacancies = []
+
+                for participant_db in participants_db:
+                    participant = ParticipationData(
+                        participant_id=participant_db.id,
+                        login="логин",
+                        track=EventTrackData(id=participant_db.track_id, name="левй трек"),
+                        event_role=participant_db.event_role,
+                        resume=participant_db.resume,
+                        event_id=event_id
+                    )
+
+                    '''vacancy = VacancyData(
+                        id=vacancy_db.id,
+                        event_track=EventTrackData(id="левый ай", name="левй трек"),
+                        description=vacancy_db.description
+                    )'''
+
+                    members.append(participant)
+                    # vacancies.append(vacancy)
+
+                team = TeamData(
+                    id=team.id,
+                    name=team.name,
+                    description=team.description,
+                    members=members,
+                    vacancies=vacancies
+                )
+
+                event_teams.append(team)
+
+            tracks = session.exec(select(EventTracksDB).where(EventTracksDB.event_id == event_db.id)).all()
+
+            api_event = EventData(
+                id=event_db.id,
+                name=event_db.name,
+                description=event_db.description,
+                start_date=event_db.start_date,
+                end_date=event_db.end_date,
+                event_tracks=[EventTrackData(id=track.id, name=track.name) for track in tracks],
+                event_teams=event_teams)
+
+            return api_event
