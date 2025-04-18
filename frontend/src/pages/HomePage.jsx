@@ -100,7 +100,10 @@ function HomePage() {
                 ) : (
                     events.map(event => (
                         <div key={event.id} className="col-md-4">
-                            <div className={`card h-100 shadow-sm bg-dark border-2 ${styles['card-clickable']}`} onClick={() => navigate(`/home/myevent/${event.id}`)}>
+                            <div className={`card h-100 shadow-sm bg-dark border-2 ${styles['card-clickable']}`} onClick={() => navigate(`/home/myevent/${event.id}`, {
+                                state: {
+                                participant_id: event.participant_id
+                            }})}>
                                 <div className="card-body">
                                     <h5 className="card-title">{event.name}</h5>
                                     <span className="badge bg-secondary me-2"> {event.event_role === "PARTICIPANT" ? "Участник" : "Тимлид"}</span>

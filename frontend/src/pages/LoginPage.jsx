@@ -6,6 +6,7 @@ const LoginPage = () => {
     const [password, setPassword] = useState("");
     const [login, setLogin] = useState("");
     const navigate = useNavigate();
+    const [errorMessage, setErrorMessage] = useState("");
 
     function LoginRequest() {
         fetch('http://localhost:8080/user/signin', {
@@ -20,7 +21,8 @@ const LoginPage = () => {
                 if (!response.ok) {
                     if (response.status === 401) {
                         // console.log("неверный логин пароль))");
-                        return Promise.reject("неверный логин пароль)))");
+                        setErrorMessage("неверный логин или пароль");
+                        return;
                     }
                 }
                 return response.json();
@@ -44,6 +46,11 @@ const LoginPage = () => {
                 <button type="submit"  className="btn btn-primary"  onClick={LoginRequest}>Войти</button>
                 <button className={styles["link-button"]} onClick={() => navigate("/signup")}>еще нет аккаунта?
                     зарегистрируйтесь!</button>
+                {errorMessage && (
+                    <div className="alert alert-danger mt-3" role="alert">
+                        {errorMessage}
+                    </div>
+                )}
             </div>
         </div>
     );

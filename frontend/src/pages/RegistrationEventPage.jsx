@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import styles from "../styles/RegistrationEventModal.module.css";
-import {useNavigate, useParams} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 function RegistrationEventPage() {
     const [event_role, setEventRole] = useState("PARTICIPANT");
@@ -8,27 +8,37 @@ function RegistrationEventPage() {
     const [resume, setResume] = useState("");
     const [team_name, setTeamName] = useState("");
     const [team_description, setTeamDescription] = useState("");
+    const [vacancies, setVacancies] = useState([]);
     const navigate = useNavigate();
     const [event, setEvent] = useState(null);
     const { event_id } = useParams();
 
     useEffect(() => {
-        fetch(`http://localhost:8080/events/user/get_event/${event_id}`, {
-            method: 'GET'
-        })
+        fetch(`http://localhost:8080/events/user/get_event/${event_id}`)
             .then(res => res.json())
-            .then(data => setEvent(data))
-            .catch(err => console.error('Ошибка загрузки событий:', err));
+            .then(data => {
+                setEvent(data);
+                /*if (data.event_tracks?.length > 0 && !event_track) {
+                    setEventTrack(data.event_tracks[0].id);
+                }*/
+            })
+            .catch(err => console.error("Ошибка загрузки событий:", err));
+    }, [event_track, event_id]);
 
-        if (event?.event_tracks?.length > 0 && !event_track) {
-            setEventTrack(event.event_tracks[0].id);
-        }
-    }, [navigate, event, event_track]);
+    const addVacancy = () => {
+        setVacancies([...vacancies, { event_track_id: "", description: "" }]);
+    };
+
+    const updateVacancy = (index, field, value) => {
+        const updated = [...vacancies];
+        updated[index][field] = value;
+        setVacancies(updated);
+    };
 
     function RegisterNewParticipant() {
         const token = localStorage.getItem("token");
         if (!token) {
-            navigate('/signin');
+            navigate("/signin");
             return;
         }
 
@@ -42,35 +52,34 @@ function RegistrationEventPage() {
         if (event_role === "TEAMLEAD") {
             requestBody.team = {
                 name: team_name,
-                description: team_description
+                description: team_description,
+                vacancies: vacancies,
             };
         }
 
         fetch("http://localhost:8080/events/user/registration", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(requestBody)
-            ,
+            body: JSON.stringify(requestBody),
         })
             .then((response) => {
                 if (!response.ok) {
                     if (response.status === 401) {
-                        navigate('/signin');
+                        navigate("/signin");
                         throw new Error("Ошибка регистрации");
                     } else if (response.status === 400) {
                         throw new Error("Ошибка регистрации");
                     }
                 }
-                return response.json()
-
+                return response.json();
             })
             .then((data) => {
                 console.log("Успешно зарегистрирован:", data);
-                navigate(`/home/myevent/${event.id}`)
-            })
+                navigate(`/home/myevent/${event.id}`);
+            });
     }
 
     return (
@@ -78,9 +87,7 @@ function RegistrationEventPage() {
             <h3 className="mb-4">Регистрация на мероприятие</h3>
 
             <div className="mb-3">
-                <label htmlFor="resume" className="form-label">
-                    Расскажите о себе
-                </label>
+                <label htmlFor="resume" className="form-label">Расскажите о себе</label>
                 <textarea
                     className="form-control bg-dark border-secondary text-light"
                     id="resume"
@@ -118,6 +125,43 @@ function RegistrationEventPage() {
                         onChange={(e) => setTeamDescription(e.target.value)}
                     />
                 </div>
+
+                <div className="mb-3">
+                    <button type="button" className="btn btn-outline-light" onClick={addVacancy}>
+                        + Добавить вакансию
+                    </button>
+                </div>
+
+                {vacancies.map((vacancy, index) => (
+                    <div key={index} className="mb-3 border p-3 rounded bg-dark border-dark">
+                        <label className="form-label">Трек для вакансии</label>
+                        <select
+                            className="form-select bg-dark border-secondary text-light mb-2"
+                            value={vacancy.event_track_id}
+                            onChange={(e) =>
+                                updateVacancy(index, "event_track_id", e.target.value)
+                            }
+                        >
+                            <option value="">Выберите трек</option>
+                            {event?.event_tracks?.map((track) => (
+                                <option key={track.id} value={track.id}>
+                                    {track.name}
+                                </option>
+                            ))}
+                        </select>
+
+                        <label className="form-label">Описание вакансии</label>
+                        <textarea
+                            className="form-control bg-dark border-secondary text-light"
+                            rows="2"
+                            placeholder="Описание вакансии"
+                            value={vacancy.description}
+                            onChange={(e) =>
+                                updateVacancy(index, "description", e.target.value)
+                            }
+                        />
+                    </div>
+                ))}
             </div>
 
             <div className="mb-3">
@@ -141,7 +185,8 @@ function RegistrationEventPage() {
                     value={event_track}
                     onChange={(e) => setEventTrack(e.target.value)}
                 >
-                    {event?.event_tracks?.map(track => (
+                    <option value="">Выберите трек</option>
+                    {event?.event_tracks?.map((track) => (
                         <option key={track.id} value={track.id}>
                             {track.name}
                         </option>
@@ -154,6 +199,6 @@ function RegistrationEventPage() {
             </button>
         </div>
     );
-};
+}
 
 export default RegistrationEventPage;

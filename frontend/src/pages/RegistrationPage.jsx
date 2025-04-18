@@ -9,13 +9,7 @@ const RegistrationPage = () => {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const navigate = useNavigate();
-    /*function handle_change_role(e) {
-        if (e.target.value === "Капитан команды") {
-            setRole("TEAM_CAPTAIN");
-        } else {
-            setRole("USER");
-        }
-    }*/
+    const [errorMessage, setErrorMessage] = useState("");
 
     function RegisterRequest() {
         if (password !== confirmPassword) {
@@ -33,7 +27,19 @@ const RegistrationPage = () => {
                 tg_nickname: tg_nickname,
             })
         })
-            .then(data => data.json())
+            .then((response) => {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        setErrorMessage("Не все поля заполнены или некорректные значения");
+                        return;
+                    }
+                    if (response.status === 409) {
+                        setErrorMessage("Такой логин уже есть, возьмите другой");
+                        return;
+                    }
+                }
+                return response.json();
+            })
             .then((data) => {
                 // console.log("Токен:", data.token);
                 localStorage.setItem("token", data.token);
@@ -53,6 +59,11 @@ const RegistrationPage = () => {
                 <button type="submit" className="btn btn-primary"  onClick={RegisterRequest}>Зарегистрироваться
                 </button>
                 <button className={styles["link-button"]} onClick={() => navigate("/signin")}>Уже есть аккаунт?</button>
+                {errorMessage && (
+                    <div className="alert alert-danger mt-3" role="alert">
+                        {errorMessage}
+                    </div>
+                )}
             </div>
         </div>
     );

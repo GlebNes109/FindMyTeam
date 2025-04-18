@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import styles from '../styles/MyEventPage.module.css';
 
@@ -6,10 +6,12 @@ function MyEventPage() {
     const { eventId } = useParams();
     const [eventData, setEventData] = useState(null);
     const [activeTab, setActiveTab] = useState('teams');
+    const location = useLocation();
+    const participant_id = location.state?.participant_id;
+    const [participantData, setParticipantData] = useState(null);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        if (!token) return;
 
         fetch(`http://localhost:8080/events/user/get_event/${eventId}`, {
             headers: {
@@ -21,6 +23,20 @@ function MyEventPage() {
             .catch(err => console.error(err));
     }, [eventId]);
 
+    useEffect(() => {
+        if (!participant_id) return;
+
+        const token = localStorage.getItem('token');
+
+        fetch(`http://localhost:8080/events/user/get_user_participation/${participant_id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(res => res.json())
+            .then(data => setParticipantData(data))
+            .catch(err => console.error("Ошибка загрузки участника:", err));
+    }, [participant_id]);
     if (!eventData) return <div>Загрузка...</div>;
 
     return (
@@ -79,15 +95,25 @@ function MyEventPage() {
                         </table>
                     </>
                 )}
-
                 {activeTab === 'responses' && <p>Отклики — пока пусто</p>}
                 {activeTab === 'invites' && <p>Приглашения — пока пусто</p>}
             </div>
             </div>
 
             {/* Карточка снизу */}
-            <div className="card mt-4 bg-dark">
-                <div className="card-body">Карточка (пока не реализована)</div>
+            <div className="card mt-4 bg-dark text-light">
+                <div className="card-body">
+                    {participantData ? (
+                        <>
+                            <h5 className="card-title mb-3">Вы участвуете в этом мероприятии</h5>
+                            <p><strong>Роль:</strong> {participantData.event_role === 'TEAMLEAD' ? 'Тимлид' : 'Участник'}</p>
+                            <p><strong>Трек:</strong> {participantData.track.name}</p>
+                            <p><strong>Резюме:</strong> {participantData.resume || '—'}</p>
+                        </>
+                    ) : (
+                        <p className="text-muted">Вы не зарегистрированы на это мероприятие</p>
+                    )}
+                </div>
             </div>
         </div>
     );
