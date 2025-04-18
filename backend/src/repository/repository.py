@@ -226,9 +226,8 @@ class Repository:
             events = session.exec(query).all()
             all_events = []
 
-            participants_db = session.exec(select(EventParticipantsDB).where(EventParticipantsDB.event_id == EventsDB.id)).all()
-
-            for event_db, participant_db in zip(events, participants_db):
+            for event_db in events:
+                participant_db = session.exec(select(EventParticipantsDB).where(EventParticipantsDB.event_id == event_db.id)).first()
                 tracks = session.exec(select(EventTracksDB).where(EventTracksDB.event_id == event_db.id)).all()
                 participant_track = session.exec(select(EventTracksDB).where(EventTracksDB.event_id == event_db.id and EventTracksDB.id == participant_db.track_id)).first().name
                 api_event = UserEventsData(
@@ -337,8 +336,7 @@ class Repository:
             participant = session.exec(select(EventParticipantsDB).where(EventParticipantsDB.id == participant_id)).first()
 
             login = session.exec(select(UsersDB.login).where(UsersDB.id == participant.user_id)).first()
-            participant_track = session.exec(
-                select(EventTracksDB).where(EventTracksDB.id == participant.track_id)).first()
+            participant_track = session.exec(select(EventTracksDB).where(EventTracksDB.id == participant.track_id)).first()
             participant = ParticipationData(
                 participant_id=participant.id,
                 login=login,
