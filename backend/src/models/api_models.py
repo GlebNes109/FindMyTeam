@@ -1,55 +1,68 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, Any
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, validator, field_validator
 
+
+class StrictBaseModel(BaseModel):
+    @field_validator('*', mode='before')
+    @classmethod
+    def no_empty_strings(cls, v: Any, info):
+        if isinstance(v, str) and not v.strip():
+            raise ValueError()
+        return v
 
 class EventRole(str, Enum):
     TEAMLEAD = "TEAMLEAD"
     PARTICIPANT = "PARTICIPANT"
 
-class NewUser(BaseModel):
+class NewUser(StrictBaseModel):
     login: str
     password: str
     email: str
     tg_nickname: str
 
-class SigninUser(BaseModel):
+class SigninUser(StrictBaseModel):
     login: str
     password: str
 
-class UserData(BaseModel):
+class UserData(StrictBaseModel):
     id: str
     login: str
     email: str
     tg_nickname: str
 
-class PatchUser(BaseModel):
+class PatchUser(StrictBaseModel):
     login: Optional[str] = None
     password: Optional[str] = None
     email: Optional[str] = None
     tg_nickname: Optional[str] = None
 
-class NewTeam(BaseModel):
-    # members_login: Optional[list[str]] = None# логины участников команды
-    name: str
+class NewVacancy(StrictBaseModel):
+    event_track_id: str
     description: str
 
-class EventTrackData(BaseModel):
+class NewTeam(StrictBaseModel):
+    # members_login: Optional[list[str]] = None #логины участников команды
+    name: str
+    description: str
+    vacancies: Optional[list[NewVacancy]] = None
+
+class EventTrackData(StrictBaseModel):
     id: str
     name: str
 
-class NewEventTrack(BaseModel):
+class NewEventTrack(StrictBaseModel):
     name: str
 
-class NewEvent(BaseModel):
+class NewEvent(StrictBaseModel):
     name: str
     description: str
     start_date: str
     end_date: str
     event_tracks: list[NewEventTrack]
 
-class NewEventParticipant(BaseModel):
+class NewEventParticipant(StrictBaseModel):
     event_id: str
     track_id: str
     event_role: EventRole
@@ -64,7 +77,7 @@ class NewEventParticipant(BaseModel):
         return self
 # если капитан - команда обязательна
 
-class UserEventsData(BaseModel):
+class UserEventsData(StrictBaseModel):
     id: str
     name: str
     description: str
@@ -77,27 +90,26 @@ class UserEventsData(BaseModel):
     # skills: Optional[list[str]]
     participant_track: str
 
-class ParticipationData(BaseModel):
+class ParticipationData(StrictBaseModel):
     participant_id: str
     login: str
-    event_id: str
     track: EventTrackData
     event_role: str
     resume: str
 
-class VacancyData(BaseModel):
+class VacancyData(StrictBaseModel):
     id: str
-    event_track: EventTrackData
+    track: EventTrackData
     description: str
 
-class TeamData(BaseModel):
+class TeamData(StrictBaseModel):
     id: str
     name: str
     description: str
     members: Optional[list[ParticipationData]] = None
     vacancies: Optional[list[VacancyData]] = None
 
-class EventData(BaseModel):
+class EventData(StrictBaseModel):
     id: str
     name: str
     description: str
@@ -105,3 +117,4 @@ class EventData(BaseModel):
     end_date: str
     event_tracks: list[EventTrackData]
     event_teams: Optional[list[TeamData]] = None
+    event_participants: Optional[list[ParticipationData]] = None

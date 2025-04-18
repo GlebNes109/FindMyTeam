@@ -170,6 +170,12 @@ class Repository:
 
     def add_new_participant(self, new_participant: NewEventParticipant, user_id):
         with Session(engine) as session:
+
+            track = session.exec(select(EventTracksDB).where(EventTracksDB.id == new_participant.track_id and EventTracksDB.event_id == new_participant.event_id)).first()
+
+            if not track:
+                return None
+
             participant_id = str(uuid.uuid4())
             participant_db = EventParticipantsDB(
                 id=participant_id,
@@ -191,16 +197,28 @@ class Repository:
                     description=new_participant.team.description
                 )
 
+                if new_participant.team.vacancies:
+                    for vacancy in new_participant.team.vacancies:
+                        vacancy_db = TeamVacanciesDB(
+                            id=str(uuid.uuid4()),
+                            team_id=team_id,
+                            event_track_id=vacancy.event_track_id,
+                            description=vacancy.description
+                        )
+                        session.add(vacancy_db)
+
                 team_member = TeamMembersDB(
                     id=str(uuid.uuid4()),
                     team_id=team_id,
                     participant_id=participant_id
                 )
+
                 session.add(team_db)
                 session.add(team_member)
 
             session.add(participant_db)
             session.commit()
+            return participant_id
 
     def get_user_events(self, user_id):
         with Session(engine) as session:
@@ -232,13 +250,16 @@ class Repository:
     def get_event_by_id(self, event_id):
         with (Session(engine) as session):
             event_db = session.exec(select(EventsDB).where(EventsDB.id == event_id)).first()
+            if event_db == None:
+                return None
+
             teams = session.exec(select(TeamsDB).where(TeamsDB.event_id == event_id)).all()
 
             event_teams = []
 
             for team in teams:
                 vacancies_db = session.exec(select(TeamVacanciesDB).where(TeamVacanciesDB.team_id == team.id)).all()
-                participants_db = session.exec(
+                team_members = session.exec(
                     select(EventParticipantsDB)
                     .join(TeamMembersDB, TeamMembersDB.participant_id == EventParticipantsDB.id)
                     .where(TeamMembersDB.team_id == team.id)
@@ -247,24 +268,26 @@ class Repository:
                 members = []
                 vacancies = []
 
-                for participant_db in participants_db:
-                    participant = ParticipationData(
-                        participant_id=participant_db.id,
-                        login="логин",
-                        track=EventTrackData(id=participant_db.track_id, name="левй трек"),
-                        event_role=participant_db.event_role,
-                        resume=participant_db.resume,
-                        event_id=event_id
+                for member_db in team_members:
+                    login = session.exec(select(UsersDB.login).where(UsersDB.id == member_db.user_id)).first()
+                    member_track = session.exec(select(EventTracksDB).where(EventTracksDB.id == member_db.track_id)).first()
+                    member = ParticipationData(
+                        participant_id=member_db.id,
+                        login=login,
+                        track=EventTrackData(id=member_track.id, name=member_track.name),
+                        event_role=member_db.event_role,
+                        resume=member_db.resume
                     )
+                    members.append(member)
 
-                    '''vacancy = VacancyData(
+                for vacancy_db in vacancies_db:
+                    vacancy_track = session.exec(select(EventTracksDB).where(EventTracksDB.id == vacancy_db.event_track_id)).first()
+                    vacancy = VacancyData(
                         id=vacancy_db.id,
-                        event_track=EventTrackData(id="левый ай", name="левй трек"),
+                        track=EventTrackData(id=vacancy_track.id, name=vacancy_track.name),
                         description=vacancy_db.description
-                    )'''
-
-                    members.append(participant)
-                    # vacancies.append(vacancy)
+                    )
+                    vacancies.append(vacancy)
 
                 team = TeamData(
                     id=team.id,
@@ -278,6 +301,26 @@ class Repository:
 
             tracks = session.exec(select(EventTracksDB).where(EventTracksDB.event_id == event_db.id)).all()
 
+            participants_db = session.exec(
+                select(EventParticipantsDB)
+                .where(EventParticipantsDB.event_id == event_id)
+            ).all()
+
+            event_participants = []
+
+            for participant_db in participants_db:
+                login = session.exec(select(UsersDB.login).where(UsersDB.id == participant_db.user_id)).first()
+                participant_track = session.exec(
+                    select(EventTracksDB).where(EventTracksDB.id == participant_db.track_id)).first()
+                participant = ParticipationData(
+                    participant_id=participant_db.id,
+                    login=login,
+                    track=EventTrackData(id=participant_track.id, name=participant_track.name),
+                    event_role=participant_db.event_role,
+                    resume=participant_db.resume
+                )
+                event_participants.append(participant)
+
             api_event = EventData(
                 id=event_db.id,
                 name=event_db.name,
@@ -285,6 +328,22 @@ class Repository:
                 start_date=event_db.start_date,
                 end_date=event_db.end_date,
                 event_tracks=[EventTrackData(id=track.id, name=track.name) for track in tracks],
-                event_teams=event_teams)
-
+                event_teams=event_teams,
+                event_participants=event_participants,)
             return api_event
+
+    def get_participant_data(self, participant_id):
+        with Session(engine) as session:
+            participant = session.exec(select(EventParticipantsDB).where(EventParticipantsDB.id == participant_id)).first()
+
+            login = session.exec(select(UsersDB.login).where(UsersDB.id == participant.user_id)).first()
+            participant_track = session.exec(
+                select(EventTracksDB).where(EventTracksDB.id == participant.track_id)).first()
+            participant = ParticipationData(
+                participant_id=participant.id,
+                login=login,
+                track=EventTrackData(id=participant_track.id, name=participant_track.name),
+                event_role=participant.event_role,
+                resume=participant.resume
+            )
+            return participant

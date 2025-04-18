@@ -23,6 +23,10 @@ def registration_user(new_participant: NewEventParticipant, user_id: str = Depen
 def get_user_events(user_id: str = Depends(get_user_id)):
     return event_service.get_users_events(user_id)
 
-@router.get("/user/get_event/{EventId}", summary="Получение ивентов на которые пользователь зарегистрирован", description="-")
-def get_user_events(EventId: str, user_id: str = Depends(get_user_id)):
+@router.get("/user/get_event/{EventId}", summary="Получение ивента по id", description="-")
+def get_event(EventId: str):
     return event_service.get_event_data(EventId)
+
+@router.get("/user/get_user_participation/{ParticipantId}", summary="Получение ивента по id", description="-")
+def get_event(ParticipantId: str):
+    return event_service.get_participation_data(ParticipantId)

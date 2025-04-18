@@ -39,13 +39,24 @@ class EventManagementService():
         return JSONResponse(status_code=201, content=None)
 
     def add_new_participant(self, new_participant, user_id):
-        repository.add_new_participant(new_participant, user_id)
-        return JSONResponse(status_code=201, content=None)
+        result = repository.add_new_participant(new_participant, user_id)
+        if not result:
+            return JSONResponse(status_code=400, content=None)
+
+        return JSONResponse(status_code=201, content={"participant_id": result})
 
     def get_users_events(self, user_id):
         user_events = repository.get_user_events(user_id)
+        # if not user_events:
+        #    return make_http_error(404, "ивентов нет")
         return JSONResponse(status_code=200, content=user_events)
 
     def get_event_data(self, event_id):
         event = repository.get_event_by_id(event_id)
+        if not event:
+            return make_http_error(404, "ивента нет")
         return JSONResponse(status_code=200, content=event.model_dump())
+
+    def get_participation_data(self, ParticipantId):
+        participant_data = repository.get_participant_data(ParticipantId)
+        return JSONResponse(status_code=200, content=participant_data.model_dump())

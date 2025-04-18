@@ -62,7 +62,6 @@ class TeamVacanciesDB(SQLModel, table=True):
     id: str = Field(primary_key=True)
     team_id: str # = Field(foreign_key="teams.id")
     event_track_id: str # = Field(foreign_key="eventtracks.id")
-    status: str
     description: str
 
 class TeamVacanciesSkillsDB(SQLModel, table=True):
