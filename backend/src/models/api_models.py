@@ -118,3 +118,7 @@ class EventData(StrictBaseModel):
     event_tracks: list[EventTrackData]
     event_teams: Optional[list[TeamData]] = None
     event_participants: Optional[list[ParticipationData]] = None
+
+class NewInvitation(StrictBaseModel):
+    vacancy_id: str
+    participant_id: str

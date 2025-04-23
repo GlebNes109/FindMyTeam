@@ -7,9 +7,9 @@ from sqlalchemy import create_engine
 
 from backend.src.config import settings
 from backend.src.models.api_models import NewUser, NewTeam, NewEvent, EventData, EventTrackData, NewEventParticipant, \
-    UserEventsData, TeamData, ParticipationData, VacancyData
+    UserEventsData, TeamData, ParticipationData, VacancyData, NewInvitation
 from backend.src.models.db_models import UsersDB, TeamsDB, EventsDB, EventTracksDB, EventParticipantsDB, TeamMembersDB, \
-    TeamVacanciesDB
+    TeamVacanciesDB, TeamInvitationsDB, EventRole
 from backend.src.services.utility_services import create_hash
 
 DATABASE_URL = f"postgresql://{settings.postgres_username}:{settings.postgres_password}@{settings.postgres_host}:{settings.postgres_port}/{settings.postgres_database}"
@@ -361,3 +361,25 @@ class Repository:
                 return participant
             except:
                 return None
+
+    def add_new_invitation(self, invitation: NewInvitation):
+        with Session(engine) as session:
+            participant_db = session.exec(select(EventParticipantsDB).where(EventParticipantsDB.id == invitation.participant_id)).first()
+            approved_by_teamlead = False
+            approved_by_participant = False
+
+            if participant_db.event_role == EventRole.PARTICIPANT:
+                approved_by_participant = True
+            elif participant_db.event_role == EventRole.TEAMLEAD:
+                approved_by_teamlead = True
+
+            invitation_db = TeamInvitationsDB(
+                id=str(uuid.uuid4()),
+                vacancy_id=invitation.vacancy_id,
+                participant_id=invitation.participant_id,
+                approved_by_teamlead=approved_by_teamlead,
+                approved_by_participant=approved_by_participant
+            )
+            session.add(invitation_db)
+            session.commit()
+            return True

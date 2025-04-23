@@ -8,6 +8,10 @@ class Role(str, Enum):
     ADMIN = "ADMIN"
     SUPER_ADMIN = "SUPER_ADMIN"
 
+class EventRole(str, Enum):
+    TEAMLEAD = "TEAMLEAD"
+    PARTICIPANT = "PARTICIPANT"
+
 class UsersDB(SQLModel, table=True):
     __table_args__ = {"extend_existing": True}
     id: str = Field(primary_key=True)
@@ -22,7 +26,7 @@ class EventParticipantsDB(SQLModel, table=True):
     event_id: str # = Field(foreign_key="events.id")
     user_id: str # = Field(foreign_key="users.id")
     track_id: str # = Field(foreign_key="eventtracks.id")
-    event_role: str # капитан или участник
+    event_role: EventRole
     resume: str
 
 class ParticipantSkillsDB(SQLModel, table=True):
@@ -69,9 +73,9 @@ class TeamVacanciesSkillsDB(SQLModel, table=True):
     skill: str
     vacancy_id: str
 
-class TeamInvitationDB(SQLModel, table=True):
+class TeamInvitationsDB(SQLModel, table=True):
     id: str = Field(primary_key=True)
-    vacancy_id: int # = Field(foreign_key="teamvacancies.id")
-    participant_id: int # = Field(foreign_key="eventparticipations.id")
-    approved_by_teamlead: Optional[bool]
-    approved_by_participant: Optional[bool]
+    vacancy_id: str # = Field(foreign_key="teamvacancies.id")
+    participant_id: str # = Field(foreign_key="eventparticipations.id")
+    approved_by_teamlead: bool
+    approved_by_participant: bool
