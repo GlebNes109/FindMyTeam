@@ -59,4 +59,6 @@ class EventManagementService():
 
     def get_participation_data(self, ParticipantId):
         participant_data = repository.get_participant_data(ParticipantId)
+        if not participant_data:
+            return make_http_error(404, "такого нет")
         return JSONResponse(status_code=200, content=participant_data.model_dump())

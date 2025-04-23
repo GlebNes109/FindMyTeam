@@ -95,6 +95,20 @@ class Repository:
             query = select(UsersDB).where(UsersDB.id == user_id)
             user_db = session.exec(query).first()
             session.delete(user_db)
+
+            '''query = select(EventParticipantsDB).where(EventParticipantsDB.user_id == user_id)
+            participant_db = session.exec(query).first()
+            participant_id_to_delete = participant_db.id
+            session.delete(participant_db)
+            
+            query = select(TeamMembersDB).where(TeamMembersDB.participant_id == participant_id_to_delete)
+            teammember_db = session.exec(query).first()
+            session.delete(teammember_db)
+            
+            query = select(TeamsDB).where(TeamsDB.teamlead_id == participant_id_to_delete)
+            team = session.exec(query).first()
+            session.delete(team)'''
+
             session.commit()
 
     def add_new_team(self, new_team: NewTeam, teamlead_id, event_id):
@@ -222,12 +236,12 @@ class Repository:
 
     def get_user_events(self, user_id):
         with Session(engine) as session:
-            query = select(EventsDB).join(EventParticipantsDB, EventParticipantsDB.event_id == EventsDB.id).where(EventParticipantsDB.user_id == user_id)
-            events = session.exec(query).all()
+            query = select(EventParticipantsDB).where(EventParticipantsDB.user_id == user_id)
+            participants = session.exec(query).all()
             all_events = []
 
-            for event_db in events:
-                participant_db = session.exec(select(EventParticipantsDB).where(EventParticipantsDB.event_id == event_db.id)).first()
+            for participant_db in participants:
+                event_db = session.exec(select(EventsDB).where(EventsDB.id == participant_db.event_id)).first()
                 tracks = session.exec(select(EventTracksDB).where(EventTracksDB.event_id == event_db.id)).all()
                 participant_track = session.exec(select(EventTracksDB).where(EventTracksDB.event_id == event_db.id and EventTracksDB.id == participant_db.track_id)).first().name
                 api_event = UserEventsData(
@@ -334,14 +348,16 @@ class Repository:
     def get_participant_data(self, participant_id):
         with Session(engine) as session:
             participant = session.exec(select(EventParticipantsDB).where(EventParticipantsDB.id == participant_id)).first()
-
-            login = session.exec(select(UsersDB.login).where(UsersDB.id == participant.user_id)).first()
-            participant_track = session.exec(select(EventTracksDB).where(EventTracksDB.id == participant.track_id)).first()
-            participant = ParticipationData(
-                participant_id=participant.id,
-                login=login,
-                track=EventTrackData(id=participant_track.id, name=participant_track.name),
-                event_role=participant.event_role,
-                resume=participant.resume
-            )
-            return participant
+            try:
+                login = session.exec(select(UsersDB.login).where(UsersDB.id == participant.user_id)).first()
+                participant_track = session.exec(select(EventTracksDB).where(EventTracksDB.id == participant.track_id)).first()
+                participant = ParticipationData(
+                    participant_id=participant.id,
+                    login=login,
+                    track=EventTrackData(id=participant_track.id, name=participant_track.name),
+                    event_role=participant.event_role,
+                    resume=participant.resume
+                )
+                return participant
+            except:
+                return None
