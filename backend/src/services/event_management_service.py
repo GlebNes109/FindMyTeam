@@ -1,6 +1,7 @@
 from starlette.responses import JSONResponse
 
 from backend.src.config import settings
+from backend.src.models.api_models import NewInvitation
 from backend.src.repository.repository import Repository
 from backend.src.services.utility_services import make_http_error
 
@@ -59,4 +60,19 @@ class EventManagementService():
 
     def get_participation_data(self, ParticipantId):
         participant_data = repository.get_participant_data(ParticipantId)
+        if not participant_data:
+            return make_http_error(404, "такого нет")
         return JSONResponse(status_code=200, content=participant_data.model_dump())
+
+    def add_invitation(self, invitation: NewInvitation, user_id):
+        user_events = repository.get_user_events(user_id)
+        is_real_participant = False # проверка, действительно ли participant_id принадлежит этому пользователю
+        for event in user_events:
+            if event["participant_id"]== invitation.participant_id:
+                is_real_participant = True
+                break
+
+        if not is_real_participant:
+            return make_http_error(403, "пользователь не является участником или id участника некорректный")
+        repository.add_new_invitation(invitation)
+        return JSONResponse(status_code=201, content=None)

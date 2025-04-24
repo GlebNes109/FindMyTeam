@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from backend.src.models.api_models import NewEvent, NewEventParticipant
+from backend.src.models.api_models import NewEvent, NewEventParticipant, NewInvitation
 from backend.src.services.event_management_service import EventManagementService
 from backend.src.services.utility_services import get_user_id
 
@@ -28,5 +28,9 @@ def get_event(EventId: str):
     return event_service.get_event_data(EventId)
 
 @router.get("/user/get_user_participation/{ParticipantId}", summary="Получение ивента по id", description="-")
-def get_event(ParticipantId: str):
+def get_participation(ParticipantId: str):
     return event_service.get_participation_data(ParticipantId)
+
+@router.post("/user/add_new_invitation", summary="Создание нового приглашения в команду", description="-")
+def add_invitation(new_invitation: NewInvitation, user_id: str = Depends(get_user_id)):
+    return event_service.add_invitation(new_invitation, user_id)
