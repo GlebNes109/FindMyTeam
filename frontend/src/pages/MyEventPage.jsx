@@ -9,7 +9,7 @@ function MyEventPage() {
     const location = useLocation();
     const participant_id = location.state?.participant_id;
     const [participantData, setParticipantData] = useState(null);
-
+    const isTeamlead = participantData?.event_role === 'TEAMLEAD';
     useEffect(() => {
         const token = localStorage.getItem('token');
 
@@ -37,8 +37,18 @@ function MyEventPage() {
             .then(data => setParticipantData(data))
             .catch(err => console.error("Ошибка загрузки участника:", err));
     }, [participant_id]);
-    if (!eventData) return <div>Загрузка...</div>;
 
+
+
+    if (!eventData) return <div className="container py-5"><p>Загрузка...</p></div>;
+    const participantsInTeams = new Set(
+        (eventData.event_teams || []).flatMap(team =>
+            team.members?.map(m => m.participant_id) || []
+        )
+    );
+    const freeParticipants = (eventData.event_participants || []).filter(
+        p => !participantsInTeams.has(p.participant_id)
+    );
     return (
         <div className="container py-5">
             <h2>{eventData.name}</h2>
@@ -48,6 +58,14 @@ function MyEventPage() {
                 <li className="nav-item">
                     <button className={`nav-link ${activeTab === 'teams' ? 'active' : ''}`} onClick={() => setActiveTab('teams')}>
                         Команды
+                    </button>
+                </li>
+                <li className="nav-item">
+                    <button
+                        className={`nav-link ${activeTab === 'participants' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('participants')}
+                    >
+                        {isTeamlead ? 'Участники (можно пригласить)' : 'Участники (просмотр)'}
                     </button>
                 </li>
                 <li className="nav-item">
@@ -95,6 +113,44 @@ function MyEventPage() {
                         </table>
                     </>
                 )}
+
+                {activeTab === 'participants' && (
+                    <>
+                        {freeParticipants.length === 0 ? (
+                            <p className="text-muted">Нет доступных участников</p>
+                        ) : (
+                            <table className="table table-bordered table-dark">
+                                <thead>
+                                <tr>
+                                    <th>Логин</th>
+                                    <th>Трек</th>
+                                    <th>Резюме</th>
+                                    <th>Действие</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {freeParticipants.map((p, i) => (
+                                    <tr key={i}>
+                                        <td>{p.login}</td>
+                                        <td>{p.track.name}</td>
+                                        <td>{p.resume}</td>
+                                        <td>
+                                            {isTeamlead ? (
+                                                <button className="btn btn-success btn-sm">Пригласить</button>
+                                            ) : (
+                                                <button className="btn btn-secondary btn-sm" disabled title="Вы не капитан">
+                                                    Недоступно
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </>
+                )}
+
                 {activeTab === 'responses' && <p>Отклики — пока пусто</p>}
                 {activeTab === 'invites' && <p>Приглашения — пока пусто</p>}
             </div>
