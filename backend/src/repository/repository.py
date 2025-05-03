@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 
 from backend.src.config import settings
 from backend.src.models.api_models import NewUser, NewTeam, NewEvent, EventData, EventTrackData, NewEventParticipant, \
-    UserEventsData, TeamData, ParticipationData, VacancyData, NewInvitation
+    UserEventsData, TeamData, ParticipationData, VacancyData, NewInvitation, InvitationData
 from backend.src.models.db_models import UsersDB, TeamsDB, EventsDB, EventTracksDB, EventParticipantsDB, TeamMembersDB, \
     TeamVacanciesDB, TeamInvitationsDB, EventRole
 from backend.src.services.utility_services import create_hash
@@ -383,3 +383,32 @@ class Repository:
             session.add(invitation_db)
             session.commit()
             return True
+
+# получение откликов пользоавтеля, то есть TeamInvitationsDB где approved_by_teamlead = False, но approved_by_participant = True. Для простого участника возвращает его отклики, для тимлида - отклики на вакансии его команды.
+    def get_responses(self, participant_id):
+        with Session(engine) as session:
+            responses = []
+            participant_db = session.exec(select(EventParticipantsDB).where(EventParticipantsDB.id == participant_id)).first()
+            if participant_db.event_role == EventRole.PARTICIPANT:
+                invitations_db = session.exec(select(TeamInvitationsDB).where(TeamInvitationsDB.participant_id == participant_id)).all()
+                for invitation_db in invitations_db:
+                    invitation = InvitationData(**invitation_db.model_dump())
+                    responses.append(invitation.model_dump())
+
+            elif participant_db.event_role == EventRole.TEAMLEAD:
+                query = (
+                    select(TeamInvitationsDB)
+                    .join(TeamVacanciesDB, TeamVacanciesDB.id == TeamInvitationsDB.vacancy_id)
+                    .join(TeamsDB, TeamsDB.id == TeamVacanciesDB.team_id)
+                    .where(
+                        TeamsDB.teamlead_id == participant_db.id,
+                        TeamInvitationsDB.approved_by_participant == True,
+                        TeamInvitationsDB.approved_by_teamlead == False
+                    )
+                )
+                invitations_db = session.exec(query).all()
+                for invitation_db in invitations_db:
+                    invitation = InvitationData(**invitation_db.model_dump())
+                    responses.append(invitation.model_dump())
+
+        return responses

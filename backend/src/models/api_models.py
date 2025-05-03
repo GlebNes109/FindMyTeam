@@ -122,3 +122,10 @@ class EventData(StrictBaseModel):
 class NewInvitation(StrictBaseModel):
     vacancy_id: str
     participant_id: str
+
+class InvitationData(StrictBaseModel):
+    id: str
+    vacancy_id: str
+    participant_id: str
+    approved_by_teamlead: bool
+    approved_by_participant: bool

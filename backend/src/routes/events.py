@@ -27,10 +27,14 @@ def get_user_events(user_id: str = Depends(get_user_id)):
 def get_event(EventId: str):
     return event_service.get_event_data(EventId)
 
-@router.get("/user/get_user_participation/{ParticipantId}", summary="Получение ивента по id", description="-")
+@router.get("/user/get_user_participation/{ParticipantId}", summary="Получение данных об участии в мероприятии", description="Воспользоваться этим эндпоинтом может любой пользователь для просмотра данных о другом ползователе (или о себе). Это нужно например при наборе в команду чтобы прочитать резюме кандидата.")
 def get_participation(ParticipantId: str):
     return event_service.get_participation_data(ParticipantId)
 
 @router.post("/user/add_new_invitation", summary="Создание нового приглашения в команду", description="-")
 def add_invitation(new_invitation: NewInvitation, user_id: str = Depends(get_user_id)):
     return event_service.add_invitation(new_invitation, user_id)
+
+@router.get("/user/get_responses/{ParticipantId}", summary="Получение всех откликов", description="Эндпоинт работает и для тимлидов, и для участников - для тимлида выводятся отклики на его вакансии, а для участника - его собственные отвлики, которые он сделал ранее.")
+def get_responses(ParticipantId: str, user_id: str = Depends(get_user_id)):
+    return event_service.get_responses(ParticipantId, user_id)

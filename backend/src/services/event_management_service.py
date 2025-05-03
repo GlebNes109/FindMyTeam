@@ -65,14 +65,24 @@ class EventManagementService():
         return JSONResponse(status_code=200, content=participant_data.model_dump())
 
     def add_invitation(self, invitation: NewInvitation, user_id):
-        user_events = repository.get_user_events(user_id)
-        is_real_participant = False # проверка, действительно ли participant_id принадлежит этому пользователю
-        for event in user_events:
-            if event["participant_id"]== invitation.participant_id:
-                is_real_participant = True
-                break
-
-        if not is_real_participant:
+        if not self.check_participant_id(user_id, invitation.participant_id):
             return make_http_error(403, "пользователь не является участником или id участника некорректный")
         repository.add_new_invitation(invitation)
         return JSONResponse(status_code=201, content=None)
+
+    def get_responses(self, participant_id, user_id):
+        if not self.check_participant_id(user_id, participant_id):
+            return make_http_error(403, "пользователь не является участником или id участника некорректный")
+        responses = repository.get_responses(participant_id)
+        return JSONResponse(status_code=200, content=responses)
+
+    def check_participant_id(self, user_id, participant_id):
+        user_events = repository.get_user_events(user_id)
+        is_real_participant = False  # проверка, действительно ли participant_id принадлежит этому пользователю
+        for event in user_events:
+            if event["participant_id"] == participant_id:
+                is_real_participant = True
+                break
+        return is_real_participant
+
+
