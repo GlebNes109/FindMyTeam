@@ -1,6 +1,5 @@
 import { useParams, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import styles from '../styles/MyEventPage.module.css';
 
 function MyEventPage() {
     const { eventId } = useParams();
@@ -9,7 +8,10 @@ function MyEventPage() {
     const location = useLocation();
     const participant_id = location.state?.participant_id;
     const [participantData, setParticipantData] = useState(null);
+    const [responsesData, setResponsesData] = useState(null);
+    const [invitationsData, setInvitationsData] = useState(null);
     const isTeamlead = participantData?.event_role === 'TEAMLEAD';
+
     useEffect(() => {
         const token = localStorage.getItem('token');
 
@@ -38,7 +40,48 @@ function MyEventPage() {
             .catch(err => console.error("Ошибка загрузки участника:", err));
     }, [participant_id]);
 
+    useEffect(() => {
+        if (!participant_id) return;
 
+        const token = localStorage.getItem('token');
+
+        fetch(`http://localhost:8080/events/user/get_responses/${participant_id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(res => res.json())
+            .then(data => setResponsesData(data))
+            .catch(err => console.error("Ошибка загрузки участника:", err));
+    }, [participant_id]);
+
+    useEffect(() => {
+        if (!participant_id) return;
+
+        const token = localStorage.getItem('token');
+
+        fetch(`http://localhost:8080/events/user/get_invitations/${participant_id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(res => res.json())
+            .then(data => setInvitationsData(data))
+            .catch(err => console.error("Ошибка загрузки участника:", err));
+    }, [participant_id]);
+
+    /*функция для приглашения новых участников в свою команду - если participant который просматривает страницу является teamlead*/
+    function InviteNewParticipant(vacancy_id, participant_to_invite_id) {
+        fetch('http://localhost:8080/events/user/invite', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                vacancy_id: vacancy_id,
+                participant_id: participant_to_invite_id,
+                teamlead_id: participant_id
+            })
+        })
+        }
 
     if (!eventData) return <div className="container py-5"><p>Загрузка...</p></div>;
     const participantsInTeams = new Set(
@@ -136,7 +179,7 @@ function MyEventPage() {
                                         <td>{p.resume}</td>
                                         <td>
                                             {isTeamlead ? (
-                                                <button className="btn btn-success btn-sm">Пригласить</button>
+                                                <button className="btn btn-success btn-sm" onClick={() => InviteNewParticipant(vacancy_id, p.id)}>Пригласить</button>
                                             ) : (
                                                 <button className="btn btn-secondary btn-sm" disabled title="Вы не капитан">
                                                     Недоступно
@@ -151,8 +194,61 @@ function MyEventPage() {
                     </>
                 )}
 
-                {activeTab === 'responses' && <p>Отклики — пока пусто</p>}
-                {activeTab === 'invites' && <p>Приглашения — пока пусто</p>}
+                {activeTab === 'responses' && (
+                    <div className="bg-black mt-3">
+                        {responsesData.length === 0 ? (
+                            <p className="text-muted">Отклики — пока пусто</p>
+                        ) : (
+                            <div className="list-group">
+                                {responsesData.map((response) => (
+                                    <div
+                                        key={response.id}
+                                        className="list-group-item d-flex justify-content-between align-items-center"
+                                    >
+                                        <div>
+                                            <h5 className="mb-1">Отклик #{response.id.slice(0, 8)}</h5>
+                                            <p className="mb-1">Вакансия: {response.vacancy_id.slice(0, 8)}</p>
+                                            <small className="mb-1">Участник: {response.participant_id.slice(0, 8)}</small>
+                                        </div>
+                                        <span className={`badge ${response.approved_by_teamlead ? 'bg-success' : 'bg-warning'} rounded-pill`}>
+                            {response.approved_by_teamlead ? 'Одобрено' : 'Ожидает'}
+                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+                {activeTab === 'invites' && (
+                    <div className="mt-3">
+                        {invitationsData.length === 0 ? (
+                            <p className="text-muted">Приглашения — пока пусто</p>
+                        ) : (
+                            <div className="list-group">
+                                {invitationsData.map((invite) => (
+                                    <div
+                                        key={invite.id}
+                                        className="list-group-item d-flex justify-content-between align-items-center"
+                                    >
+                                        <div>
+                                            <h5 className="mb-1">Приглашение #{invite.id.slice(0, 8)}</h5>
+                                            <p className="mb-1">Вакансия: {invite.vacancy_id.slice(0, 8)}</p>
+                                            {isTeamlead ? (
+                                                <small>Отправлено участнику: {invite.participant_id.slice(0, 8)}</small>
+                                            ) : (
+                                                <small>Приглашено тимлидом</small>
+                                            )}
+                                        </div>
+                                        <span className="badge bg-primary rounded-pill">
+                            Ожидает ответа
+                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
             </div>
             </div>
 
