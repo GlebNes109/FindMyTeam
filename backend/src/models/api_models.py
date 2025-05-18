@@ -122,6 +122,11 @@ class EventData(StrictBaseModel):
 class NewInvitation(StrictBaseModel):
     vacancy_id: str
     participant_id: str
+    teamlead_id: str
+
+class NewResponse(StrictBaseModel):
+    vacancy_id: str
+    participant_id: str
 
 class InvitationData(StrictBaseModel):
     id: str

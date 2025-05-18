@@ -1,7 +1,7 @@
 from starlette.responses import JSONResponse
 
 from backend.src.config import settings
-from backend.src.models.api_models import NewInvitation
+from backend.src.models.api_models import NewInvitation, EventRole, NewResponse
 from backend.src.repository.repository import Repository
 from backend.src.services.utility_services import make_http_error
 
@@ -64,10 +64,21 @@ class EventManagementService():
             return make_http_error(404, "такого нет")
         return JSONResponse(status_code=200, content=participant_data.model_dump())
 
-    def add_invitation(self, invitation: NewInvitation, user_id):
-        if not self.check_participant_id(user_id, invitation.participant_id):
+    def add_invitation(self, invitation: NewInvitation, user_id): # добавление приглашения в команду от тимлида
+        # проверка, что participant_id принадлежит этому участнику
+        if not self.check_participant_id(user_id, invitation.teamlead_id):
             return make_http_error(403, "пользователь не является участником или id участника некорректный")
-        repository.add_new_invitation(invitation)
+
+        # проверка, что teamlead_id является тимлидом в той команде, в которую подается приглашение
+        if not repository.check_vacancy_id(invitation.teamlead_id, invitation.vacancy_id):
+            return make_http_error(403, "пользователь не является участником или id участника некорректный")
+        repository.add_new_invitation(invitation.vacancy_id, invitation.participant_id, from_teamlead=True)
+        return JSONResponse(status_code=201, content=None)
+
+    def add_response(self, response: NewResponse, user_id): # добавление отклика от участника
+        if not self.check_participant_id(user_id, response.participant_id):
+                return make_http_error(403, "пользователь не является участником или id участника некорректный")
+        repository.add_new_invitation(response.vacancy_id, response.participant_id, from_teamlead=False)
         return JSONResponse(status_code=201, content=None)
 
     def get_responses(self, participant_id, user_id):
@@ -85,4 +96,8 @@ class EventManagementService():
                 break
         return is_real_participant
 
-
+    def get_invitations(self, participant_id, user_id):
+        if not self.check_participant_id(user_id, participant_id):
+            return make_http_error(403, "пользователь не является участником или id участника некорректный")
+        invitations = repository.get_invitations(participant_id)
+        return JSONResponse(status_code=200, content=invitations)

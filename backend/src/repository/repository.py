@@ -362,21 +362,15 @@ class Repository:
             except:
                 return None
 
-    def add_new_invitation(self, invitation: NewInvitation):
+    def add_new_invitation(self, vacancy_id, participant_id, from_teamlead=False):
         with Session(engine) as session:
-            participant_db = session.exec(select(EventParticipantsDB).where(EventParticipantsDB.id == invitation.participant_id)).first()
-            approved_by_teamlead = False
             approved_by_participant = False
-
-            if participant_db.event_role == EventRole.PARTICIPANT:
-                approved_by_participant = True
-            elif participant_db.event_role == EventRole.TEAMLEAD:
-                approved_by_teamlead = True
+            approved_by_teamlead = True
 
             invitation_db = TeamInvitationsDB(
                 id=str(uuid.uuid4()),
-                vacancy_id=invitation.vacancy_id,
-                participant_id=invitation.participant_id,
+                vacancy_id=vacancy_id,
+                participant_id=participant_id,
                 approved_by_teamlead=approved_by_teamlead,
                 approved_by_participant=approved_by_participant
             )
@@ -384,17 +378,62 @@ class Repository:
             session.commit()
             return True
 
-# получение откликов пользоавтеля, то есть TeamInvitationsDB где approved_by_teamlead = False, но approved_by_participant = True. Для простого участника возвращает его отклики, для тимлида - отклики на вакансии его команды.
-    def get_responses(self, participant_id):
+    def check_vacancy_id(self, teamlead_id, vacancy_id):
+        with Session(engine) as session:
+            # получаем вакансию и связанную с ней команду
+            vacancy = session.exec(
+                select(TeamVacanciesDB)
+                .where(TeamVacanciesDB.id == vacancy_id)
+            ).first()
+
+            if not vacancy:
+                return False
+
+            # проверка, являестся ли participant тимлидом команды
+            team = session.exec(
+                select(TeamsDB)
+                .where(
+                    TeamsDB.id == vacancy.team_id,
+                    TeamsDB.teamlead_id == teamlead_id
+                )
+            ).first()
+
+            if not team:
+                return False
+
+            # дополнительная проверка роли в EventParticipantsDB
+            participant = session.exec(
+                select(EventParticipantsDB)
+                .where(
+                    EventParticipantsDB.id == teamlead_id,
+                    EventParticipantsDB.event_role == EventRole.TEAMLEAD
+                )
+            ).first()
+
+            return participant is not None
+
+    # универсальный эндпоинт для получения инвайтов или откликов
+    def _get_invitations_common(
+            self,
+            participant_id: str,
+            approved_by_teamlead,
+            approved_by_participant
+    ) -> list[dict]:
         with Session(engine) as session:
             responses = []
-            participant_db = session.exec(select(EventParticipantsDB).where(EventParticipantsDB.id == participant_id)).first()
-            if participant_db.event_role == EventRole.PARTICIPANT:
-                invitations_db = session.exec(select(TeamInvitationsDB).where(TeamInvitationsDB.participant_id == participant_id)).all()
-                for invitation_db in invitations_db:
-                    invitation = InvitationData(**invitation_db.model_dump())
-                    responses.append(invitation.model_dump())
+            participant_db = session.exec(
+                select(EventParticipantsDB)
+                .where(EventParticipantsDB.id == participant_id)
+            ).first()
 
+            if not participant_db:
+                return []
+
+            if participant_db.event_role == EventRole.PARTICIPANT:
+                query = select(TeamInvitationsDB).where(
+                    TeamInvitationsDB.participant_id == participant_id,
+                    TeamInvitationsDB.approved_by_participant == approved_by_participant, TeamInvitationsDB.approved_by_teamlead == approved_by_teamlead
+                )
             elif participant_db.event_role == EventRole.TEAMLEAD:
                 query = (
                     select(TeamInvitationsDB)
@@ -402,13 +441,26 @@ class Repository:
                     .join(TeamsDB, TeamsDB.id == TeamVacanciesDB.team_id)
                     .where(
                         TeamsDB.teamlead_id == participant_db.id,
-                        TeamInvitationsDB.approved_by_participant == True,
-                        TeamInvitationsDB.approved_by_teamlead == False
+                        TeamInvitationsDB.approved_by_participant == approved_by_participant,
+                        TeamInvitationsDB.approved_by_teamlead == approved_by_teamlead
                     )
                 )
-                invitations_db = session.exec(query).all()
-                for invitation_db in invitations_db:
-                    invitation = InvitationData(**invitation_db.model_dump())
-                    responses.append(invitation.model_dump())
+            else:
+                return []
 
-        return responses
+            invitations_db = session.exec(query).all()
+            return [InvitationData(**inv.model_dump()).model_dump() for inv in invitations_db]
+
+    def get_responses(self, participant_id: str) -> list[dict]:
+        return self._get_invitations_common(
+            participant_id=participant_id,
+            approved_by_teamlead=False,
+            approved_by_participant=True
+        )
+
+    def get_invitations(self, participant_id: str) -> list[dict]:
+        return self._get_invitations_common(
+            participant_id=participant_id,
+            approved_by_teamlead=True,
+            approved_by_participant=False
+        )

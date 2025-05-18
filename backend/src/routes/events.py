@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from backend.src.models.api_models import NewEvent, NewEventParticipant, NewInvitation
+from backend.src.models.api_models import NewEvent, NewEventParticipant, NewInvitation, NewResponse
 from backend.src.services.event_management_service import EventManagementService
 from backend.src.services.utility_services import get_user_id
 
@@ -31,10 +31,18 @@ def get_event(EventId: str):
 def get_participation(ParticipantId: str):
     return event_service.get_participation_data(ParticipantId)
 
-@router.post("/user/add_new_invitation", summary="Создание нового приглашения в команду", description="-")
+@router.post("/user/invite", summary="Создание нового приглашения в команду", description="-")
 def add_invitation(new_invitation: NewInvitation, user_id: str = Depends(get_user_id)):
     return event_service.add_invitation(new_invitation, user_id)
+
+@router.post("/user/respond", summary="Откликнуться", description="-")
+def add_invitation(new_resp: NewResponse, user_id: str = Depends(get_user_id)):
+    return event_service.add_response(new_resp, user_id)
 
 @router.get("/user/get_responses/{ParticipantId}", summary="Получение всех откликов", description="Эндпоинт работает и для тимлидов, и для участников - для тимлида выводятся отклики на его вакансии, а для участника - его собственные отвлики, которые он сделал ранее.")
 def get_responses(ParticipantId: str, user_id: str = Depends(get_user_id)):
     return event_service.get_responses(ParticipantId, user_id)
+
+@router.get("/user/get_invitations/{ParticipantId}", summary="Получение всех откликов", description="Эндпоинт работает и для тимлидов, и для участников - для тимлида выводятся отклики на его вакансии, а для участника - его собственные отвлики, которые он сделал ранее.")
+def get_responses(ParticipantId: str, user_id: str = Depends(get_user_id)):
+    return event_service.get_invitations(ParticipantId, user_id)
