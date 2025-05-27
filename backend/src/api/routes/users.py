@@ -1,16 +1,15 @@
-import jwt
 from fastapi import APIRouter, Depends
 
-from backend.src.models.api_models import NewUser, SigninUser, PatchUser
-from backend.src.services.user_services import UserService
-from backend.src.services.utility_services import get_user_id
+from backend.src.api.dependencies import get_user_service
+from backend.src.legacy.models.api_models import NewUser, SigninUser, PatchUser
+from backend.src.domain.services.user_services import UserService
+from backend.src.domain.services.utility_services import get_user_id
 
 router = APIRouter()
-user_service = UserService()
 
 @router.post("/signup", summary="Регистрация", description="Первоначальная регистрация на платформе")
-def add_new_user(new_user: NewUser):
-    return user_service.add_new_user(new_user)
+def add_new_user(new_user: NewUser, service: UserService = Depends(get_user_service)):
+    return service.add_new_user(new_user)
 
 @router.post("/signin", summary="Вход по логину/паролю", description="Вход по кредам и получение токена")
 def sign_in_user(user: SigninUser):

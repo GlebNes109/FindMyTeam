@@ -1,10 +1,10 @@
 import hashlib
 import time
 
-from starlette.responses import JSONResponse
 import jwt
+from fastapi.responses import JSONResponse
 from fastapi import Request, Depends, HTTPException, status
-from backend.src.config import settings
+from backend.src.core.config import settings
 
 
 def make_http_error(code, text):
@@ -33,7 +33,7 @@ def get_token(request: Request):
     return a[7:]
 
 def get_user_id(token: str = Depends(get_token)):
-    from backend.src.repository.repository import Repository
+    from backend.src.legacy.repository.repository import Repository
     repository = Repository()
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])

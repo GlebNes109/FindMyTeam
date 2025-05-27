@@ -1,16 +1,15 @@
 import uuid
-from types import new_class
 
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import SQLModel, Session, select
 from sqlalchemy import create_engine
 
-from backend.src.config import settings
-from backend.src.models.api_models import NewUser, NewTeam, NewEvent, EventData, EventTrackData, NewEventParticipant, \
-    UserEventsData, TeamData, ParticipationData, VacancyData, NewInvitation, InvitationData
-from backend.src.models.db_models import UsersDB, TeamsDB, EventsDB, EventTracksDB, EventParticipantsDB, TeamMembersDB, \
+from backend.src.core.config import settings
+from backend.src.legacy.models.api_models import NewUser, NewTeam, NewEvent, EventData, EventTrackData, NewEventParticipant, \
+    UserEventsData, TeamData, ParticipationData, VacancyData, InvitationData
+from backend.src.legacy.models.db_models import UsersDB, TeamsDB, EventsDB, EventTracksDB, EventParticipantsDB, TeamMembersDB, \
     TeamVacanciesDB, TeamInvitationsDB, EventRole
-from backend.src.services.utility_services import create_hash
+from backend.src.domain.services.utility_services import create_hash
 
 DATABASE_URL = f"postgresql://{settings.postgres_username}:{settings.postgres_password}@{settings.postgres_host}:{settings.postgres_port}/{settings.postgres_database}"
 engine = create_engine(DATABASE_URL)

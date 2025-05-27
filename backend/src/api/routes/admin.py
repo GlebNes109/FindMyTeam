@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends
 
-from backend.src.models.api_models import NewEvent
-from backend.src.routes.users import user_service
-from backend.src.services.admin_services import AdminService
-from backend.src.services.utility_services import get_user_id
+from backend.src.legacy.models.api_models import NewEvent
+from backend.src.domain.services.admin_services import AdminService
+from backend.src.domain.services.utility_services import get_user_id
 
 router = APIRouter()
 admin_service = AdminService()

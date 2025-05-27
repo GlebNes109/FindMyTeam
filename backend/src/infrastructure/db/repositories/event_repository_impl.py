@@ -1,0 +1,3 @@
+
+class EventRepository:
+    pass

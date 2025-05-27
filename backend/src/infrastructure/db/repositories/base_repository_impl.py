@@ -1,0 +1,46 @@
+from typing import Generic, Type, Any
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, update, delete
+
+from backend.src.domain.models.models import CreateModelType, ReadModelType, ModelType, UpdateModelType
+from backend.src.domain.repositories.base_repository import BaseRepository
+
+class BaseRepositoryImpl(
+    BaseRepository[ModelType, ReadModelType, CreateModelType, UpdateModelType]):
+    def __init__(self, session: AsyncSession, model: Type[ModelType], read_schema: Type[ReadModelType]):
+        self.session = session
+        self.model = model
+        self.read_schema = read_schema
+
+    async def get(self, id: Any) -> ReadModelType:
+        stmt = select(self.model).where(self.model.id == id)
+        result = await self.session.execute(stmt)
+        obj = result.scalar_one()
+        return self.read_schema.model_validate(obj, from_attributes=True)
+
+    async def get_all(self) -> list[ReadModelType]:
+        stmt = select(self.model)
+        result = await self.session.execute(stmt)
+        objs = result.scalars().all()
+        return [self.read_schema.model_validate(obj, from_attributes=True) for obj in objs]
+
+    async def create(self, obj: CreateModelType) -> ReadModelType:
+        db_obj = self.model(**obj.model_dump())
+        self.session.add(db_obj)
+        await self.session.commit()
+        await self.session.refresh(db_obj)
+        return self.read_schema.model_validate(db_obj, from_attributes=True)
+
+    async def update(self, obj: UpdateModelType) -> ReadModelType:
+        await self.session.execute(
+            update(self.model)
+            .where(self.model.id == obj.id)
+            .values(**obj.model_dump(exclude_unset=True))
+        )
+        await self.session.commit()
+        return await self.get(obj.id)
+
+    async def delete(self, id: Any) -> bool:
+        await self.session.execute(delete(self.model).where(self.model.id == id))
+        await self.session.commit()
+        return True
