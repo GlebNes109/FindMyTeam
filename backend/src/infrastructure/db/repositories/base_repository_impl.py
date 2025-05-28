@@ -1,12 +1,16 @@
+import uuid
+from sqlalchemy.exc import IntegrityError
 from typing import Generic, Type, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
 
+from backend.src.domain.exceptions import ObjectAlreadyExistsError
 from backend.src.domain.models.models import CreateModelType, ReadModelType, ModelType, UpdateModelType
-from backend.src.domain.repositories.base_repository import BaseRepository
+from backend.src.domain.interfaces.base_repository import BaseRepository
 
 class BaseRepositoryImpl(
-    BaseRepository[ModelType, ReadModelType, CreateModelType, UpdateModelType]):
+    BaseRepository[ModelType, ReadModelType, CreateModelType, UpdateModelType],
+    Generic[ModelType, ReadModelType, CreateModelType, UpdateModelType]):
     def __init__(self, session: AsyncSession, model: Type[ModelType], read_schema: Type[ReadModelType]):
         self.session = session
         self.model = model
@@ -26,16 +30,20 @@ class BaseRepositoryImpl(
 
     async def create(self, obj: CreateModelType) -> ReadModelType:
         db_obj = self.model(**obj.model_dump())
-        self.session.add(db_obj)
-        await self.session.commit()
-        await self.session.refresh(db_obj)
-        return self.read_schema.model_validate(db_obj, from_attributes=True)
+        db_obj.id = str(uuid.uuid4())
+        try:
+            self.session.add(db_obj)
+            await self.session.commit()
+            await self.session.refresh(db_obj)
+            return self.read_schema.model_validate(db_obj, from_attributes=True)
+        except IntegrityError:
+            raise ObjectAlreadyExistsError
 
     async def update(self, obj: UpdateModelType) -> ReadModelType:
         await self.session.execute(
             update(self.model)
             .where(self.model.id == obj.id)
-            .values(**obj.model_dump(exclude_unset=True))
+            .values(**obj.model_dump())
         )
         await self.session.commit()
         return await self.get(obj.id)

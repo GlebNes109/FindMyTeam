@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from backend.src.legacy.models.api_models import NewEvent
+from backend.src.legacy.db_models.api_models import NewEvent
 from backend.src.domain.services.admin_services import AdminService
 from backend.src.domain.services.utility_services import get_user_id
 

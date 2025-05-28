@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from backend.src.legacy.models.api_models import NewUser, SigninUser, PatchUser
+from backend.src.legacy.db_models.api_models import NewUser, SigninUser, PatchUser
 from backend.src.domain.services.user_services import UserService
 from backend.src.domain.services.utility_services import get_user_id
 
@@ -9,7 +9,7 @@ user_service = UserService()
 
 @router.post("/signup", summary="Регистрация", description="Первоначальная регистрация на платформе")
 def add_new_user(new_user: NewUser):
-    return user_service.add_new_user(new_user)
+    return user_service.create_user(new_user)
 
 @router.post("/signin", summary="Вход по логину/паролю", description="Вход по кредам и получение токена")
 def sign_in_user(user: SigninUser):

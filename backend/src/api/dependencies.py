@@ -1,11 +1,19 @@
-from fastapi import Depends
+from fastapi import HTTPException, Request, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+import jwt
 
+from ..application.services.user_service import UserService
+from ..core.config import settings
+from ..domain.interfaces.hash_creator import HashCreator
+from ..domain.interfaces.token_creator import TokenCreator
+from ..domain.interfaces.user_repository import UserRepository
 from ..domain.models.user import UserRead
-from ..domain.services.user_services import UserService
 from ..infrastructure.db.session import get_session
 from ..infrastructure.db.repositories.user_repository_impl import UserRepositoryImpl
-from ..infrastructure.db.models.user import UsersDB
+from ..infrastructure.db.db_models.user import UsersDB
+from ..infrastructure.hash_creator_impl import sha256HashCreator
+from ..infrastructure.token_creator_impl import JWTTokenCreator
+
 
 def get_user_repository(
     session: AsyncSession = Depends(get_session),
@@ -16,7 +24,38 @@ def get_user_repository(
         read_schema=UserRead
     )
 
+def get_hash_creator() -> HashCreator:
+    return sha256HashCreator()
+
+def get_token_creator() -> TokenCreator:
+    return JWTTokenCreator()
+
 def get_user_service(
-    repo: UserRepositoryImpl = Depends(get_user_repository),
-) -> UserService:
-    return UserService(repo)
+    token_creator: TokenCreator= Depends(get_token_creator),
+    hash_creator: HashCreator = Depends(get_hash_creator),
+    repo: UserRepository = Depends(get_user_repository),
+    ) -> UserService:
+    return UserService(repo, token_creator, hash_creator)
+
+def get_token(request: Request):
+    headers = request.headers
+    a = str(headers.get("Authorization"))
+    return a[7:]
+
+def get_user_id(token: str = Depends(get_token)):
+    from backend.src.legacy.repository.repository import Repository
+    repository = Repository()
+    try:
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        user_id = payload.get("sub")
+
+        if not repository.get_user_by_id(user_id):
+            raise jwt.PyJWTError
+
+        return user_id
+
+    except jwt.PyJWTError:
+        raise HTTPException(
+            status_code=409,
+            detail="Пользователь не авторизован"
+        )

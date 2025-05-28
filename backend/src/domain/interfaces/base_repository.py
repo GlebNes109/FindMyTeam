@@ -1,4 +1,4 @@
-from typing import TypeVar, Protocol, Any
+from typing import TypeVar, Protocol, Any, Generic
 from pydantic import BaseModel
 
 from backend.src.domain.models.models import ModelType, ReadModelType, UpdateModelType, CreateModelType

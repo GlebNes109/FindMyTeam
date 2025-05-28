@@ -1,0 +1,6 @@
+from typing import Protocol
+
+
+class TokenCreator(Protocol):
+    async def create_token(self, user_id: str) -> str: ...
+    async def calculate_token_TTL(self) -> float: ...

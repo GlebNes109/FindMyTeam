@@ -1,7 +1,7 @@
 from starlette.responses import JSONResponse
 
 from backend.src.core.config import settings
-from backend.src.legacy.models.api_models import NewInvitation, NewResponse
+from backend.src.legacy.db_models.api_models import NewInvitation, NewResponse
 from backend.src.legacy.repository.repository import Repository
 from backend.src.domain.services.utility_services import make_http_error
 

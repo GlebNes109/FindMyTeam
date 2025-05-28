@@ -5,9 +5,9 @@ from sqlmodel import SQLModel, Session, select
 from sqlalchemy import create_engine
 
 from backend.src.core.config import settings
-from backend.src.legacy.models.api_models import NewUser, NewTeam, NewEvent, EventData, EventTrackData, NewEventParticipant, \
+from backend.src.legacy.db_models.api_models import NewUser, NewTeam, NewEvent, EventData, EventTrackData, NewEventParticipant, \
     UserEventsData, TeamData, ParticipationData, VacancyData, InvitationData
-from backend.src.legacy.models.db_models import UsersDB, TeamsDB, EventsDB, EventTracksDB, EventParticipantsDB, TeamMembersDB, \
+from backend.src.legacy.db_models.db_models import UsersDB, TeamsDB, EventsDB, EventTracksDB, EventParticipantsDB, TeamMembersDB, \
     TeamVacanciesDB, TeamInvitationsDB, EventRole
 from backend.src.domain.services.utility_services import create_hash
 
