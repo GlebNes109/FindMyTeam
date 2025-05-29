@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+'''from fastapi import APIRouter, Depends
 
 from backend.src.legacy.db_models.api_models import NewEvent, NewEventParticipant, NewInvitation, NewResponse
 from backend.src.domain.services.event_management_service import EventManagementService
@@ -45,4 +45,4 @@ def get_responses(ParticipantId: str, user_id: str = Depends(get_user_id)):
 
 @router.get("/user/get_invitations/{ParticipantId}", summary="Получение всех откликов", description="Эндпоинт работает и для тимлидов, и для участников - для тимлида выводятся отклики на его вакансии, а для участника - его собственные отвлики, которые он сделал ранее.")
 def get_responses(ParticipantId: str, user_id: str = Depends(get_user_id)):
-    return event_service.get_invitations(ParticipantId, user_id)
+    return event_service.get_invitations(ParticipantId, user_id)'''

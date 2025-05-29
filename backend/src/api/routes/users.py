@@ -24,7 +24,7 @@ async def sign_in_user(user: SigninUser, service: UserService = Depends(get_user
     except AccessDeniedError:
         raise HTTPException(status_code=403)
 
-@router.get("/data", summary="Информация", description="Все данные пользователя кроме конфиденциальных")
+'''@router.get("/data", summary="Информация", description="Все данные пользователя кроме конфиденциальных")
 def get_user_data(user_id: str = Depends(get_user_id)):
     return user_service.get_user_data(user_id)
 
@@ -34,4 +34,4 @@ def patch_user(user: PatchUser, user_id: str = Depends(get_user_id)):
 
 @router.delete("/delete", summary="Удаление профиля", description="Удаление пользователя из бд")
 def delete_user(user_id: str = Depends(get_user_id)):
-    return user_service.delete_user(user_id)
+    return user_service.delete_user(user_id)'''

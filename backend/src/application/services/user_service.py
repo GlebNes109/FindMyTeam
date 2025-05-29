@@ -46,7 +46,7 @@ class UserService:
         else:
             raise AccessDeniedError
 
-    def get_user_data(self, user_id):
+    '''def get_user_data(self, user_id):
         user_db = repository.get_user_by_id(user_id)
         user = UserData(
             id=user_db.id,
@@ -75,4 +75,4 @@ class UserService:
 
         repository.delete_user(user_id)
 
-        return JSONResponse(status_code=204, content=None)
+        return JSONResponse(status_code=204, content=None)'''

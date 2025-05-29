@@ -5,7 +5,7 @@ from backend.src.legacy.db_models.api_models import NewInvitation, NewResponse
 from backend.src.legacy.repository.repository import Repository
 from backend.src.domain.services.utility_services import make_http_error
 
-repository = Repository()
+'''repository = Repository()
 
 class EventManagementService():
     def add_new_team(self, new_team, teamlead_id):
@@ -100,4 +100,4 @@ class EventManagementService():
         if not self.check_participant_id(user_id, participant_id):
             return make_http_error(403, "пользователь не является участником или id участника некорректный")
         invitations = repository.get_invitations(participant_id)
-        return JSONResponse(status_code=200, content=invitations)
+        return JSONResponse(status_code=200, content=invitations)'''
