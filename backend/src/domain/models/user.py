@@ -1,11 +1,6 @@
 from typing import Optional
-from uuid import UUID
-
 from backend.src.domain.models.models import UpdateBaseModel, CreateBaseModel
 from pydantic import BaseModel
-
-from backend.src.legacy.db_models.api_models import NewUser
-
 
 class UserCreate(CreateBaseModel):
     login: str
@@ -19,10 +14,12 @@ class UserRead(BaseModel):
     email: str
     tg_nickname: str
     password_hash: Optional[str] = None # в бизнес модели хеш допустим, эта модель не отдается в апи
+    role: str
 
 class UserUpdate(UpdateBaseModel):
     login: Optional[str] = None
-    password: Optional[str] = None
+    # password: Optional[str] = None
+    password_hash: Optional[str] = None
     email: Optional[str] = None
     tg_nickname: Optional[str] = None
 

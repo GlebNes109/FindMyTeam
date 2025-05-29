@@ -1,10 +1,10 @@
 import uuid
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from typing import Generic, Type, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
 
-from backend.src.domain.exceptions import ObjectAlreadyExistsError
+from backend.src.domain.exceptions import ObjectAlreadyExistsError, ObjectNotFoundError
 from backend.src.domain.models.models import CreateModelType, ReadModelType, ModelType, UpdateModelType
 from backend.src.domain.interfaces.base_repository import BaseRepository
 
@@ -19,8 +19,11 @@ class BaseRepositoryImpl(
     async def get(self, id: Any) -> ReadModelType:
         stmt = select(self.model).where(self.model.id == id)
         result = await self.session.execute(stmt)
-        obj = result.scalar_one()
-        return self.read_schema.model_validate(obj, from_attributes=True)
+        try:
+            obj = result.scalar_one()
+            return self.read_schema.model_validate(obj, from_attributes=True)
+        except NoResultFound:
+            raise ObjectNotFoundError
 
     async def get_all(self) -> list[ReadModelType]:
         stmt = select(self.model)
@@ -49,6 +52,7 @@ class BaseRepositoryImpl(
         return await self.get(obj.id)
 
     async def delete(self, id: Any) -> bool:
+        await self.get(id) # проверка что существует (чтобы не удаляли по нескольку раз одно и то же)))
         await self.session.execute(delete(self.model).where(self.model.id == id))
         await self.session.commit()
         return True

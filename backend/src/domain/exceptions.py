@@ -3,3 +3,6 @@ class ObjectAlreadyExistsError(Exception):
 
 class AccessDeniedError(Exception):
     pass
+
+class ObjectNotFoundError(Exception):
+    pass

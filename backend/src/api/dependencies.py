@@ -42,16 +42,12 @@ def get_token(request: Request):
     a = str(headers.get("Authorization"))
     return a[7:]
 
-def get_user_id(token: str = Depends(get_token)):
-    from backend.src.legacy.repository.repository import Repository
-    repository = Repository()
+def get_user_id(token: str = Depends(get_token), repository: UserRepository = Depends(get_user_repository)):
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         user_id = payload.get("sub")
-
-        if not repository.get_user_by_id(user_id):
+        if not repository.get(user_id):
             raise jwt.PyJWTError
-
         return user_id
 
     except jwt.PyJWTError:
