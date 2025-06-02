@@ -2,12 +2,17 @@ from fastapi import HTTPException, Request, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 import jwt
 
+from ..application.services.events_service import EventsService
 from ..application.services.user_service import UserService
 from ..core.config import settings
+from ..domain.interfaces.events_repository import EventsRepository
 from ..domain.interfaces.hash_creator import HashCreator
 from ..domain.interfaces.token_creator import TokenCreator
 from ..domain.interfaces.user_repository import UserRepository
-from ..domain.models.user import UserRead
+from ..domain.models.events import EventsRead
+from ..domain.models.user import UsersRead
+from ..infrastructure.db.db_models.events import EventsDB
+from ..infrastructure.db.repositories.events_repository_impl import EventsRepositoryImpl
 from ..infrastructure.db.session import get_session
 from ..infrastructure.db.repositories.user_repository_impl import UserRepositoryImpl
 from ..infrastructure.db.db_models.user import UsersDB
@@ -21,7 +26,7 @@ def get_user_repository(
     return UserRepositoryImpl(
         session=session,
         model=UsersDB,
-        read_schema=UserRead
+        read_schema=UsersRead
     )
 
 def get_hash_creator() -> HashCreator:
@@ -36,6 +41,21 @@ def get_user_service(
     repo: UserRepository = Depends(get_user_repository),
     ) -> UserService:
     return UserService(repo, token_creator, hash_creator)
+
+def get_events_repository(
+    session: AsyncSession = Depends(get_session),
+    ) -> EventsRepositoryImpl:
+    return EventsRepositoryImpl(
+        session=session,
+        model=EventsDB,
+        read_schema=EventsRead
+    )
+
+def get_event_service(
+    repo: EventsRepository = Depends(get_events_repository),
+    user_service: UserService = Depends(get_user_service)
+    ) -> EventsService:
+    return EventsService(repo, user_service)
 
 def get_token(request: Request):
     headers = request.headers
@@ -52,6 +72,6 @@ def get_user_id(token: str = Depends(get_token), repository: UserRepository = De
 
     except jwt.PyJWTError:
         raise HTTPException(
-            status_code=409,
+            status_code=401,
             detail="Пользователь не авторизован"
         )
