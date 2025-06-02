@@ -2,11 +2,8 @@ from enum import Enum
 from typing import Optional, List
 from sqlmodel import SQLModel, Field
 
+from backend.src.domain.models.user import Role
 
-class Role(str, Enum):
-    USER = "USER"
-    ADMIN = "ADMIN"
-    SUPER_ADMIN = "SUPER_ADMIN"
 
 class UsersDB(SQLModel, table=True):
     id: str = Field(primary_key=True)

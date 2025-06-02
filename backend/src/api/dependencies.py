@@ -19,7 +19,6 @@ from ..infrastructure.db.db_models.user import UsersDB
 from ..infrastructure.hash_creator_impl import sha256HashCreator
 from ..infrastructure.token_creator_impl import JWTTokenCreator
 
-
 def get_user_repository(
     session: AsyncSession = Depends(get_session),
 ) -> UserRepositoryImpl:
@@ -62,11 +61,11 @@ def get_token(request: Request):
     a = str(headers.get("Authorization"))
     return a[7:]
 
-def get_user_id(token: str = Depends(get_token), repository: UserRepository = Depends(get_user_repository)):
+async def get_user_id(token: str = Depends(get_token), repository: UserRepository = Depends(get_user_repository)):
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         user_id = payload.get("sub")
-        if not repository.get(user_id):
+        if not await repository.get(user_id):
             raise jwt.PyJWTError
         return user_id
 

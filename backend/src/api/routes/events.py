@@ -1,21 +1,29 @@
-'''from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends
 
-from backend.src.legacy.db_models.api_models import NewEvent, NewEventParticipant, NewInvitation, NewResponse
-from backend.src.domain.services.event_management_service import EventManagementService
-from backend.src.domain.services.utility_services import get_user_id
+from backend.src.api.dependencies import get_user_id, get_event_service, get_user_service
+from backend.src.api.dto.events import EventsCreateAPI
+from backend.src.application.services.events_service import EventsService
+from backend.src.application.services.user_service import UserService
 
 router = APIRouter()
-event_service = EventManagementService()
 
-@router.get("/user/get_all_events", summary="Получение всех ивентов", description="Доступно для юзеров и админов")
-def get_events():
-    return event_service.get_events()
+@router.get("", summary="Получение всех ивентов", description="Доступно для юзеров и админов")
+async def get_events(service: EventsService = Depends(get_event_service)):
+    return await service.get_events()
 
-@router.post("/admin/add_event", summary="Добавление новых ивентов (мероприятий)", description="Доступно только админу")
-def add_event(new_event: NewEvent, admin_id: str = Depends(get_user_id)):
-    return event_service.add_event(new_event, admin_id)
+@router.get("/{EventId}", summary="Получение всех ивентов", description="Доступно для юзеров и админов")
+async def get_events(EventId: str, service: EventsService = Depends(get_event_service)):
+    return await service.get_event(EventId)
 
-@router.post("/user/registration", summary="Регистрация на мероприятие", description="-")
+@router.post("", summary="Добавление новых ивентов (мероприятий)", description="Доступно только админу")
+async def add_event(new_event: EventsCreateAPI, admin_id: str = Depends(get_user_id), service: EventsService = Depends(get_event_service)):
+    return await service.create_event(new_event, admin_id)
+
+'''@router.delete("/{EventId}", summary="Получение всех ивентов", description="Доступно для юзеров и админов")
+async def get_events(EventId: str, service: EventsService = Depends(get_event_service)):
+    return await service.get_event(EventId)'''
+
+'''@router.post("/user/registration", summary="Регистрация на мероприятие", description="-")
 def registration_user(new_participant: NewEventParticipant, user_id: str = Depends(get_user_id)):
     return event_service.add_new_participant(new_participant, user_id)
 

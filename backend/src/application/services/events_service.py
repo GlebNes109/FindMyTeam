@@ -1,13 +1,32 @@
-from starlette.responses import JSONResponse
-
+from backend.src.application.services.user_service import UserService
 from backend.src.core.config import settings
-from backend.src.legacy.db_models.api_models import NewInvitation, NewResponse
-from backend.src.legacy.repository.repository import Repository
-from backend.src.domain.services.utility_services import make_http_error
+from backend.src.domain.exceptions import AccessDeniedError
+from backend.src.domain.interfaces.events_repository import EventsRepository
+
+
+class EventsService:
+    def __init__(self, repository: EventsRepository, user_service: UserService):
+        self.repository = repository
+        self.user_service = user_service
+
+    async def create_event(self, event_create, admin_id):
+        user = await self.user_service.get_user(admin_id)
+        if user.role not in settings.admins:
+            raise AccessDeniedError
+        event = await self.repository.create(event_create)
+        return event
+
+    async def get_events(self, limit=10, offset=0):
+        all_events = await self.repository.get_all(limit, offset)
+        return all_events
+
+    async def get_event(self, event_id):
+        event = await self.repository.get(event_id)
+        return event
 
 '''repository = Repository()
 
-class EventManagementService():
+class EventsService():
     def add_new_team(self, new_team, teamlead_id):
         user_db = repository.get_user_by_id(teamlead_id)
 

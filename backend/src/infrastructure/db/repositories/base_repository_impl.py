@@ -25,8 +25,8 @@ class BaseRepositoryImpl(
         except NoResultFound:
             raise ObjectNotFoundError
 
-    async def get_all(self) -> list[ReadModelType]:
-        stmt = select(self.model)
+    async def get_all(self, limit: int, offset: int) -> list[ReadModelType]:
+        stmt = select(self.model).limit(limit).offset(offset)
         result = await self.session.execute(stmt)
         objs = result.scalars().all()
         return [self.read_schema.model_validate(obj, from_attributes=True) for obj in objs]
