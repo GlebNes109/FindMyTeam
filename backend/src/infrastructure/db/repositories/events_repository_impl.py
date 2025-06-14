@@ -104,3 +104,15 @@ class EventsRepositoryImpl(
             )
             for event in events
         ]
+
+    async def get_track(self, id: str) -> EventTracksRead:
+        stmt = (
+            select(EventTracksDB)
+            .where(EventTracksDB.id == id)
+        )
+        result = await self.session.execute(stmt)
+        track_db = result.scalar_one_or_none()
+        if not track_db:
+            raise ObjectNotFoundError
+
+        return EventTracksRead(**track_db.model_dump())

@@ -10,7 +10,7 @@ from starlette.middleware.cors import CORSMiddleware
 from backend.src.api.dependencies import get_hash_creator
 from backend.src.api.routes import users, events, participants
 from backend.src.core.config import settings
-from backend.src.core.init_data import add_super_admin
+from backend.src.core.init_data import add_super_admin, create_tables
 from backend.src.domain.exceptions import AppException
 from fastapi.responses import JSONResponse
 
@@ -22,6 +22,7 @@ async def lifespan(app: FastAPI):
     async with async_session_maker() as session:
         hash_creator = get_hash_creator()
         await add_super_admin(hash_creator, session)
+        await create_tables()
     yield
 
 app = FastAPI(lifespan=lifespan)
@@ -40,7 +41,7 @@ app.add_middleware(
 
 app.include_router(users.router, prefix="/users", tags=["Users"])
 app.include_router(events.router, prefix="/events", tags=["Events management"])
-app.include_router(participants.router, prefix="/participants", tags=["Events management"])
+app.include_router(participants.router, prefix="/participants", tags=["Participants management"])
 
 
 @app.exception_handler(RequestValidationError)

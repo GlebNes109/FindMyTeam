@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
 
 import uuid
-
+from sqlmodel import SQLModel
 from backend.src.core.config import settings
 from backend.src.domain.interfaces.hash_creator import HashCreator
 from backend.src.domain.models.user import Role
@@ -10,6 +10,7 @@ from backend.src.infrastructure.db.session import engine, get_session, async_ses
 from sqlalchemy.ext.asyncio import AsyncSession
 
 async def add_super_admin(hash_creator: HashCreator, session: AsyncSession):
+        # SQLModel.metadata.create_all(engine)
         res = await session.execute(
             select(UsersDB).where(UsersDB.role == "SUPER_ADMIN")
         )
@@ -31,3 +32,6 @@ async def add_super_admin(hash_creator: HashCreator, session: AsyncSession):
         await session.close()
         # print("добавлен")
 
+async def create_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)

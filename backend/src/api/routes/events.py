@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from backend.src.api.dependencies import get_user_id, get_event_service, get_user_service
 from backend.src.api.dto.events import EventsCreateAPI
 from backend.src.application.services.events_service import EventsService
-from backend.src.application.services.user_service import UserService
+from backend.src.application.services.user_service import UsersService
 
 router = APIRouter()
 

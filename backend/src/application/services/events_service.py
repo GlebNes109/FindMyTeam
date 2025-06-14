@@ -1,11 +1,11 @@
-from backend.src.application.services.user_service import UserService
+from backend.src.application.services.user_service import UsersService
 from backend.src.core.config import settings
 from backend.src.domain.exceptions import AccessDeniedError
 from backend.src.domain.interfaces.events_repository import EventsRepository
 
 
 class EventsService:
-    def __init__(self, repository: EventsRepository, user_service: UserService):
+    def __init__(self, repository: EventsRepository, user_service: UsersService):
         self.repository = repository
         self.user_service = user_service
 
@@ -23,6 +23,9 @@ class EventsService:
     async def get_event(self, event_id):
         event = await self.repository.get(event_id)
         return event
+
+    async def get_track(self, track_id):
+        return await self.repository.get_track(track_id)
 
 '''repository = Repository()
 

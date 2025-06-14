@@ -17,3 +17,7 @@ class ObjectAlreadyExistsError(AppException):
 class AccessDeniedError(AppException):
     status_code = 403
     message = "Access denied"
+
+class BadRequestError(AppException):
+    status_code = 400
+    message = "Ошибка в данных запроса"

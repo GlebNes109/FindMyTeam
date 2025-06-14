@@ -3,35 +3,28 @@ from typing import Optional, Any
 
 from pydantic import BaseModel, model_validator, validator, field_validator
 
-from backend.src.domain.models.user import UserRead
+from backend.src.api.dto.strictbasemodel import StrictBaseModel
+from backend.src.domain.models.user import UsersRead
 
 
-class StrictBaseModel(BaseModel):
-    @field_validator('*', mode='before')
-    @classmethod
-    def no_empty_strings(cls, v: Any):
-        if isinstance(v, str) and not v.strip():
-            raise ValueError()
-        return v
-
-class UserCreateApi(StrictBaseModel):
+class UserCreateAPI(StrictBaseModel):
     login: str
     password: str
     email: str
     tg_nickname: str
 
-class AuthUserApi(StrictBaseModel):
+class AuthUserAPI(StrictBaseModel):
     login: str
     password: str
 
-class UserReadApi(StrictBaseModel):
+class UserReadAPI(StrictBaseModel):
     id: str
     login: str
     email: str
     tg_nickname: str
     role: str
     @classmethod
-    def from_user_read(cls, user_read: UserRead) -> "UserReadApi":
+    def from_user_read(cls, user_read: UsersRead) -> "UserReadAPI":
         return cls(
             id=user_read.id,
             login=user_read.login,
@@ -40,7 +33,7 @@ class UserReadApi(StrictBaseModel):
             role=user_read.role
         )
 
-class UserUpdateApi(StrictBaseModel):
+class UserUpdateAPI(StrictBaseModel):
     login: Optional[str] = None
     password: Optional[str] = None
     email: Optional[str] = None
