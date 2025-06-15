@@ -10,6 +10,11 @@ router = APIRouter()
 async def create_participants(new_participant: ParticipantsCreateAPI, user_id: str = Depends(get_user_id), service: ParticipantsService = Depends(get_participants_service)):
     return await service.create_participant(new_participant, user_id)
 
+@router.get("", summary="Регистрация на мероприятие", description="-")
+async def get_participants(user_id: str = Depends(get_user_id), service: ParticipantsService = Depends(get_participants_service)):
+    return await service.get_participants(user_id)
+
+
 '''@router.get("", summary="Получение данных об участнике", description="-")
 async def create_participants(new_participant: ParticipantsCreateAPI, user_id: str = Depends(get_user_id), service: ParticipantsService = Depends(get_participants_service)):
     return await service.get_participant(new_participant, user_id)'''

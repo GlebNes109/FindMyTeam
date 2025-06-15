@@ -13,6 +13,7 @@ class TeamsCreateAPI(StrictBaseModel):
     # members_login: Optional[list[str]] = None #логины участников команды
     name: str
     description: str
+    # event_id: Optional[str] = None
     vacancies: Optional[list[VacanciesCreateAPI]] = None
 
 class ParticipantsCreateAPI(StrictBaseModel):
@@ -21,10 +22,3 @@ class ParticipantsCreateAPI(StrictBaseModel):
     event_role: EventRole
     resume: str
     team: Optional[TeamsCreateAPI] = None
-    @model_validator(mode="after")
-    def validate(self):
-        if self.event_role == EventRole.TEAMLEAD and self.team == None:
-            raise ValueError
-        if self.event_role == EventRole.PARTICIPANT and self.team:
-            raise ValueError
-        return self

@@ -1,7 +1,7 @@
-from typing import Any, Protocol, Generic
+from typing import Any, Protocol
 
 from backend.src.domain.models.user import UsersRead, UsersCreate, UsersUpdate
-from backend.src.domain.interfaces.base_repository import BaseRepository
+from backend.src.domain.interfaces.repositories.base_repository import BaseRepository
 
 
 class UserRepository(BaseRepository[Any, UsersRead, UsersCreate, UsersUpdate], Protocol):

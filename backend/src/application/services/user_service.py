@@ -1,11 +1,8 @@
-
-from fastapi.responses import JSONResponse
-
-from backend.src.domain.exceptions import AccessDeniedError, ObjectNotFoundError
+from backend.src.domain.exceptions import ObjectNotFoundError
 from backend.src.domain.interfaces.hash_creator import HashCreator
 from backend.src.domain.interfaces.token_creator import TokenCreator
 from backend.src.domain.models.user import UsersCreate, TokenRead, UsersRead, UsersUpdate
-from backend.src.domain.interfaces.user_repository import UserRepository
+from backend.src.domain.interfaces.repositories.user_repository import UserRepository
 
 
 class UsersService:

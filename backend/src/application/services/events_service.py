@@ -1,7 +1,7 @@
 from backend.src.application.services.user_service import UsersService
 from backend.src.core.config import settings
 from backend.src.domain.exceptions import AccessDeniedError
-from backend.src.domain.interfaces.events_repository import EventsRepository
+from backend.src.domain.interfaces.repositories.events_repository import EventsRepository
 
 
 class EventsService:
@@ -16,7 +16,7 @@ class EventsService:
         event = await self.repository.create(event_create)
         return event
 
-    async def get_events(self, limit=10, offset=0):
+    async def get_events(self, limit=1000, offset=0):
         all_events = await self.repository.get_all(limit, offset)
         return all_events
 

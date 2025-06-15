@@ -2,7 +2,7 @@ from sqlalchemy import select
 
 from backend.src.domain.exceptions import ObjectNotFoundError
 from backend.src.domain.models.user import UsersRead, UsersCreate, UsersUpdate
-from backend.src.domain.interfaces.user_repository import UserRepository
+from backend.src.domain.interfaces.repositories.user_repository import UserRepository
 from backend.src.infrastructure.db.db_models.user import UsersDB
 from backend.src.infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
 
