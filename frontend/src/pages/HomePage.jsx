@@ -18,7 +18,7 @@ function HomePage() {
         }
 
         // Получаем данные пользователя
-        fetch('http://localhost:8080/user/data', {
+        fetch('http://localhost:8080/users', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -39,7 +39,7 @@ function HomePage() {
             .catch(error => console.error('Ошибка HomePage:', error));
 
         // Получаем события, в которых участвует пользователь
-        fetch('http://localhost:8080/events/user/get_user_events', {
+        fetch('http://localhost:8080/participants', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -58,7 +58,7 @@ function HomePage() {
 
     const handleDelete = () => {
         if (window.confirm("Вы уверены, что хотите удалить аккаунт?")) {
-            fetch("http://localhost:8080/user/delete", {
+            fetch("http://localhost:8080/users", {
                 method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -100,9 +100,9 @@ function HomePage() {
                 ) : (
                     events.map(event => (
                         <div key={event.id} className="col-md-4">
-                            <div className={`card h-100 shadow-sm bg-dark border-2 ${styles['card-clickable']}`} onClick={() => navigate(`/home/myevent/${event.id}`, {
+                            <div className={`card h-100 shadow-sm bg-dark border-2 ${styles['card-clickable']}`} onClick={() => navigate(`/home/myevent/${event.event_id}`, {
                                 state: {
-                                participant_id: event.participant_id
+                                participant_id: event.id // на самом деле event это participant сущность )))) переделать
                             }})}>
                                 <div className="card-body">
                                     <h5 className="card-title">{event.name}</h5>
