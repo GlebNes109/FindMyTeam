@@ -14,7 +14,7 @@ function RegistrationEventPage() {
     const { event_id } = useParams();
 
     useEffect(() => {
-        fetch(`http://localhost:8080/events/user/get_event/${event_id}`)
+        fetch(`http://localhost:8080/events/${event_id}`)
             .then(res => res.json())
             .then(data => {
                 setEvent(data);
@@ -57,7 +57,7 @@ function RegistrationEventPage() {
             };
         }
 
-        fetch("http://localhost:8080/events/user/registration", {
+        fetch("http://localhost:8080/participants", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${token}`,
