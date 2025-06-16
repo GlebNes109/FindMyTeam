@@ -36,10 +36,10 @@ class TeamsRead(BaseModel):
     name: str
     description: str
     vacancies: Optional[list[VacanciesRead]] = None
-    members: Optional[list[ParticipantsRead]] = None
+    members: list[ParticipantsRead]
 
-class TeamsDomainValidate(BaseModel):
+"""class TeamsDomainValidate(BaseModel):
     name: str
     description: str
     # event_id: Optional[str] = None
-    vacancies: Optional[list[VacanciesCreate]] = None
+    vacancies: Optional[list[VacanciesCreate]] = None"""

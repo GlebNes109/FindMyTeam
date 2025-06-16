@@ -34,13 +34,13 @@ class BaseRepositoryImpl(
     async def create(self, obj: CreateModelType) -> ReadModelType:
         db_obj = self.model(**obj.model_dump())
         db_obj.id = str(uuid.uuid4())
-        # try:
-        self.session.add(db_obj)
-        await self.session.commit()
-        await self.session.refresh(db_obj)
-        return self.read_schema.model_validate(db_obj, from_attributes=True)
-        #except IntegrityError:
-            #raise ObjectAlreadyExistsError
+        try:
+            self.session.add(db_obj)
+            await self.session.commit()
+            await self.session.refresh(db_obj)
+            return self.read_schema.model_validate(db_obj, from_attributes=True)
+        except IntegrityError:
+            raise ObjectAlreadyExistsError
 
     async def update(self, obj: UpdateModelType) -> ReadModelType:
         await self.session.execute(
