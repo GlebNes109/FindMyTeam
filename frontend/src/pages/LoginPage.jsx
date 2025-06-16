@@ -9,7 +9,7 @@ const LoginPage = () => {
     const [errorMessage, setErrorMessage] = useState("");
 
     function LoginRequest() {
-        fetch('http://localhost:8080/user/signin', {
+        fetch('http://localhost:8080/users/signin', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -30,7 +30,7 @@ const LoginPage = () => {
             .then((data) => {
                 localStorage.setItem("token", data.token);
                 navigate('/events');
-                // console.log("Токен в логине:", data.token);
+                console.log("Токен в логине:", data.token);
             })
             .catch(error => console.error('Ошибка loginPage:', error));
     }
