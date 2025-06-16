@@ -14,7 +14,7 @@ function EventsPage() {
 
 
     useEffect(() => {
-        fetch('http://localhost:8080/events/user/get_all_events', {
+        fetch('http://localhost:8080/events', {
             method: 'GET'
         })
             .then(res => res.json())
