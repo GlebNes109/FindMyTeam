@@ -17,7 +17,7 @@ const RegistrationPage = () => {
             return;
         }
 
-        fetch('http://localhost:8080/user/signup', {
+        fetch('http://localhost:8080/users/signup', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -41,7 +41,7 @@ const RegistrationPage = () => {
                 return response.json();
             })
             .then((data) => {
-                // console.log("Токен:", data.token);
+                console.log("Токен:", data.token);
                 localStorage.setItem("token", data.token);
                 navigate('/events');})
             .catch(error => console.error('Ошибка:', error));
