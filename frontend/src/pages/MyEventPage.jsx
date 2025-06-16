@@ -1,8 +1,9 @@
 import { useParams, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import {useEffect, useMemo, useState} from 'react';
 
 function MyEventPage() {
     const { eventId } = useParams();
+    // const { participant_id } = useParams();
     const [eventData, setEventData] = useState(null);
     const [activeTab, setActiveTab] = useState('teams');
     const location = useLocation();
@@ -13,62 +14,106 @@ function MyEventPage() {
     const isTeamlead = participantData?.event_role === 'TEAMLEAD';
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
 
-        fetch(`http://localhost:8080/events/user/get_event/${eventId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
+        if (!eventId) return;
+        console.log(eventId)
+
+        const fetchEventData = async () => {
+            try {
+                const [eventRes, teamsRes, participantsRes] = await Promise.all([
+                    fetch(`http://localhost:8080/events/${eventId}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
+                    fetch(`http://localhost:8080/events/${eventId}/teams`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
+                    fetch(`http://localhost:8080/events/${eventId}/participants`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
+                ]);
+
+                const [event, teams, participants] = await Promise.all([
+                    eventRes.json(),
+                    teamsRes.json(),
+                    participantsRes.json(),
+                ]);
+
+                setEventData({
+                    ...event,
+                    event_teams: teams,
+                    event_participants: participants,
+                });
+
+            } catch (error) {
+                console.error("Ошибка при загрузке данных события:", error);
             }
-        })
-            .then(res => res.json())
-            .then(data => setEventData(data))
-            .catch(err => console.error(err));
+        };
+
+        fetchEventData();
     }, [eventId]);
 
     useEffect(() => {
-        if (!participant_id) return;
+        const token = localStorage.getItem("token");
 
-        const token = localStorage.getItem('token');
+        // if (!participant_id) return;
 
-        fetch(`http://localhost:8080/events/user/get_user_participation/${participant_id}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
+        const fetchParticipantData = async () => {
+            try {
+                const res = await fetch(`http://localhost:8080/participants/${participant_id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (!res.ok) throw new Error("Не удалось получить участника");
+                const data = await res.json();
+                setParticipantData(data);
+            } catch (error) {
+                console.error("Ошибка при получении участника:", error);
             }
-        })
-            .then(res => res.json())
-            .then(data => setParticipantData(data))
-            .catch(err => console.error("Ошибка загрузки участника:", err));
+        };
+
+        fetchParticipantData();
     }, [participant_id]);
 
     useEffect(() => {
+        const token = localStorage.getItem("token");
+
         if (!participant_id) return;
 
-        const token = localStorage.getItem('token');
-
-        fetch(`http://localhost:8080/events/user/get_responses/${participant_id}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
+        const fetchResponses = async () => {
+            try {
+                const res = await fetch(`http://localhost:8080/participants/${participant_id}/responses`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                const data = await res.json();
+                setResponsesData(data);
+            } catch (error) {
+                console.error("Ошибка при получении откликов:", error);
             }
-        })
-            .then(res => res.json())
-            .then(data => setResponsesData(data))
-            .catch(err => console.error("Ошибка загрузки участника:", err));
+        };
+
+        fetchResponses();
     }, [participant_id]);
 
     useEffect(() => {
+        const token = localStorage.getItem("token");
+
         if (!participant_id) return;
 
-        const token = localStorage.getItem('token');
-
-        fetch(`http://localhost:8080/events/user/get_invitations/${participant_id}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
+        const fetchInvitations = async () => {
+            try {
+                const res = await fetch(`http://localhost:8080/participants/${participant_id}/invitations`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                const data = await res.json();
+                setInvitationsData(data);
+            } catch (error) {
+                console.error("Ошибка при получении приглашений:", error);
             }
-        })
-            .then(res => res.json())
-            .then(data => setInvitationsData(data))
-            .catch(err => console.error("Ошибка загрузки участника:", err));
+        };
+
+        fetchInvitations();
     }, [participant_id]);
+
 
     /*функция для приглашения новых участников в свою команду - если participant который просматривает страницу является teamlead*/
     function InviteNewParticipant(vacancy_id, participant_to_invite_id) {
@@ -82,16 +127,34 @@ function MyEventPage() {
             })
         })
         }
+    console.log(eventData)
+    const participantsInTeams = useMemo(() => {
+        if (!eventData?.event_teams) return new Set();
+        return new Set(
+            eventData.event_teams.flatMap(team =>
+                team.members?.map(m => m.id) || []
+            )
+        );
+    }, [eventData]);
+
+    const freeParticipants = useMemo(() => {
+        if (!eventData?.event_participants) return [];
+        return eventData.event_participants.filter(
+            p => !participantsInTeams.has(p.id)
+        );
+    }, [eventData, participantsInTeams]);
+
+    const myVacancies = useMemo(() => {
+        if (!eventData?.event_teams || !participantData) return [];
+
+        const myTeam = eventData.event_teams.find(team =>
+            team.members.some(m => m.participant_id === participantData.participant_id)
+        );
+
+        return myTeam?.vacancies || [];
+    }, [eventData, participantData]);
 
     if (!eventData) return <div className="container py-5"><p>Загрузка...</p></div>;
-    const participantsInTeams = new Set(
-        (eventData.event_teams || []).flatMap(team =>
-            team.members?.map(m => m.participant_id) || []
-        )
-    );
-    const freeParticipants = (eventData.event_participants || []).filter(
-        p => !participantsInTeams.has(p.participant_id)
-    );
     return (
         <div className="container py-5">
             <h2>{eventData.name}</h2>
@@ -179,7 +242,16 @@ function MyEventPage() {
                                         <td>{p.resume}</td>
                                         <td>
                                             {isTeamlead ? (
-                                                <button className="btn btn-success btn-sm" onClick={() => InviteNewParticipant(vacancy_id, p.id)}>Пригласить</button>
+                                                myVacancies.length > 0 ? (
+                                                    <button
+                                                        className="btn btn-success btn-sm"
+                                                        onClick={() => InviteNewParticipant(myVacancies[0].id, p.id)}
+                                                    >
+                                                        Пригласить
+                                                    </button>
+                                                ) : (
+                                                    <button className="btn btn-secondary btn-sm" disabled>Нет вакансий</button>
+                                                )
                                             ) : (
                                                 <button className="btn btn-secondary btn-sm" disabled title="Вы не капитан">
                                                     Недоступно
