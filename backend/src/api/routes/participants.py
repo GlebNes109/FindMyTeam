@@ -14,6 +14,9 @@ async def create_participants(new_participant: ParticipantsCreateAPI, user_id: s
 async def get_participants(user_id: str = Depends(get_user_id), service: ParticipantsService = Depends(get_participants_service)):
     return await service.get_participants(user_id)
 
+@router.get("/{ParticipantsId}", summary="Получение участника", description="-")
+async def get_participants(ParticipantsId: str, service: ParticipantsService = Depends(get_participants_service)):
+    return await service.get_participant(ParticipantsId)
 
 '''@router.get("", summary="Получение данных об участнике", description="-")
 async def create_participants(new_participant: ParticipantsCreateAPI, user_id: str = Depends(get_user_id), service: ParticipantsService = Depends(get_participants_service)):

@@ -7,6 +7,7 @@ class EventTracksCreate(CreateBaseModel):
 
 class EventTracksRead(BaseModel):
     id: str
+    event_id: str
     name: str
 
 class EventsCreate(CreateBaseModel):

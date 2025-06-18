@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends
 
-from backend.src.api.dependencies import get_user_id, get_event_service, get_user_service, get_teams_service
+from backend.src.api.dependencies import get_user_id, get_event_service, get_user_service, get_teams_service, \
+    get_participants_service
 from backend.src.api.dto.events import EventsCreateAPI
 from backend.src.application.services.events_service import EventsService
+from backend.src.application.services.participants_service import ParticipantsService
 from backend.src.application.services.teams_service import TeamsService
 from backend.src.application.services.user_service import UsersService
 
@@ -23,6 +25,11 @@ async def add_event(new_event: EventsCreateAPI, admin_id: str = Depends(get_user
 @router.get("/{EventId}/teams", summary="Получение команд", description="Доступно для юзеров и админов")
 async def get_events(EventId: str, service: TeamsService = Depends(get_teams_service)):
     return await service.get_teams(EventId)
+
+@router.get("/{EventId}/participants", summary="Получение участников мероприятия", description="Доступно для юзеров и админов")
+async def get_events(EventId: str, service: ParticipantsService = Depends(get_participants_service)):
+    return await service.get_event_participants(EventId) # использован participants сервис, так как участники - его зона ответственности
+
 
 '''@router.delete("/{EventId}", summary="Получение всех ивентов", description="Доступно для юзеров и админов")
 async def get_events(EventId: str, service: EventsService = Depends(get_event_service)):

@@ -4,24 +4,29 @@ import jwt
 
 from ..application.services.events_service import EventsService
 from ..application.services.participants_service import ParticipantsService
+from ..application.services.team_requests_service import TeamRequestsService
 from ..application.services.teams_service import TeamsService
 from ..application.services.user_service import UsersService
 from ..core.config import settings
 from backend.src.domain.interfaces.repositories.events_repository import EventsRepository
 from ..domain.interfaces.hash_creator import HashCreator
 from backend.src.domain.interfaces.repositories.participants_repository import ParticipantsRepository
+from ..domain.interfaces.repositories.team_requests_repository import TeamRequestsRepository
 from ..domain.interfaces.repositories.teams_repository import TeamsRepository
 from ..domain.interfaces.token_creator import TokenCreator
 from backend.src.domain.interfaces.repositories.user_repository import UserRepository
 from ..domain.models.events import EventsRead
 from ..domain.models.participants import ParticipantsDomainModel
-from ..domain.models.teams import TeamsRead
+from ..domain.models.teamrequests import TeamRequestsRead
+from ..domain.models.teams import TeamsRead, TeamsBasicRead
 from ..domain.models.user import UsersRead
 from ..infrastructure.db.db_models.events import EventsDB
 from ..infrastructure.db.db_models.participants import ParticipantsDB
+from ..infrastructure.db.db_models.teamrequests import TeamRequestsDB
 from ..infrastructure.db.db_models.teams import TeamsDB
 from ..infrastructure.db.repositories.events_repository_impl import EventsRepositoryImpl
 from ..infrastructure.db.repositories.participants_repository_impl import ParticipantsRepositoryImpl
+from ..infrastructure.db.repositories.team_requests_repository_impl import TeamRequestsRepositoryImpl
 from ..infrastructure.db.repositories.teams_repository_impl import TeamsRepositoryImpl
 from ..infrastructure.db.session import get_session
 from ..infrastructure.db.repositories.user_repository_impl import UserRepositoryImpl
@@ -101,7 +106,7 @@ def get_teams_repository(
     return TeamsRepositoryImpl(
         session=session,
         model=TeamsDB,
-        read_schema=TeamsRead
+        read_schema=TeamsBasicRead
     )
 
 def get_teams_service(
@@ -109,9 +114,26 @@ def get_teams_service(
     ) -> TeamsService:
     return TeamsService(repo)
 
+def get_teams_requests_repository(
+    session: AsyncSession = Depends(get_session),
+    ) -> TeamRequestsRepositoryImpl:
+    return TeamRequestsRepositoryImpl(
+        session=session,
+        model=TeamRequestsDB,
+        read_schema=TeamRequestsRead
+    )
+
 def get_participants_service(
     repo: ParticipantsRepository = Depends(get_participants_repository),
     event_service: EventsService = Depends(get_event_service),
     teams_service: TeamsService = Depends(get_teams_service)
     ) -> ParticipantsService:
     return ParticipantsService(repo, event_service, teams_service)
+
+def get_team_requests_service(
+    repo: TeamRequestsRepository = Depends(get_teams_requests_repository),
+    event_service: EventsService = Depends(get_event_service),
+    teams_service: TeamsService = Depends(get_teams_service),
+    participants_service: ParticipantsService = Depends(get_participants_service)
+) -> TeamRequestsService:
+    return TeamRequestsService(repo, teams_service, participants_service, event_service)

@@ -46,6 +46,8 @@ class EventTracksDB(SQLModel, table=True):
     event_id: str # = Field(foreign_key="events.id")
     name: str
 
+
+
 '''class UserRolesDB(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
     name: str'''

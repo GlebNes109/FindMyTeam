@@ -15,4 +15,6 @@ class EventTracksDB(SQLModel, table=True):
     id: str = Field(primary_key=True)
     event_id: str = Field(foreign_key="eventsdb.id")
     name: str
+
     event: Optional[EventsDB] = Relationship(back_populates="event_tracks")  # Обратная связь
+    participants: List["ParticipantsDB"] = Relationship(back_populates="track")
