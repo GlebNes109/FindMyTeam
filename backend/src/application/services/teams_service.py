@@ -10,3 +10,9 @@ class TeamsService:
 
     async def get_teams(self, event_id):
         return await self.repository.get_all_by_event_id(event_id)
+
+    async def get_vacancy(self, vacancy_id):
+        return await self.repository.get_vacancy(vacancy_id)
+
+    async def get_team(self, team_id):
+        return await self.repository.get(team_id)

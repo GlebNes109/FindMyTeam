@@ -15,6 +15,7 @@ class VacanciesRead(BaseModel):
     id: str
     track: EventTracksRead
     description: str
+    team_id: str
 
 class TeamsCreate(CreateBaseModel):
     name: str
@@ -34,9 +35,17 @@ class TeamsUpdate(UpdateBaseModel):
 class TeamsRead(BaseModel):
     id: str
     name: str
+    event_id: str
     description: str
     vacancies: Optional[list[VacanciesRead]] = None
     members: list[ParticipantsRead]
+
+class TeamsBasicRead(BaseModel):
+    id: str
+    name: str
+    event_id: str
+    teamlead_id: str
+    description: str
 
 """class TeamsDomainValidate(BaseModel):
     name: str

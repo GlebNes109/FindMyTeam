@@ -1,26 +1,35 @@
 import uuid
 from sqlite3 import IntegrityError
+from typing import Any
 
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
 
-from backend.src.domain.exceptions import ObjectAlreadyExistsError
+from backend.src.domain.exceptions import ObjectAlreadyExistsError, ObjectNotFoundError
 from backend.src.domain.interfaces.repositories.teams_repository import TeamsRepository
 from backend.src.domain.models.events import EventTracksRead
 from backend.src.domain.models.models import CreateModelType, ReadModelType
 from backend.src.domain.models.participants import ParticipantsRead
-from backend.src.domain.models.teams import TeamsRead, TeamsCreate, TeamsUpdate, VacanciesRead
+from backend.src.domain.models.teams import TeamsRead, TeamsCreate, TeamsUpdate, VacanciesRead, TeamsBasicRead
 from backend.src.infrastructure.db.db_models.events import EventTracksDB
+from backend.src.infrastructure.db.db_models.participants import ParticipantsDB
 from backend.src.infrastructure.db.db_models.teams import TeamsDB, TeamMembersDB, TeamVacanciesDB
 from backend.src.infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 
 class TeamsRepositoryImpl(
-    BaseRepositoryImpl[TeamsDB, TeamsRead, TeamsCreate, TeamsUpdate],
+    BaseRepositoryImpl[TeamsDB, TeamsBasicRead, TeamsCreate, TeamsUpdate],
     TeamsRepository):
 
-    async def create(self, obj: TeamsCreate) -> TeamsRead:
-        db_obj = self.model(**obj.model_dump())
+    async def create(self, obj: TeamsCreate) -> TeamsBasicRead:
+        db_obj = self.model(
+            id=str(uuid.uuid4()),
+            name=obj.name,
+            description=obj.description,
+            event_id=obj.event_id,
+            teamlead_id=obj.teamlead_id
+        ) #маппинг вручную т к есть вложенные модели
         db_obj.id = str(uuid.uuid4())
         try:
             self.session.add(db_obj)
@@ -47,7 +56,19 @@ class TeamsRepositoryImpl(
             await self.session.refresh(db_obj)
             #await self.session.refresh(team_member)
             #await self.session.refresh(vacancy_db)
-            return self.read_schema.model_validate(db_obj, from_attributes=True)
+            # ЯВНАЯ ЗАГРУЗКА ОТНОШЕНИЙ ПЕРЕД ВАЛИДАЦИЕЙ
+            stmt = (
+                select(TeamsDB)
+                .where(TeamsDB.id == db_obj.id)
+                .options(
+                    selectinload(TeamsDB.vacancies),
+                    selectinload(TeamsDB.members).selectinload(TeamMembersDB.participant)
+                )
+            )
+            result = await self.session.execute(stmt)
+            loaded_team = result.scalars().one()
+
+            return TeamsBasicRead.model_validate(db_obj, from_attributes=True)
         except IntegrityError:
             raise ObjectAlreadyExistsError
 
@@ -57,16 +78,16 @@ class TeamsRepositoryImpl(
             .where(TeamsDB.event_id == event_id)
             .options(
                 selectinload(TeamsDB.vacancies),
-                selectinload(TeamsDB.members).selectinload(TeamMembersDB.participant)
+                selectinload(TeamsDB.members)
+                .selectinload(TeamMembersDB.participant)
             )
         )
-
         result = await self.session.execute(stmt)
         teams = result.scalars().all()
 
         track_stmt = select(EventTracksDB)
         track_result = await self.session.execute(track_stmt)
-        tracks = {track.id: track for track in track_result.scalars().all()}
+        tracks = {track.id: track for track in track_result.scalars().all()} # в словарь, чтобы потом по id доставать
 
         teams_read = []
         for team in teams:
@@ -75,35 +96,50 @@ class TeamsRepositoryImpl(
                     id=vacancy.id,
                     track=EventTracksRead(
                         id=vacancy.event_track_id,
-                        name=tracks.get(vacancy.event_track_id).name if tracks.get(
-                            vacancy.event_track_id) else "Unknown"
+                        name=tracks.get(vacancy.event_track_id).name,
+                        event_id=event_id
                     ),
-                    description=vacancy.description
+                    description=vacancy.description,
+                    team_id=team.id
                 )
                 for vacancy in team.vacancies
-            ] if team.vacancies else None
+            ] if team.vacancies else []
 
-            members_read = [
-                ParticipantsRead(
+            members_read = []
+            for member in team.members:
+                if member.participant is None:
+                    # print(member)
+                    continue
+
+                members_read.append(ParticipantsRead(
                     id=member.participant.id,
+                    user_id=member.participant.user_id,
                     event_id=member.participant.event_id,
                     track=EventTracksRead(
                         id=member.participant.track_id,
-                        name=tracks.get(member.participant.track_id).name if tracks.get(
-                            member.participant.track_id) else "Unknown"
+                        name=tracks.get(member.participant.track_id).name,
+                        event_id=member.participant.event_id
                     ),
                     event_role=member.participant.event_role,
                     resume=member.participant.resume
-                )
-                for member in team.members
-            ]
+                ))
 
             teams_read.append(TeamsRead(
                 id=team.id,
                 name=team.name,
                 description=team.description,
                 vacancies=vacancies_read,
-                members=members_read
+                members=members_read,
+                event_id=event_id
             ))
 
         return teams_read
+
+    async def get_vacancy(self, vacancy_id: Any) -> VacanciesRead:
+        stmt = select(TeamVacanciesDB).where(TeamVacanciesDB.id == vacancy_id)
+        result = await self.session.execute(stmt)
+        try:
+            obj = result.scalar_one()
+            return VacanciesRead.model_validate(obj, from_attributes=True)
+        except NoResultFound:
+            raise ObjectNotFoundError

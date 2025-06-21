@@ -1,11 +1,13 @@
 from sqlmodel import SQLModel, Field, Relationship
 from typing import List, Optional
 
+from backend.src.infrastructure.db.db_models.participants import ParticipantsDB
+
 
 class TeamsDB(SQLModel, table=True):
     id: str = Field(primary_key=True)
     name: str
-    event_id: str = Field(foreign_key="events.id")
+    event_id: str = Field(foreign_key="eventsdb.id")
     teamlead_id: str = Field(foreign_key="participantsdb.id")
     description: str
 
@@ -25,7 +27,7 @@ class TeamMembersDB(SQLModel, table=True):
 class TeamVacanciesDB(SQLModel, table=True):
     id: str = Field(primary_key=True)
     team_id: str = Field(foreign_key="teamsdb.id")
-    event_track_id: str = Field(foreign_key="eventtracks.id")
+    event_track_id: str = Field(foreign_key="eventtracksdb.id")
     description: str
 
     team: "TeamsDB" = Relationship(back_populates="vacancies")
