@@ -17,10 +17,14 @@ class ParticipantsService:
         try:
             track_read = await self.event_service.get_track(participant_domain.track_id)
         except ObjectNotFoundError:
+            # -----
             track_read = EventTracksRead(
                 name="не указано",
-                id="0 (не указано)"
+                id="0 (не указано)",
+                event_id="0 не указано"
             )
+            # -----
+            # временная заглушка, нужна для дебага. Должен быть BadRequestError
             # raise BadRequestError
 
         participant_read = ParticipantsRead.from_domain(participant_domain, track_read)
@@ -28,12 +32,17 @@ class ParticipantsService:
 
 
     async def create_participant(self, participants_create_api, user_id):
+        # проверка что event id реальный
+        try:
+            event = await self.event_service.get_event(participants_create_api.event_id)
+        except ObjectNotFoundError:
+            raise BadRequestError # 400 в этом случае будет понятнее чем 404, так как ошибка именно в данных
         participants_create = ParticipantsCreate.map_to_domain_read_model(user_id, participants_create_api) # добавление user_id для вставки в бд, а также бизнес правило о том, что тимлид должен иметь команду.
         participant_domain = await self.repository.create(participants_create) # вставка в бд
         participant_read = await self.model_domain_to_create(participant_domain) # переход в read модель - читаемый формат треков (название + айди)
-
+        # TODO вынести в api слой, application не должен знать про апи модель !
         if participants_create.team:
-            new_team = TeamsCreate.map_to_domain_model(participant_read.event_id, participant_read.id, participants_create_api.team) # маппинг модели новой тимы , это нельзя сделать до вставки в бд, ведь нужен id участника, а он получается после вставки в бд
+            new_team = TeamsCreate.map_to_domain_model(participant_read.event_id, participant_read.id, participants_create.team) # маппинг модели новой тимы , это нельзя сделать до вставки в бд, ведь нужен id участника, а он получается после вставки в бд
             # event_id есть только в domain модели, api слой не должен про него знать. добавление новой команды с таким же event_id - это бизнес логика
 
             await self.teams_service.add_team(new_team)
@@ -44,3 +53,15 @@ class ParticipantsService:
         participants = await self.repository.get_all_for_user(user_id, limit=1000, offset=0)
         participants_read = [await self.model_domain_to_create(participant) for participant in participants]
         return participants_read
+
+    async def get_event_participants(self, event_id):
+        participants = await self.repository.get_all_for_event(event_id, limit=1000, offset=0)
+        participants_read = [await self.model_domain_to_create(participant) for participant in participants]
+        return participants_read
+
+    async def get_participant(self, participant_id):
+        participant = await self.repository.get(participant_id)
+        return await self.model_domain_to_create(participant)
+
+    async def get_track(self, track_id):
+        return await self.event_service.get_track(track_id)

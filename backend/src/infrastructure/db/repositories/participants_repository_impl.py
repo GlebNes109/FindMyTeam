@@ -17,4 +17,9 @@ class ParticipantsRepositoryImpl(
         objs = result.scalars().all()
         return [self.read_schema.model_validate(obj, from_attributes=True) for obj in objs]
 
+    async def get_all_for_event(self, event_id: Any, limit: int, offset: int) -> list[ParticipantsDomainModel]:
+        stmt = select(ParticipantsDB).where(ParticipantsDB.event_id == event_id).limit(limit).offset(offset)
+        result = await self.session.execute(stmt)
+        objs = result.scalars().all()
+        return [self.read_schema.model_validate(obj, from_attributes=True) for obj in objs]
     # async def create_participant(self, obj: ParticipantsCreate, user_id) -> ParticipantsRead:

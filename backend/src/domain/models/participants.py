@@ -52,6 +52,7 @@ class ParticipantsUpdate(UpdateBaseModel):
 class ParticipantsRead(BaseModel):
     id: str
     event_id: str
+    user_id: str
     track: EventTracksRead
     event_role: EventRole
     resume: str
@@ -63,12 +64,14 @@ class ParticipantsRead(BaseModel):
             event_id=participant.event_id,
             track=track,
             event_role=participant.event_role,
-            resume=participant.resume
+            resume=participant.resume,
+            user_id=participant.user_id
         )
 
 class ParticipantsDomainModel(BaseModel):
     id: str
     event_id: str
     track_id: str
+    user_id: str
     event_role: EventRole
     resume: str
