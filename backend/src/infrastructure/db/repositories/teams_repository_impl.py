@@ -1,5 +1,4 @@
 import uuid
-from sqlite3 import IntegrityError
 from typing import Any
 
 from sqlmodel import select
@@ -10,12 +9,14 @@ from backend.src.domain.interfaces.repositories.teams_repository import TeamsRep
 from backend.src.domain.models.events import EventTracksRead
 from backend.src.domain.models.models import CreateModelType, ReadModelType
 from backend.src.domain.models.participants import ParticipantsRead
-from backend.src.domain.models.teams import TeamsRead, TeamsCreate, TeamsUpdate, VacanciesRead, TeamsBasicRead
+from backend.src.domain.models.teams import TeamsRead, TeamsCreate, TeamsUpdate, VacanciesRead, TeamsBasicRead, \
+    VacanciesBasicRead, TeamMembersCreate, TeamMembersRead
 from backend.src.infrastructure.db.db_models.events import EventTracksDB
 from backend.src.infrastructure.db.db_models.participants import ParticipantsDB
 from backend.src.infrastructure.db.db_models.teams import TeamsDB, TeamMembersDB, TeamVacanciesDB
 from backend.src.infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
 from sqlalchemy.exc import IntegrityError, NoResultFound
+from asyncpg.exceptions import UniqueViolationError
 
 
 class TeamsRepositoryImpl(
@@ -135,11 +136,17 @@ class TeamsRepositoryImpl(
 
         return teams_read
 
-    async def get_vacancy(self, vacancy_id: Any) -> VacanciesRead:
+    async def get_vacancy(self, vacancy_id: Any) -> VacanciesBasicRead:
         stmt = select(TeamVacanciesDB).where(TeamVacanciesDB.id == vacancy_id)
         result = await self.session.execute(stmt)
         try:
             obj = result.scalar_one()
-            return VacanciesRead.model_validate(obj, from_attributes=True)
+            vacancy = VacanciesBasicRead(
+                id=obj.id,
+                track_id=obj.event_track_id,
+                description=obj.description,
+                team_id=obj.team_id
+            )
+            return vacancy
         except NoResultFound:
             raise ObjectNotFoundError

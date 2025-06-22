@@ -6,7 +6,6 @@ from pydantic import BaseModel
 
 from backend.src.domain.models.participants import ParticipantsRead
 
-# в отдельный сервис?
 class VacanciesCreate(CreateBaseModel):
     event_track_id: str
     description: str
@@ -14,6 +13,12 @@ class VacanciesCreate(CreateBaseModel):
 class VacanciesRead(BaseModel):
     id: str
     track: EventTracksRead
+    description: str
+    team_id: str
+
+class VacanciesBasicRead(BaseModel):
+    id: str
+    track_id: str
     description: str
     team_id: str
 
