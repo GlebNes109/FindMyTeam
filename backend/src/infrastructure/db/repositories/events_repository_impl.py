@@ -98,7 +98,7 @@ class EventsRepositoryImpl(
                 start_date=event.start_date,
                 end_date=event.end_date,
                 event_tracks=[
-                    EventTracksRead(id=track.id, name=track.name)
+                    EventTracksRead(id=track.id, name=track.name, event_id=event.id)
                     for track in event.event_tracks
                 ]
             )
