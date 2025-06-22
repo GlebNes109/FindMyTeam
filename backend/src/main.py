@@ -47,7 +47,7 @@ app.include_router(team_requests.router, prefix="/team_requests", tags=["Team re
 
 @app.exception_handler(RequestValidationError)
 async def raise_validation_error(request: Request, exc: RequestValidationError):
-    return HTTPException(400, "ошибка в данных запроса")
+    return JSONResponse("ошибка в данных запроса", 400)
 
 @app.exception_handler(AppException)
 async def handle_app_exception(request, exc: AppException):
