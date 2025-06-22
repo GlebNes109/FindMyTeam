@@ -1,4 +1,6 @@
+from backend.src.application.services.events_service import EventsService
 from backend.src.domain.interfaces.repositories.teams_repository import TeamsRepository
+from backend.src.domain.models.teams import VacanciesRead, TeamMembersCreate, TeamMembersRead
 
 
 class TeamsService:
@@ -12,7 +14,12 @@ class TeamsService:
         return await self.repository.get_all_by_event_id(event_id)
 
     async def get_vacancy(self, vacancy_id):
-        return await self.repository.get_vacancy(vacancy_id)
+        basic_vacancy = await self.repository.get_vacancy(vacancy_id)
+        track = await self.event_service.get_track(basic_vacancy.track_id)
+        return VacanciesRead(
+            track=track,
+            **basic_vacancy.model_dump()
+        )
 
     async def get_team(self, team_id):
         return await self.repository.get(team_id)
