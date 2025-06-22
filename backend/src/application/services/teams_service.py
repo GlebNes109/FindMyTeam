@@ -4,8 +4,9 @@ from backend.src.domain.models.teams import VacanciesRead, TeamMembersCreate, Te
 
 
 class TeamsService:
-    def __init__(self, repository: TeamsRepository):
+    def __init__(self, repository: TeamsRepository, event_service: EventsService):
         self.repository = repository
+        self.event_service = event_service
 
     async def add_team(self, team_read):
         return await self.repository.create(team_read)
@@ -23,3 +24,7 @@ class TeamsService:
 
     async def get_team(self, team_id):
         return await self.repository.get(team_id)
+
+    async def create_member(self, create_member: TeamMembersCreate) -> TeamMembersRead:
+        # здесь нет никаких проверок, потому что team_requests сервис гарантирует что все данные будут проверены
+        return await self.repository.create_member(create_member)

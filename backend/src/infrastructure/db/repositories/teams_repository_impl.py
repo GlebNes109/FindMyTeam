@@ -150,3 +150,16 @@ class TeamsRepositoryImpl(
             return vacancy
         except NoResultFound:
             raise ObjectNotFoundError
+
+    async def create_member(self, obj: TeamMembersCreate) -> TeamMembersRead:
+        db_obj = TeamMembersDB(**obj.model_dump())
+        db_obj.id = str(uuid.uuid4())
+        try:
+            self.session.add(db_obj)
+            await self.session.commit()
+            await self.session.refresh(db_obj)
+            return TeamMembersRead.model_validate(db_obj, from_attributes=True)
+        except IntegrityError as e:
+            if isinstance(e.orig, UniqueViolationError):
+                raise ObjectAlreadyExistsError
+            raise

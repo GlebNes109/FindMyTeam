@@ -52,6 +52,19 @@ class TeamsBasicRead(BaseModel):
     teamlead_id: str
     description: str
 
+class TeamMembersRead(BaseModel):
+    id: str
+    team_id: str
+    participant_id: str
+
+class TeamMembersCreate(CreateBaseModel):
+    team_id: str
+    participant_id: str
+
+class TeamMembersUpdate(UpdateBaseModel):
+    team_id: str
+    participant_id: str
+
 """class TeamsDomainValidate(BaseModel):
     name: str
     description: str
