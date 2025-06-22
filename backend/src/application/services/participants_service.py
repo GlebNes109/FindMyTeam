@@ -1,15 +1,17 @@
 from backend.src.application.services.events_service import EventsService
 from backend.src.application.services.teams_service import TeamsService
+from backend.src.application.services.user_service import UsersService
 from backend.src.domain.exceptions import ObjectNotFoundError, BadRequestError
 from backend.src.domain.interfaces.repositories.participants_repository import ParticipantsRepository
 from backend.src.domain.models.events import EventTracksRead
-from backend.src.domain.models.participants import ParticipantsCreate, ParticipantsRead
+from backend.src.domain.models.participants import ParticipantsCreate, ParticipantsRead, ParticipantsDetailsRead
 from backend.src.domain.models.teams import TeamsCreate
 
 
 class ParticipantsService:
-    def __init__(self, repository: ParticipantsRepository, event_service: EventsService, teams_service: TeamsService):
+    def __init__(self, repository: ParticipantsRepository, event_service: EventsService, teams_service: TeamsService, users_service: UsersService):
         self.repository = repository
+        self.users_service = users_service
         self.event_service = event_service
         self.teams_service = teams_service
 
@@ -62,6 +64,17 @@ class ParticipantsService:
     async def get_participant(self, participant_id):
         participant = await self.repository.get(participant_id)
         return await self.model_domain_to_create(participant)
+
+    async def get_participant_with_user_info(self, participant_id):
+        participant = await self.get_participant(participant_id)
+        user = await self.users_service.get_user(participant.user_id)
+        return ParticipantsDetailsRead(
+            **participant.model_dump(),
+            login=user.login,
+            email=user.email,
+            tg_nickname=user.tg_nickname,
+            role=user.role
+        )
 
     async def get_track(self, track_id):
         return await self.event_service.get_track(track_id)

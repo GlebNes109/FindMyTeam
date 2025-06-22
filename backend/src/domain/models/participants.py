@@ -7,6 +7,7 @@ from backend.src.domain.models.events import EventTracksRead
 from backend.src.domain.models.models import CreateBaseModel, UpdateBaseModel
 from pydantic import BaseModel
 
+from backend.src.domain.models.user import Role, UsersRead
 
 
 # TeamsCreate = ForwardRef('TeamsCreate')
@@ -65,8 +66,11 @@ class ParticipantsRead(BaseModel):
             track=track,
             event_role=participant.event_role,
             resume=participant.resume,
-            user_id=participant.user_id
+            user_id=participant.user_id,
         )
+
+    def check_user_id(cls, user_id) -> bool:
+        return cls.user_id == user_id
 
 class ParticipantsDomainModel(BaseModel):
     id: str
@@ -75,3 +79,9 @@ class ParticipantsDomainModel(BaseModel):
     user_id: str
     event_role: EventRole
     resume: str
+
+class ParticipantsDetailsRead(ParticipantsRead):
+    login: str
+    email: str
+    tg_nickname: str
+    role: Role
