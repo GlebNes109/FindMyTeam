@@ -111,8 +111,9 @@ def get_teams_repository(
 
 def get_teams_service(
     repo: TeamsRepository = Depends(get_teams_repository),
+    event_service: EventsService = Depends(get_event_service)
     ) -> TeamsService:
-    return TeamsService(repo)
+    return TeamsService(repo, event_service)
 
 def get_teams_requests_repository(
     session: AsyncSession = Depends(get_session),
@@ -126,9 +127,10 @@ def get_teams_requests_repository(
 def get_participants_service(
     repo: ParticipantsRepository = Depends(get_participants_repository),
     event_service: EventsService = Depends(get_event_service),
-    teams_service: TeamsService = Depends(get_teams_service)
+    teams_service: TeamsService = Depends(get_teams_service),
+    user_service: UsersService = Depends(get_user_service)
     ) -> ParticipantsService:
-    return ParticipantsService(repo, event_service, teams_service)
+    return ParticipantsService(repo, event_service, teams_service, user_service)
 
 def get_team_requests_service(
     repo: TeamRequestsRepository = Depends(get_teams_requests_repository),
