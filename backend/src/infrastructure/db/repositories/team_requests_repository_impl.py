@@ -1,10 +1,32 @@
 from typing import Any
-
+from sqlmodel import select
 from backend.src.domain.interfaces.repositories.team_requests_repository import TeamRequestsRepository
 from backend.src.domain.models.teamrequests import TeamRequestsRead, TeamRequestsCreate, TeamRequestsUpdate
+from backend.src.infrastructure.db.db_models.teamrequests import TeamRequestsDB
 from backend.src.infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
 
+from sqlalchemy import select, and_, or_, true, false, null
 
 class TeamRequestsRepositoryImpl(BaseRepositoryImpl[Any, TeamRequestsRead, TeamRequestsCreate, TeamRequestsUpdate],
                                  TeamRequestsRepository):
-    pass
+    async def get_all_with_params(self, participant_id, approved_by_teamlead,
+                                  approved_by_participant) -> list[TeamRequestsRead]:
+        conditions = [
+            TeamRequestsDB.participant_id == participant_id,
+            TeamRequestsDB.is_active == True
+        ]
+
+        if approved_by_teamlead is not None:
+            conditions.append(TeamRequestsDB.approved_by_teamlead == approved_by_teamlead)
+        else:
+            conditions.append(TeamRequestsDB.approved_by_teamlead.is_(None))
+
+        if approved_by_participant is not None:
+            conditions.append(TeamRequestsDB.approved_by_participant == approved_by_participant)
+        else:
+            conditions.append(TeamRequestsDB.approved_by_participant.is_(None))
+
+        stmt = select(TeamRequestsDB).where(and_(*conditions))
+        result = await self.session.execute(stmt)
+        objs = result.scalars().all()
+        return [self.read_schema.model_validate(obj, from_attributes=True) for obj in objs]
