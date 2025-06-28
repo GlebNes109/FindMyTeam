@@ -1,7 +1,8 @@
 import { useParams, useLocation } from 'react-router-dom';
 import {useEffect, useMemo, useState} from 'react';
+import SelectVacancyModal from "../components/SelectVacancyModel.jsx";
 
-function MyEventPage() {
+function EventPage() {
     const { eventId } = useParams();
     // const { participant_id } = useParams();
     const [eventData, setEventData] = useState(null);
@@ -9,9 +10,20 @@ function MyEventPage() {
     const location = useLocation();
     const participant_id = location.state?.participant_id;
     const [participantData, setParticipantData] = useState(null);
-    const [responsesData, setResponsesData] = useState(null);
-    const [invitationsData, setInvitationsData] = useState(null);
+    const [incomingRequests, setIncomingRequests] = useState([]);
+    const [outgoingRequests, setOutgoingRequests] = useState([]);
     const isTeamlead = participantData?.event_role === 'TEAMLEAD';
+    const [selectedParticipant, setSelectedParticipant] = useState(null);
+    const [isVacancyModalOpen, setIsVacancyModalOpen] = useState(false);
+
+    const handleOpenVacancyModal = (participant) => {
+        setSelectedParticipant(participant);
+        setIsVacancyModalOpen(true);
+    };
+
+    const handleSendInvite = (vacancyId) => {
+        CreateNewTeamRequest(vacancyId, selectedParticipant.id);
+    };
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -56,7 +68,7 @@ function MyEventPage() {
     useEffect(() => {
         const token = localStorage.getItem("token");
 
-        // if (!participant_id) return;
+        if (!participant_id) return;
 
         const fetchParticipantData = async () => {
             try {
@@ -76,58 +88,52 @@ function MyEventPage() {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
+        if (!participant_id || !participantData) return;
 
-        if (!participant_id) return;
-
-        const fetchResponses = async () => {
+        const loadRequests = async () => {
             try {
-                const res = await fetch(`http://localhost:8080/participants/${participant_id}/responses`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                const data = await res.json();
-                setResponsesData(data);
+                const incomingUrl = `http://localhost:8080/team_requests/${isTeamlead ? 'incoming' : 'outgoing'}?participant_id=${participant_id}`;
+                const outgoingUrl = `http://localhost:8080/team_requests/${isTeamlead ? 'outgoing' : 'incoming'}?participant_id=${participant_id}`;
+
+                const [incomingRes, outgoingRes] = await Promise.all([
+                    fetch(incomingUrl, { headers: { Authorization: `Bearer ${token}` } }),
+                    fetch(outgoingUrl, { headers: { Authorization: `Bearer ${token}` } }),
+                ]);
+
+                const [incoming, outgoing] = await Promise.all([
+                    incomingRes.json(),
+                    outgoingRes.json(),
+                ]);
+
+                setIncomingRequests(incoming || []);
+                setOutgoingRequests(outgoing || []);
+
             } catch (error) {
-                console.error("Ошибка при получении откликов:", error);
+                console.error("Ошибка при загрузке заявок:", error);
             }
         };
 
-        fetchResponses();
-    }, [participant_id]);
+        loadRequests();
+    }, [participant_id, participantData, isTeamlead]);
 
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-
-        if (!participant_id) return;
-
-        const fetchInvitations = async () => {
-            try {
-                const res = await fetch(`http://localhost:8080/participants/${participant_id}/invitations`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                const data = await res.json();
-                setInvitationsData(data);
-            } catch (error) {
-                console.error("Ошибка при получении приглашений:", error);
-            }
-        };
-
-        fetchInvitations();
-    }, [participant_id]);
 
 
     /*функция для приглашения новых участников в свою команду - если participant который просматривает страницу является teamlead*/
-    function InviteNewParticipant(vacancy_id, participant_to_invite_id) {
-        fetch('http://localhost:8080/events/user/invite', {
+    function CreateNewTeamRequest(vacancy_id, participant_to_invite_id) {
+        const token = localStorage.getItem("token");
+        const res = fetch('http://localhost:8080/team_requests', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
             body: JSON.stringify({
                 vacancy_id: vacancy_id,
-                participant_id: participant_to_invite_id,
-                teamlead_id: participant_id
+                participant_id: participant_to_invite_id
             })
         })
         }
-    console.log(eventData)
+    // console.log(eventData)
     const participantsInTeams = useMemo(() => {
         if (!eventData?.event_teams) return new Set();
         return new Set(
@@ -146,10 +152,11 @@ function MyEventPage() {
 
     const myVacancies = useMemo(() => {
         if (!eventData?.event_teams || !participantData) return [];
-
         const myTeam = eventData.event_teams.find(team =>
-            team.members.some(m => m.participant_id === participantData.participant_id)
+            team.teamlead_id === participantData.id
         );
+        console.log("fsd");
+        console.log(myTeam);
 
         return myTeam?.vacancies || [];
     }, [eventData, participantData]);
@@ -245,10 +252,11 @@ function MyEventPage() {
                                                 myVacancies.length > 0 ? (
                                                     <button
                                                         className="btn btn-success btn-sm"
-                                                        onClick={() => InviteNewParticipant(myVacancies[0].id, p.id)}
+                                                        onClick={() => handleOpenVacancyModal(p)}
                                                     >
                                                         Пригласить
                                                     </button>
+
                                                 ) : (
                                                     <button className="btn btn-secondary btn-sm" disabled>Нет вакансий</button>
                                                 )
@@ -268,22 +276,24 @@ function MyEventPage() {
 
                 {activeTab === 'responses' && (
                     <div className="bg-black mt-3">
-                        {responsesData.length === 0 ? (
+                        {incomingRequests.length === 0 ? (
                             <p className="text-muted">Отклики — пока пусто</p>
                         ) : (
                             <div className="list-group">
-                                {responsesData.map((response) => (
+                                {incomingRequests.map((request) => (
                                     <div
-                                        key={response.id}
+                                        key={request.id}
                                         className="list-group-item d-flex justify-content-between align-items-center"
                                     >
                                         <div>
-                                            <h5 className="mb-1">Отклик #{response.id.slice(0, 8)}</h5>
-                                            <p className="mb-1">Вакансия: {response.vacancy_id.slice(0, 8)}</p>
-                                            <small className="mb-1">Участник: {response.participant_id.slice(0, 8)}</small>
+                                            <h5 className="mb-1">Запрос #{request.id.slice(0, 8)}</h5>
+                                            <p className="mb-1">Вакансия: {request.vacancy_id.slice(0, 8)}</p>
+                                            <small className="mb-1">
+                                                {isTeamlead ? `От участника: ${request.participant_id.slice(0, 8)}` : `Отправлено в команду`}
+                                            </small>
                                         </div>
-                                        <span className={`badge ${response.approved_by_teamlead ? 'bg-success' : 'bg-warning'} rounded-pill`}>
-                            {response.approved_by_teamlead ? 'Одобрено' : 'Ожидает'}
+                                        <span className={`badge ${request.approved_by_teamlead ? 'bg-success' : 'bg-warning'} rounded-pill`}>
+                            {request.approved_by_teamlead ? 'Одобрено' : 'Ожидает'}
                         </span>
                                     </div>
                                 ))}
@@ -291,35 +301,35 @@ function MyEventPage() {
                         )}
                     </div>
                 )}
+
                 {activeTab === 'invites' && (
                     <div className="mt-3">
-                        {invitationsData.length === 0 ? (
+                        {outgoingRequests.length === 0 ? (
                             <p className="text-muted">Приглашения — пока пусто</p>
                         ) : (
                             <div className="list-group">
-                                {invitationsData.map((invite) => (
+                                {outgoingRequests.map((invite) => (
                                     <div
                                         key={invite.id}
                                         className="list-group-item d-flex justify-content-between align-items-center"
                                     >
                                         <div>
-                                            <h5 className="mb-1">Приглашение #{invite.id.slice(0, 8)}</h5>
+                                            <h5 className="mb-1">Запрос #{invite.id.slice(0, 8)}</h5>
                                             <p className="mb-1">Вакансия: {invite.vacancy_id.slice(0, 8)}</p>
                                             {isTeamlead ? (
                                                 <small>Отправлено участнику: {invite.participant_id.slice(0, 8)}</small>
                                             ) : (
-                                                <small>Приглашено тимлидом</small>
+                                                <small>Приглашено командой</small>
                                             )}
                                         </div>
-                                        <span className="badge bg-primary rounded-pill">
-                            Ожидает ответа
-                        </span>
+                                        <span className="badge bg-primary rounded-pill">Ожидает ответа</span>
                                     </div>
                                 ))}
                             </div>
                         )}
                     </div>
                 )}
+
 
             </div>
             </div>
@@ -339,8 +349,15 @@ function MyEventPage() {
                     )}
                 </div>
             </div>
+            <SelectVacancyModal
+                isOpen={isVacancyModalOpen}
+                onClose={() => setIsVacancyModalOpen(false)}
+                vacancies={myVacancies}
+                onSubmit={handleSendInvite}
+                participant={selectedParticipant}
+            />
         </div>
     );
 }
 
-export default MyEventPage;
+export default EventPage;
