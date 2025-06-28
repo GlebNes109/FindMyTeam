@@ -136,7 +136,7 @@ function HomePage() {
                                 <div key={participant.id} className="col-md-4">
                                     <div
                                         className={`card h-100 shadow-sm bg-dark border-2 ${styles['card-clickable']}`}
-                                        onClick={() => navigate(`/home/myevent/${participant.event_id}`, {
+                                        onClick={() => navigate(`/event/${participant.event_id}`, {
                                             state: { participant_id: participant.id }
                                         })}
                                     >

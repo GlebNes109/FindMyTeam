@@ -43,7 +43,7 @@ function MainPage() {
                                     <span key={track.id} className={styles.track}>{track.name}</span>
                                 ))}
                             </div>
-                            <button onClick={() => {navigate(`/home/myevent/${event.id}/register`)}} className="btn btn-primary mt-3">Я учавствую</button>
+                            <button onClick={() => {navigate(`/event/${event.id}/register`)}} className="btn btn-primary mt-3">Я учавствую</button>
                         </div>
                     ))}
                 </div>

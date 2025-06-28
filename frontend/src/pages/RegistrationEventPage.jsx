@@ -78,7 +78,7 @@ function RegistrationEventPage() {
             })
             .then((data) => {
                 console.log("Успешно зарегистрирован:", data);
-                navigate(`/home/myevent/${event.id}`);
+                navigate(`/event/${event.id}`);
             });
     }
 
