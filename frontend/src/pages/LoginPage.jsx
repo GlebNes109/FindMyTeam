@@ -19,18 +19,24 @@ const LoginPage = () => {
         })
             .then((response) => {
                 if (!response.ok) {
-                    if (response.status === 401) {
+                    if (response.status === 404) {
                         // console.log("неверный логин пароль))");
                         setErrorMessage("неверный логин или пароль");
-                        return;
                     }
+                    if (response.status === 400) {
+                        setErrorMessage("некорректные значения или поля не заполнены");
+                    }
+                    else {
+                        setErrorMessage("HTTP код ошибки:" + response.status);
+                    }
+                    return Promise.reject();
                 }
                 return response.json();
             })
             .then((data) => {
                 localStorage.setItem("token", data.token);
                 navigate('/events');
-                console.log("Токен в логине:", data.token);
+                // console.log("Токен в логине:", data.token);
             })
             .catch(error => console.error('Ошибка loginPage:', error));
     }
