@@ -185,6 +185,17 @@ function EventPage() {
         handleTabChange(activeTab);
     }, []);
 
+    function AcceptRequest(request_id) {
+        const token = localStorage.getItem("token");
+        const res = fetch(`http://localhost:8080/team_requests/${request_id}/accept`, {
+            method: 'PUT',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        })
+    }
+
     if (!eventData) return <div className="container py-5"><p>Загрузка...</p></div>;
     return (
         <div className="container py-5">
@@ -201,8 +212,8 @@ function EventPage() {
                                 {{
                                     teams: 'Команды',
                                     participants: isTeamlead ? 'Участники (можно пригласить)' : 'Участники (просмотр)',
-                                    responses: 'Отклики',
-                                    invites: 'Приглашения'
+                                    responses: isTeamlead ? 'Отклики в мою команду' : 'Мои отклики',
+                                    invites: isTeamlead ? 'Мои приглашения' : 'Приглашения мне'
                                 }[tab]}
                             </button>
                         </li>
@@ -289,64 +300,90 @@ function EventPage() {
                         )}
                     </>
                 )}
-
-                {activeTab === 'responses' && (
-                    <div className="bg-black mt-3">
-                        {incomingRequests.length === 0 ? (
-                            <p className="text-muted">Отклики — пока пусто</p>
-                        ) : (
-                            <div className="list-group">
-                                {incomingRequests.map((request) => (
-                                    <div
-                                        key={request.id}
-                                        className="list-group-item d-flex justify-content-between align-items-center"
-                                    >
-                                        <div>
-                                            <h5 className="mb-1">Запрос #{request.id.slice(0, 8)}</h5>
-                                            <p className="mb-1">Вакансия: {request.vacancy_id.slice(0, 8)}</p>
-                                            <small className="mb-1">
-                                                {isTeamlead ? `От участника: ${request.participant_id.slice(0, 8)}` : `Отправлено в команду`}
-                                            </small>
+                    {activeTab === 'responses' && (
+                        <div className="bg-black mt-3">
+                            {incomingRequests.length === 0 ? (
+                                <p className="text-muted">Отклики — пока пусто</p>
+                            ) : (
+                                <div className="list-group">
+                                    {incomingRequests.map((request) => (
+                                        <div
+                                            key={request.id}
+                                            className="list-group-item d-flex justify-content-between align-items-center"
+                                        >
+                                            <div>
+                                                <h5 className="mb-1">Запрос #{request.id.slice(0, 8)}</h5>
+                                                <p className="mb-1">Вакансия: {request.vacancy_id.slice(0, 8)}</p>
+                                                <small className="mb-1">
+                                                    {isTeamlead
+                                                        ? `От участника: ${request.participant_id.slice(0, 8)}`
+                                                        : `Отправлено в команду`}
+                                                </small>
+                                            </div>
+                                            <div className="d-flex align-items-center gap-3">
+              <span
+                  className={`badge ${request.approved_by_teamlead ? 'bg-success' : 'bg-warning'} rounded-pill`}
+              >
+                {request.approved_by_teamlead ? 'Одобрено' : 'Ожидает'}
+              </span>
+                                                {/* Кнопка "Подтвердить", только если это входящий запрос */}
+                                                {isTeamlead && !request.approved_by_teamlead && (
+                                                    <button
+                                                        className="btn btn-success btn-sm"
+                                                        onClick={() => AcceptRequest(request.id)}
+                                                    >
+                                                        Подтвердить
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
-                                        <span className={`badge ${request.approved_by_teamlead ? 'bg-success' : 'bg-warning'} rounded-pill`}>
-                            {request.approved_by_teamlead ? 'Одобрено' : 'Ожидает'}
-                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                )}
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
-                {activeTab === 'invites' && (
-                    <div className="mt-3">
-                        {outgoingRequests.length === 0 ? (
-                            <p className="text-muted">Приглашения — пока пусто</p>
-                        ) : (
-                            <div className="list-group">
-                                {outgoingRequests.map((invite) => (
-                                    <div
-                                        key={invite.id}
-                                        className="list-group-item d-flex justify-content-between align-items-center"
-                                    >
-                                        <div>
-                                            <h5 className="mb-1">Запрос #{invite.id.slice(0, 8)}</h5>
-                                            <p className="mb-1">Вакансия: {invite.vacancy_id.slice(0, 8)}</p>
-                                            {isTeamlead ? (
-                                                <small>Отправлено участнику: {invite.participant_id.slice(0, 8)}</small>
-                                            ) : (
-                                                <small>Приглашено командой</small>
-                                            )}
+
+                    {activeTab === 'invites' && (
+                        <div className="mt-3">
+                            {outgoingRequests.length === 0 ? (
+                                <p className="text-muted">Приглашения — пока пусто</p>
+                            ) : (
+                                <div className="list-group">
+                                    {outgoingRequests.map((invite) => (
+                                        <div
+                                            key={invite.id}
+                                            className="list-group-item d-flex justify-content-between align-items-center"
+                                        >
+                                            <div>
+                                                <h5 className="mb-1">Запрос #{invite.id.slice(0, 8)}</h5>
+                                                <p className="mb-1">Вакансия: {invite.vacancy_id.slice(0, 8)}</p>
+                                                {isTeamlead ? (
+                                                    <small>Отправлено участнику: {invite.participant_id.slice(0, 8)}</small>
+                                                ) : (
+                                                    <small>Приглашено командой</small>
+                                                )}
+                                            </div>
+                                            <div className="d-flex align-items-center gap-3">
+              <span className="badge bg-primary rounded-pill">
+                {invite.approved_by_participant ? 'Принято' : 'Ожидает'}
+              </span>
+                                                {/* Только участник может подтвердить приглашение */}
+                                                {!isTeamlead && !invite.approved_by_participant && (
+                                                    <button
+                                                        className="btn btn-success btn-sm"
+                                                        onClick={() => AcceptRequest(invite.id)}
+                                                    >
+                                                        Подтвердить
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
-                                        <span className="badge bg-primary rounded-pill">Ожидает ответа</span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                )}
-
-
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
             </div>
             </div>
 
