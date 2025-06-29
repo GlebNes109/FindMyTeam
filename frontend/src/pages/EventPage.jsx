@@ -12,9 +12,17 @@ function EventPage() {
     const [participantData, setParticipantData] = useState(null);
     const [incomingRequests, setIncomingRequests] = useState([]);
     const [outgoingRequests, setOutgoingRequests] = useState([]);
-    const isTeamlead = participantData?.event_role === 'TEAMLEAD';
     const [selectedParticipant, setSelectedParticipant] = useState(null);
     const [isVacancyModalOpen, setIsVacancyModalOpen] = useState(false);
+    const [loadedTabs, setLoadedTabs] = useState({
+        teams: false,
+        participants: false,
+        requests: false,
+    });
+
+    const isTeamlead = useMemo(() => {
+        return participantData?.event_role === 'TEAMLEAD';
+    }, [participantData]);
 
     const handleOpenVacancyModal = (participant) => {
         setSelectedParticipant(participant);
@@ -25,49 +33,52 @@ function EventPage() {
         CreateNewTeamRequest(vacancyId, selectedParticipant.id);
     };
 
-    useEffect(() => {
+    const loadEventAndTeams = async () => {
+        if (!eventId || loadedTabs.teams) return;
         const token = localStorage.getItem("token");
 
-        if (!eventId) return;
-        console.log(eventId)
+        try {
+            const [eventRes, teamsRes] = await Promise.all([
+                fetch(`http://localhost:8080/events/${eventId}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                }),
+                fetch(`http://localhost:8080/events/${eventId}/teams`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                }),
+            ]);
 
-        const fetchEventData = async () => {
-            try {
-                const [eventRes, teamsRes, participantsRes] = await Promise.all([
-                    fetch(`http://localhost:8080/events/${eventId}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    }),
-                    fetch(`http://localhost:8080/events/${eventId}/teams`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    }),
-                    fetch(`http://localhost:8080/events/${eventId}/participants`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    }),
-                ]);
+            const [event, teams] = await Promise.all([
+                eventRes.json(),
+                teamsRes.json(),
+            ]);
 
-                const [event, teams, participants] = await Promise.all([
-                    eventRes.json(),
-                    teamsRes.json(),
-                    participantsRes.json(),
-                ]);
+            setEventData(prev => ({ ...event, event_teams: teams, event_participants: prev?.event_participants || [] }));
+            setLoadedTabs(prev => ({ ...prev, teams: true }));
+        } catch (error) {
+            console.error("Ошибка при загрузке event/teams:", error);
+        }
+    };
 
-                setEventData({
-                    ...event,
-                    event_teams: teams,
-                    event_participants: participants,
-                });
+    const loadParticipants = async () => {
+        if (!eventId || loadedTabs.participants) return;
+        const token = localStorage.getItem("token");
 
-            } catch (error) {
-                console.error("Ошибка при загрузке данных события:", error);
-            }
-        };
+        try {
+            const res = await fetch(`http://localhost:8080/events/${eventId}/participants`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const participants = await res.json();
 
-        fetchEventData();
-    }, [eventId]);
+            setEventData(prev => ({ ...prev, event_participants: participants }));
+            setLoadedTabs(prev => ({ ...prev, participants: true }));
+        } catch (error) {
+            console.error("Ошибка при загрузке участников:", error);
+        }
+    };
+
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-
         if (!participant_id) return;
 
         const fetchParticipantData = async () => {
@@ -86,37 +97,46 @@ function EventPage() {
         fetchParticipantData();
     }, [participant_id]);
 
-    useEffect(() => {
+    const loadRequests = async () => {
+        if (!participant_id || loadedTabs.responses) return;
         const token = localStorage.getItem("token");
-        if (!participant_id || !participantData) return;
+        const incomingUrl = `http://localhost:8080/team_requests/${isTeamlead ? 'incoming' : 'outgoing'}?participant_id=${participant_id}`;
+        const outgoingUrl = `http://localhost:8080/team_requests/${isTeamlead ? 'outgoing' : 'incoming'}?participant_id=${participant_id}`;
 
-        const loadRequests = async () => {
-            try {
-                const incomingUrl = `http://localhost:8080/team_requests/${isTeamlead ? 'incoming' : 'outgoing'}?participant_id=${participant_id}`;
-                const outgoingUrl = `http://localhost:8080/team_requests/${isTeamlead ? 'outgoing' : 'incoming'}?participant_id=${participant_id}`;
+        try {
+            const [incomingRes, outgoingRes] = await Promise.all([
+                fetch(incomingUrl, { headers: { Authorization: `Bearer ${token}` } }),
+                fetch(outgoingUrl, { headers: { Authorization: `Bearer ${token}` } }),
+            ]);
 
-                const [incomingRes, outgoingRes] = await Promise.all([
-                    fetch(incomingUrl, { headers: { Authorization: `Bearer ${token}` } }),
-                    fetch(outgoingUrl, { headers: { Authorization: `Bearer ${token}` } }),
-                ]);
+            const [incoming, outgoing] = await Promise.all([
+                incomingRes.json(),
+                outgoingRes.json(),
+            ]);
 
-                const [incoming, outgoing] = await Promise.all([
-                    incomingRes.json(),
-                    outgoingRes.json(),
-                ]);
+            setIncomingRequests(incoming || []);
+            setOutgoingRequests(outgoing || []);
+            setLoadedTabs(prev => ({ ...prev, responses: true, invites: true }));
+        } catch (error) {
+            console.error("Ошибка при загрузке заявок:", error);
+        }
+    };
 
-                setIncomingRequests(incoming || []);
-                setOutgoingRequests(outgoing || []);
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
 
-            } catch (error) {
-                console.error("Ошибка при загрузке заявок:", error);
-            }
-        };
+        if (tab === 'teams' && !loadedTabs.teams) {
+            loadEventAndTeams();
+        }
 
-        loadRequests();
-    }, [participant_id, participantData, isTeamlead]);
+        if (tab === 'participants' && !loadedTabs.participants) {
+            loadParticipants();
+        }
 
-
+        if (tab === 'responses' || tab === 'invites' && !loadedTabs.requests) {
+            loadRequests();
+        }
+    };
 
     /*функция для приглашения новых участников в свою команду - если participant который просматривает страницу является teamlead*/
     function CreateNewTeamRequest(vacancy_id, participant_to_invite_id) {
@@ -161,39 +181,35 @@ function EventPage() {
         return myTeam?.vacancies || [];
     }, [eventData, participantData]);
 
+    useEffect(() => {
+        handleTabChange(activeTab);
+    }, []);
+
     if (!eventData) return <div className="container py-5"><p>Загрузка...</p></div>;
     return (
         <div className="container py-5">
             <h2>{eventData.name}</h2>
             <p>{eventData.description}</p>
             <div>
-            <ul className="nav nav-tabs">
-                <li className="nav-item">
-                    <button className={`nav-link ${activeTab === 'teams' ? 'active' : ''}`} onClick={() => setActiveTab('teams')}>
-                        Команды
-                    </button>
-                </li>
-                <li className="nav-item">
-                    <button
-                        className={`nav-link ${activeTab === 'participants' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('participants')}
-                    >
-                        {isTeamlead ? 'Участники (можно пригласить)' : 'Участники (просмотр)'}
-                    </button>
-                </li>
-                <li className="nav-item">
-                    <button className={`nav-link ${activeTab === 'responses' ? 'active' : ''}`} onClick={() => setActiveTab('responses')}>
-                        Отклики
-                    </button>
-                </li>
-                <li className="nav-item">
-                    <button className={`nav-link ${activeTab === 'invites' ? 'active' : ''}`} onClick={() => setActiveTab('invites')}>
-                        Приглашения
-                    </button>
-                </li>
-            </ul>
+                <ul className="nav nav-tabs">
+                    {['teams', 'participants', 'responses', 'invites'].map(tab => (
+                        <li className="nav-item" key={tab}>
+                            <button
+                                className={`nav-link ${activeTab === tab ? 'active' : ''}`}
+                                onClick={() => handleTabChange(tab)}
+                            >
+                                {{
+                                    teams: 'Команды',
+                                    participants: isTeamlead ? 'Участники (можно пригласить)' : 'Участники (просмотр)',
+                                    responses: 'Отклики',
+                                    invites: 'Приглашения'
+                                }[tab]}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
 
-            <div className="mt-4">
+                <div className="mt-4">
                 {activeTab === 'teams' && (
                     <>
                         <table className="table table-striped table-dark">
