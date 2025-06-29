@@ -29,19 +29,18 @@ const RegistrationPage = () => {
         })
             .then((response) => {
                 if (!response.ok) {
-                    if (response.status === 401) {
+                    if (response.status === 400) {
                         setErrorMessage("Не все поля заполнены или некорректные значения");
-                        return;
                     }
                     if (response.status === 409) {
                         setErrorMessage("Такой логин уже есть, возьмите другой");
-                        return;
                     }
+                    return Promise.reject();
                 }
                 return response.json();
             })
             .then((data) => {
-                console.log("Токен:", data.token);
+                // console.log("Токен:", data.token);
                 localStorage.setItem("token", data.token);
                 navigate('/events');})
             .catch(error => console.error('Ошибка:', error));
