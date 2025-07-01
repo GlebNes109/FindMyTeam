@@ -1,6 +1,14 @@
 import React, {useState} from "react";
-import styles from "../styles/LoginRegisterPage.module.css";
 import {useNavigate} from "react-router-dom";
+import {
+    Box,
+    Button,
+    Container,
+    TextField,
+    Typography,
+    Alert,
+    Stack
+} from "@mui/material";
 
 const RegistrationPage = () => {
     const [email, setEmail] = useState("");
@@ -47,24 +55,69 @@ const RegistrationPage = () => {
     }
 
     return (
-        <div className={styles['main-content']}>
-            <div className={styles['fields-content']}>
-                <h2>Регистрация</h2>
-                <input type="text" placeholder="Введите электронную почту" className={`form-control ${styles['input-dark']}`} value={email} onChange={(e) => setEmail(e.target.value)}/>
-                <input type="text" placeholder="Введите логин" className={`form-control ${styles['input-dark']}`} value={login} onChange={(e) => setLogin(e.target.value)}/>
-                <input type="text" placeholder="Введите tg никнейм для связи" className={`form-control ${styles['input-dark']}`} value={tg_nickname} onChange={(e) => setTg_nickname(e.target.value)}/>
-                <input type="password" placeholder="Введите пароль" className={`form-control ${styles['input-dark']}`} value={password} onChange={(e) => setPassword(e.target.value)}/>
-                <input type="password" placeholder="Повторите пароль" className={`form-control ${styles['input-dark']}`} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}/>
-                <button type="submit" className="btn btn-primary"  onClick={RegisterRequest}>Зарегистрироваться
-                </button>
-                <button className={styles["link-button"]} onClick={() => navigate("/signin")}>Уже есть аккаунт?</button>
-                {errorMessage && (
-                    <div className="alert alert-danger mt-3" role="alert">
-                        {errorMessage}
-                    </div>
-                )}
-            </div>
-        </div>
+        <Container maxWidth="sm">
+            <Box sx={{ mt: 8, p: 4, borderRadius: 2, boxShadow: 3, bgcolor: 'background.paper' }}>
+                <Typography variant="h4" gutterBottom>
+                    Регистрация
+                </Typography>
+
+                <Stack spacing={2}>
+                    <TextField
+                        fullWidth
+                        label="Электронная почта"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+
+                    <TextField
+                        fullWidth
+                        label="Логин"
+                        value={login}
+                        onChange={(e) => setLogin(e.target.value)}
+                    />
+
+                    <TextField
+                        fullWidth
+                        label="Telegram никнейм"
+                        value={tg_nickname}
+                        onChange={(e) => setTg_nickname(e.target.value)}
+                    />
+
+                    <TextField
+                        fullWidth
+                        label="Пароль"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+
+                    <TextField
+                        fullWidth
+                        label="Повторите пароль"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+
+                    <Button variant="contained" fullWidth onClick={RegisterRequest}>
+                        Зарегистрироваться
+                    </Button>
+
+                    <Button
+                        variant="text"
+                        onClick={() => navigate("/signin")}
+                        sx={{ textTransform: "none" }}
+                    >
+                        Уже есть аккаунт?
+                    </Button>
+
+                    {errorMessage && (
+                        <Alert severity="error">{errorMessage}</Alert>
+                    )}
+                </Stack>
+            </Box>
+        </Container>
     );
 };
 

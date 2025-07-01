@@ -1,7 +1,6 @@
-import styles from "../styles/EventsPage.module.css";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import RegistrationEventModal from "../components/RegistrationEventModal.jsx";
+import {Box, Button, Card, CardContent, Chip, Container, Divider, Stack, Toolbar, Typography} from "@mui/material";
 
 
 function EventsPage() {
@@ -18,37 +17,67 @@ function EventsPage() {
             method: 'GET'
         })
             .then(res => res.json())
-            .then(data => setEvents(data || [])) // Устанавливаем список событий
+            .then(data => setEvents(data || [])) // список событий задется данными из api
             .catch(err => console.error('Ошибка загрузки событий:', err));
     }, [navigate]);
 
     return (
-        <div className={styles['main-content']}>
+        <>
+            <Toolbar />
+        <Container sx={{ mt: 4 }}>
             {events.length === 0 ? (
-                <p>Нет доступных событий</p>
+                <Typography>Нет доступных событий</Typography>
             ) : (
-                <div className={styles.cardsList}>
-                    <div className={styles.header}>
-                    <h3>Все события</h3>
-                </div>
-                    {events.map(event => (
-                        <div key={event.id} className={styles.eventCard}>
-                            <h4>{event.name}</h4>
-                            <p>{event.description}</p>
-                            <p><b>Дата начала:</b> {event.start_date}</p>
-                            <p><b>Дата окончания:</b> {event.end_date}</p>
-                            <div className={styles.eventTracks}>
-                                <b>Треки:</b>
-                                {event.event_tracks.map(track => (
-                                    <span key={track.id} className={styles.track}>{track.name}</span>
-                                ))}
-                            </div>
-                            <button onClick={() => {navigate(`/event/${event.id}/register`)}} className="btn btn-primary mt-3">Я учавствую</button>
-                        </div>
-                    ))}
-                </div>
+                <Box>
+                    <Typography variant="h5" gutterBottom>Все события</Typography>
+                    <Divider sx={{ mb: 3 }} />
+                    <Stack spacing={3}>
+                        {events.map(event => (
+                            <Card
+                                key={event.id}
+                                sx={{ cursor: 'pointer' }}
+                                onClick={() => navigate(`/event/${event.id}`)}
+                            >
+                                <CardContent>
+                                    <Typography variant="h6">{event.name}</Typography>
+                                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                                        {event.description}
+                                    </Typography>
+
+                                    <Typography variant="body2" mt={1}>
+                                        <strong>Дата начала:</strong> {event.start_date}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        <strong>Дата окончания:</strong> {event.end_date}
+                                    </Typography>
+
+                                    <Box mt={2}>
+                                        <Typography variant="subtitle2" gutterBottom>Треки:</Typography>
+                                        <Stack direction="row" spacing={1} flexWrap="wrap">
+                                            {event.event_tracks.map(track => (
+                                                <Chip key={track.id} label={track.name} variant="outlined" />
+                                            ))}
+                                        </Stack>
+                                    </Box>
+
+                                    <Button
+                                        variant="contained"
+                                        sx={{ mt: 3 }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/event/${event.id}/register`);
+                                        }}
+                                    >
+                                        Я участвую
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </Stack>
+                </Box>
             )}
-        </div>
+        </Container>
+            </>
     );
 }
 

@@ -1,7 +1,20 @@
-import styles from "../styles/HomePage.module.css";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import PatchUserModal from "../components/PatchUserModal.jsx";
+import {
+    Box,
+    Button,
+    Typography,
+    Stack,
+    Chip,
+    Card,
+    CardContent,
+    Grid,
+    Container,
+    Badge, useTheme, Divider,
+} from "@mui/material";
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 function HomePage() {
     const navigate = useNavigate();
@@ -9,7 +22,7 @@ function HomePage() {
     const [participants, setParticipants] = useState([]);
     const [EventDetails, setEventDetails] = useState([]); // Состояние для хранения событий
     const [isModalOpen, setIsModalOpen] = useState(false);
-
+    const theme = useTheme();
     useEffect(() => {
         const token = localStorage.getItem("token");
 
@@ -94,76 +107,201 @@ function HomePage() {
         return <p>Загрузка...</p>;
     }
 
+
     return (
-        <div className="container py-5">
-            <div className={styles['user-info']}>
-                <div className={styles['user-info-content-left']}>
-                    <h2>Здравствуйте, {data.login}!</h2>
-                    <p>Email: {data.email}</p>
-                    <p>Telegram: {data.tg_nickname}</p>
-                </div>
-                <div className={styles['user-info-content-right']}>
-                    <button onClick={handleLogout} className="btn btn-warning mb-2">Выйти</button>
-                    <button onClick={handleDelete} className="btn btn-danger mb-2">Удалить профиль</button>
-                    <button className="btn btn-primary" onClick={() => { setIsModalOpen(true) }}>Редактировать профиль</button>
-                </div>
-            </div>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Box
+                sx={{
+                    mb: 5,
+                    p: 4,
+                    bgcolor: "background.paper",
+                    borderRadius: 3,
+                    boxShadow: 3,
+                    display: "flex",
+                    flexDirection: { xs: "column", md: "row" }, // столбец на мобильных, строка на десктопах
+                    justifyContent: "space-between",
+                    alignItems: { xs: "flex-start", md: "center" },
+                    gap: 3,
+                    borderLeft: `8px solid ${theme.palette.primary.main}`,
+                }}
+            >
+                {/* Информация о пользователе */}
+                <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
+                        Здравствуйте, {data?.login || 'Пользователь'}!
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                        Email: <strong>{data?.email || 'Не указан'}</strong>
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                        Telegram: <strong>{data?.tg_nickname || 'Не указан'}</strong>
+                    </Typography>
+                </Box>
 
-            <h1>Ваши мероприятия</h1>
+                <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={2}
+                    sx={{
+                        flexShrink: 0,
+                        width: { xs: '100%', sm: 'auto' }
+                    }}
+                >
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        startIcon={<EditIcon />}
+                        onClick={() => setIsModalOpen(true)}
+                        sx={{ textTransform: 'none' }}
+                    >
+                        Редактировать профиль
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        onClick={handleDelete}
+                        sx={{ textTransform: 'none' }}
+                    >
+                        Удалить профиль
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="inherit"
+                        startIcon={<LogoutIcon />}
+                        onClick={handleLogout}
+                        sx={{ textTransform: 'none' }}
+                    >
+                        Выйти
+                    </Button>
+                </Stack>
+            </Box>
 
-            {/* Секция с карточками мероприятий */}
-            <div className="row g-4">
-                {participants.length === 0 ? (
-                    <p>Вы не участвуете в мероприятиях.</p>
-                ) : (
-                    participants.map(participant => {
-                            const event = EventDetails[participant.event_id];
+            <Typography variant="h4" gutterBottom sx={{ mb: 3, fontWeight: 600 }}>
+                Ваши мероприятия
+            </Typography>
 
-                            if (!event) {
-                                return (
-                                    <div key={participant.id} className="col-md-4">
-                                        <div className="card h-100 shadow-sm bg-dark text-white border-2">
-                                            <div className="card-body">
-                                                <h5 className="card-title">Загрузка...</h5>
-                                                <p className="card-text">Получение данных мероприятия</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            }
-
+            {participants.length === 0 ? (
+                <Box
+                    sx={{
+                        p: 4,
+                        bgcolor: "background.paper",
+                        borderRadius: 2,
+                        boxShadow: 1,
+                        textAlign: "center",
+                        color: "text.secondary"
+                    }}
+                >
+                    <Typography variant="h6">Вы пока не участвуете ни в одном мероприятии.</Typography>
+                    <Typography variant="body1" mt={1}>
+                        Вы можете выбрать мероприятия прямо сейчас!
+                    </Typography>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{ mt: 3 }}
+                        onClick={() => navigate('/events')}
+                    >
+                        Найти мероприятия
+                    </Button>
+                </Box>
+            ) : (
+                <Grid container spacing={3}>
+                    {participants.map((participant) => {
+                        const event = EventDetails[participant.event_id];
+                        if (!event) {
                             return (
-                                <div key={participant.id} className="col-md-4">
-                                    <div
-                                        className={`card h-100 shadow-sm bg-dark border-2 ${styles['card-clickable']}`}
-                                        onClick={() => navigate(`/event/${participant.event_id}`, {
-                                            state: { participant_id: participant.id }
-                                        })}
-                                    >
-                                        <div className="card-body">
-                                            <h5 className="card-title">{event.name}</h5>
-                                            <span className="badge bg-secondary me-2">
-                                            {participant.event_role === "PARTICIPANT" ? "Участник" : "Тимлид"}
-                                        </span>
-                                            <span className="badge bg-primary">
-                                            {participant.track.name}
-                                        </span>
-                                            <p className="card-text">{event.description}</p>
-                                            <p><b>Дата начала:</b> {event.start_date}</p>
-                                            <p><b>Дата окончания:</b> {event.end_date}</p>
-                                        </div>
-                                    </div>
-                                </div>
+                                <Grid item xs={12} sm={6} md={4} key={participant.id}>
+                                    <Card sx={{ height: "100%", display: 'flex', flexDirection: 'column', boxShadow: 3 }}>
+                                        <CardContent sx={{ flexGrow: 1 }}>
+                                            <Typography variant="h6" color="text.primary">Загрузка данных мероприятия...</Typography>
+                                            <Typography variant="body2" color="text.secondary">Пожалуйста, подождите.</Typography>
+                                        </CardContent>
+                                    </Card>
+                                </Grid>
                             );
-                        })
-                    )}
-            </div>
+                        }
 
-            <PatchUserModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-            />
-        </div>
+                        // карточки мероприятия
+                        return (
+                            <Grid item xs={12} sm={6} md={4} key={participant.id}> {/* xs=12 для полной ширины на мобильных, sm=6 для двух колонок на планшетах md=4 для трех колонок на десктопах */}
+                                <Card
+                                    sx={{
+                                        height: "100%",
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        cursor: "pointer",
+                                        boxShadow: 3,
+                                        transition: "transform 0.2s, box-shadow 0.2s",
+                                        "&:hover": {
+                                            boxShadow: 8,
+                                            transform: "translateY(-5px)",
+                                        },
+                                        bgcolor: "background.paper",
+                                    }}
+                                    onClick={() =>
+                                        navigate(`/event/${participant.event_id}`, {
+                                            state: { participant_id: participant.id },
+                                        })
+                                    }
+                                >
+                                    <CardContent sx={{ flexGrow: 1 }}>
+                                        <Stack
+                                            direction="row"
+                                            spacing={1}
+                                            alignItems="center"
+                                            mb={1.5}
+                                            flexWrap="wrap"
+                                        >
+                                            <Chip
+                                                label={
+                                                    participant.event_role === "PARTICIPANT"
+                                                        ? "Участник"
+                                                        : "Тимлид"
+                                                }
+                                                color={
+                                                    participant.event_role === "PARTICIPANT"
+                                                        ? "secondary"
+                                                        : "primary"
+                                                }
+                                                size="small"
+                                            />
+                                            {participant.track && (
+                                                <Chip
+                                                    label={participant.track.name}
+                                                    color="info"
+                                                    size="small"
+                                                />
+                                            )}
+                                        </Stack>
+
+                                        <Typography variant="h6" gutterBottom sx={{ fontWeight: 500 }} noWrap>
+                                            {event.name}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary" mb={2} sx={{
+                                            display: '-webkit-box',
+                                            overflow: 'hidden',
+                                            WebkitBoxOrient: 'vertical',
+                                            WebkitLineClamp: 3,
+                                        }}>
+                                            {event.description}
+                                        </Typography>
+
+                                        <Divider sx={{ my: 1.5 }} /> {/* Разделитель для дат */}
+
+                                        <Typography variant="body2" color="text.primary">
+                                            <strong>Начало:</strong> {event.start_date}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.primary">
+                                            <strong>Окончание:</strong> {event.end_date}
+                                        </Typography>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        );
+                    })}
+                </Grid>
+            )}
+        </Container>
     );
 }
 

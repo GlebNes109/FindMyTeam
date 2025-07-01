@@ -1,6 +1,25 @@
 import { useParams, useLocation } from 'react-router-dom';
 import {useEffect, useMemo, useState} from 'react';
 import SelectVacancyModal from "../components/SelectVacancyModel.jsx";
+import {
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    Divider,
+    Grid,
+    Stack,
+    Tab,
+    Tabs,
+    Typography,
+    List,
+    ListItem,
+    ListItemText,
+    ListItemSecondaryAction,
+    Badge,
+    Alert, Toolbar, Container, TableRow, TableCell, TableHead, TableBody, Table,
+} from "@mui/material";
 
 function EventPage() {
     const { eventId } = useParams();
@@ -196,212 +215,287 @@ function EventPage() {
         })
     }
 
+    function RejectRequest(request_id) {
+        const token = localStorage.getItem("token");
+        const res = fetch(`http://localhost:8080/team_requests/${request_id}/reject`, {
+            method: 'PUT',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        })
+    }
+
     if (!eventData) return <div className="container py-5"><p>Загрузка...</p></div>;
+
+    const tabLabels = {
+        teams: "Команды",
+        participants: isTeamlead ? "Участники (можно пригласить)" : "Участники (просмотр)",
+        responses: isTeamlead ? "Отклики в мою команду" : "Мои отклики",
+        invites: isTeamlead ? "Мои приглашения" : "Приглашения мне",
+    };
+
     return (
-        <div className="container py-5">
-            <h2>{eventData.name}</h2>
-            <p>{eventData.description}</p>
-            <div>
-                <ul className="nav nav-tabs">
-                    {['teams', 'participants', 'responses', 'invites'].map(tab => (
-                        <li className="nav-item" key={tab}>
-                            <button
-                                className={`nav-link ${activeTab === tab ? 'active' : ''}`}
-                                onClick={() => handleTabChange(tab)}
-                            >
-                                {{
-                                    teams: 'Команды',
-                                    participants: isTeamlead ? 'Участники (можно пригласить)' : 'Участники (просмотр)',
-                                    responses: isTeamlead ? 'Отклики в мою команду' : 'Мои отклики',
-                                    invites: isTeamlead ? 'Мои приглашения' : 'Приглашения мне'
-                                }[tab]}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
+        <>
+            <Toolbar />
+            <Container>
+        <Box p={5}>
+            <Typography variant="h4" mb={2}>{eventData.name}</Typography>
+            <Typography mb={3}>{eventData.description}</Typography>
 
-                <div className="mt-4">
-                {activeTab === 'teams' && (
-                    <>
-                        <table className="table table-striped table-dark">
-                            <thead>
-                            <tr>
-                                <th>Команда</th>
-                                <th>Участники</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {eventData.event_teams.map(team => (
-                                <tr key={team.id}>
-                                    <td>{team.name}</td>
-                                    <td>
-                                        {team.members.map((member, i) => (
-                                            <span
-                                                key={i}
-                                                className={`badge me-2 mb-1 text-white ${member.event_role === 'PARTICIPANT' ? 'bg-primary' : 'bg-success'}`}
-                                            >
-                                            {member.login} [{member.track.name}]
-                                        </span>
-                                        ))}
-                                        {team.vacancies.map((vacancy, i) => (
-                                            <span key={i} className="badge bg-secondary me-2 mb-1">Вакансия [{vacancy.track.name}]</span>
-                                        ))}
-                                    </td>
-                                </tr>
+            <Tabs value={activeTab} onChange={(e, val) => handleTabChange(val)} variant="scrollable" scrollButtons="auto" sx={{ mb: 4 }}>
+                {Object.entries(tabLabels).map(([key, label]) => (
+                    <Tab key={key} label={label} value={key} />
+                ))}
+            </Tabs>
+
+            {activeTab === "teams" && (
+                <Card variant="outlined" sx={{ mb: 4, bgcolor: "#303030"}}>
+                    <CardContent>
+                        <Table sx={{ minWidth: '100%' }}>
+                        <TableHead sx={{ borderBottom: "1px solid #e0e0e0" }}>
+                            <TableCell sx={{ fontWeight: "bold", color: "white" }}>Команда</TableCell>
+                            <TableCell sx={{ fontWeight: "bold", color: "white" }}>Участники</TableCell>
+                        </TableHead>
+                        <TableBody sx={{justify: "center" }}>
+                            {eventData.event_teams.map((team, index) => (
+                                <TableRow
+                                    key={team.id}
+                                    sx={{
+                                        '&:last-child td, &:last-child th': { border: 0 },
+                                        borderBottom: index < eventData.event_teams.length - 1 ? "1px solid #424242" : "none",
+                                    }}
+                                >
+                                    {/* первая колонка */}
+                                    <TableCell component="th" scope="row" sx={{ fontWeight: "medium", color: "white" }}>
+                                        {team.name}
+                                    </TableCell>
+
+                                    {/* вторая колонка */}
+                                    <TableCell sx={{ color: "white" }}>
+                                        <Stack direction="row" flexWrap="wrap" spacing={1}>
+                                            {team.members.map((member, i) => (
+                                                <Chip
+                                                    key={i}
+                                                    label={`${member.login} [${member.track.name}]`}
+                                                    color={member.event_role === "PARTICIPANT" ? "primary" : "success"}
+                                                    size="small"
+                                                    sx={{ color: "white" }}
+                                                />
+                                            ))}
+                                            {team.vacancies.map((vacancy, i) => (
+                                                <Chip
+                                                    key={i}
+                                                    label={`Вакансия [${vacancy.track.name}]`}
+                                                    color="default"
+                                                    size="small"
+                                                    variant="outlined"
+                                                    sx={{ color: "white", borderColor: "rgba(255, 255, 255, 0.4)" }} // Стиль для вакансий на темном фоне
+                                                />
+                                            ))}
+                                        </Stack>
+                                    </TableCell>
+                                </TableRow>
                             ))}
-                            </tbody>
-                        </table>
-                    </>
-                )}
+                        </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            )}
 
-                {activeTab === 'participants' && (
-                    <>
-                        {freeParticipants.length === 0 ? (
-                            <p className="text-muted">Нет доступных участников</p>
-                        ) : (
-                            <table className="table table-bordered table-dark">
-                                <thead>
-                                <tr>
-                                    <th>Логин</th>
-                                    <th>Трек</th>
-                                    <th>Резюме</th>
-                                    <th>Действие</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {freeParticipants.map((p, i) => (
-                                    <tr key={i}>
-                                        <td>{p.login}</td>
-                                        <td>{p.track.name}</td>
-                                        <td>{p.resume}</td>
-                                        <td>
-                                            {isTeamlead ? (
-                                                myVacancies.length > 0 ? (
-                                                    <button
-                                                        className="btn btn-success btn-sm"
-                                                        onClick={() => handleOpenVacancyModal(p)}
-                                                    >
-                                                        Пригласить
-                                                    </button>
-
-                                                ) : (
-                                                    <button className="btn btn-secondary btn-sm" disabled>Нет вакансий</button>
-                                                )
-                                            ) : (
-                                                <button className="btn btn-secondary btn-sm" disabled title="Вы не капитан">
-                                                    Недоступно
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        )}
-                    </>
-                )}
-                    {activeTab === 'responses' && (
-                        <div className="bg-black mt-3">
-                            {incomingRequests.length === 0 ? (
-                                <p className="text-muted">Отклики — пока пусто</p>
-                            ) : (
-                                <div className="list-group">
-                                    {incomingRequests.map((request) => (
-                                        <div
-                                            key={request.id}
-                                            className="list-group-item d-flex justify-content-between align-items-center"
+            {activeTab === "participants" && (
+                freeParticipants.length === 0 ? (
+                    <Typography color="text.secondary">Нет доступных участников</Typography>
+                ) : (
+                    <Grid container spacing={3}>
+                        {freeParticipants.map((p, i) => (
+                            <Grid item xs={12} md={6} lg={4} key={i}>
+                                <Card sx={{ bgcolor: "background.paper", height: "100%", display: "flex", flexDirection: "column" }}>
+                                    <CardContent sx={{ flexGrow: 1 }}>
+                                        <Typography variant="h6">{p.login}</Typography>
+                                        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                            Трек: {p.track.name}
+                                        </Typography>
+                                        <Typography
+                                            variant="body2"
+                                            sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
                                         >
-                                            <div>
-                                                <h5 className="mb-1">Запрос #{request.id.slice(0, 8)}</h5>
-                                                <p className="mb-1">Вакансия: {request.vacancy_id.slice(0, 8)}</p>
-                                                <small className="mb-1">
-                                                    {isTeamlead
-                                                        ? `От участника: ${request.participant_id.slice(0, 8)}`
-                                                        : `Отправлено в команду`}
-                                                </small>
-                                            </div>
-                                            <div className="d-flex align-items-center gap-3">
-              <span
-                  className={`badge ${request.approved_by_teamlead ? 'bg-success' : 'bg-warning'} rounded-pill`}
-              >
-                {request.approved_by_teamlead ? 'Одобрено' : 'Ожидает'}
-              </span>
-                                                {/* Кнопка "Подтвердить", только если это входящий запрос */}
-                                                {isTeamlead && !request.approved_by_teamlead && (
-                                                    <button
-                                                        className="btn btn-success btn-sm"
+                                            <strong>Резюме:</strong> {p.resume || "—"}
+                                        </Typography>
+                                    </CardContent>
+                                    <Box sx={{ p: 2, pt: 0 }}>
+                                        {isTeamlead ? (
+                                            myVacancies.length > 0 ? (
+                                                <Button
+                                                    variant="contained"
+                                                    size="small"
+                                                    onClick={() => handleOpenVacancyModal(p)}
+                                                    fullWidth
+                                                >
+                                                    Пригласить
+                                                </Button>
+                                            ) : (
+                                                <Button variant="outlined" size="small" disabled fullWidth>
+                                                    Нет вакансий
+                                                </Button>
+                                            )
+                                        ) : (
+                                            <Button variant="outlined" size="small" disabled fullWidth title="Вы не капитан">
+                                                Недоступно
+                                            </Button>
+                                        )}
+                                    </Box>
+                                </Card>
+                            </Grid>
+                        ))}
+                    </Grid>
+                )
+            )}
+
+            {activeTab === "responses" && (
+                <Box sx={{ mt: 3 }}>
+                    {incomingRequests.length === 0 ? (
+                        <Typography color="text.secondary">Отклики — пока пусто</Typography>
+                    ) : (
+                        <List>
+                            {incomingRequests.map((request) => (
+                                <ListItem
+                                    key={request.id}
+                                    divider
+                                    secondaryAction={
+                                        <Stack direction="row" spacing={1} alignItems="center">
+                                            <Badge
+                                                badgeContent={request.approved_by_teamlead ? "Одобрено" : "Ожидает"}
+                                                color={request.approved_by_teamlead ? "success" : "warning"}
+                                                sx={{ minWidth: 80 }}
+                                            />
+                                            {isTeamlead && !request.approved_by_teamlead && (
+                                                <Stack direction="row" spacing={1}>
+                                                    <Button
+                                                        variant="contained"
+                                                        size="small"
+                                                        color="success"
                                                         onClick={() => AcceptRequest(request.id)}
                                                     >
                                                         Подтвердить
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-
-                    {activeTab === 'invites' && (
-                        <div className="mt-3">
-                            {outgoingRequests.length === 0 ? (
-                                <p className="text-muted">Приглашения — пока пусто</p>
-                            ) : (
-                                <div className="list-group">
-                                    {outgoingRequests.map((invite) => (
-                                        <div
-                                            key={invite.id}
-                                            className="list-group-item d-flex justify-content-between align-items-center"
-                                        >
-                                            <div>
-                                                <h5 className="mb-1">Запрос #{invite.id.slice(0, 8)}</h5>
-                                                <p className="mb-1">Вакансия: {invite.vacancy_id.slice(0, 8)}</p>
-                                                {isTeamlead ? (
-                                                    <small>Отправлено участнику: {invite.participant_id.slice(0, 8)}</small>
-                                                ) : (
-                                                    <small>Приглашено командой</small>
-                                                )}
-                                            </div>
-                                            <div className="d-flex align-items-center gap-3">
-              <span className="badge bg-primary rounded-pill">
-                {invite.approved_by_participant ? 'Принято' : 'Ожидает'}
-              </span>
-                                                {/* Только участник может подтвердить приглашение */}
-                                                {!isTeamlead && !invite.approved_by_participant && (
-                                                    <button
-                                                        className="btn btn-success btn-sm"
-                                                        onClick={() => AcceptRequest(invite.id)}
+                                                    </Button>
+                                                    <Button
+                                                        variant="outlined"
+                                                        size="small"
+                                                        color="error"
+                                                        onClick={() => RejectRequest(request.id)}
                                                     >
-                                                        Подтвердить
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                                                        Отклонить
+                                                    </Button>
+                                                </Stack>
+                                            )}
+                                        </Stack>
+                                    }
+                                >
+                                    <ListItemText
+                                        primary={`Запрос #${request.id.slice(0, 8)}`}
+                                        secondary={
+                                            <>
+                                                <Typography variant="body2">Вакансия: {request.vacancy.id}</Typography>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    {isTeamlead
+                                                        ? `От участника ${request.participant.login}`
+                                                        : `Отправлено в команду`}
+                                                </Typography>
+                                            </>
+                                        }
+                                    />
+                                </ListItem>
+                            ))}
+                        </List>
                     )}
-            </div>
-            </div>
+                </Box>
+            )}
 
-            {/* Карточка снизу */}
-            <div className="card mt-4 bg-dark text-light">
-                <div className="card-body">
+            {activeTab === "invites" && (
+                <Box sx={{ mt: 3 }}>
+                    {outgoingRequests.length === 0 ? (
+                        <Typography color="text.secondary">Приглашения — пока пусто</Typography>
+                    ) : (
+                        <List>
+                            {outgoingRequests.map((invite) => (
+                                <ListItem
+                                    key={invite.id}
+                                    divider
+                                    secondaryAction={
+                                        <Stack direction="row" spacing={1} alignItems="center">
+                                            <Badge
+                                                badgeContent={invite.approved_by_participant ? "Принято" : "Ожидает"}
+                                                color="primary"
+                                                sx={{ minWidth: 60 }}
+                                            />
+                                        </Stack>
+                                    }
+                                >
+                                    <ListItemText
+                                        primary={`Запрос #${invite.id.slice(0, 8)}`}
+                                        secondary={
+                                            <>
+                                                <Typography variant="body2">Вакансия: {invite.vacancy.id}</Typography>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    {isTeamlead
+                                                        ? `Отправлено участнику ${invite.participant.login}`
+                                                        : `Приглашение в команду ${invite.team.name}`}
+                                                </Typography>
+
+                                                {!isTeamlead && !invite.approved_by_participant && (
+                                                    <Box sx={{
+                                                        mt: 1,
+                                                        display: "flex",
+                                                        gap: 1,
+                                                    }}>
+                                                        <Button
+                                                            variant="contained"
+                                                            size="small"
+                                                            color="success"
+                                                            onClick={() => AcceptRequest(invite.id)}
+                                                        >
+                                                            Подтвердить
+                                                        </Button>
+                                                        <Button
+                                                            variant="outlined"
+                                                            size="small"
+                                                            color="error"
+                                                            onClick={() => RejectRequest(invite.id)}
+                                                        >
+                                                            Отклонить
+                                                        </Button>
+                                                    </Box>
+                                                )}
+                                            </>
+                                        }
+                                    />
+                                </ListItem>
+                            ))}
+                        </List>
+                    )}
+                </Box>
+            )}
+
+            <Card sx={{ mt: 4, bgcolor: "background.paper" }}>
+                <CardContent>
                     {participantData ? (
                         <>
-                            <h5 className="card-title mb-3">Вы участвуете в этом мероприятии</h5>
-                            <p><strong>Роль:</strong> {participantData.event_role === 'TEAMLEAD' ? 'Тимлид' : 'Участник'}</p>
-                            <p><strong>Трек:</strong> {participantData.track.name}</p>
-                            <p><strong>Резюме:</strong> {participantData.resume || '—'}</p>
+                            <Typography variant="h6" mb={2}>
+                                Вы участвуете в этом мероприятии
+                            </Typography>
+                            <Typography><strong>Роль:</strong> {participantData.event_role === "TEAMLEAD" ? "Тимлид" : "Участник"}</Typography>
+                            <Typography><strong>Трек:</strong> {participantData.track.name}</Typography>
+                            <Typography sx={{ whiteSpace: "pre-wrap" }}>
+                                <strong>Резюме:</strong> {participantData.resume || "—"}
+                            </Typography>
                         </>
                     ) : (
-                        <p className="text-muted">Вы не зарегистрированы на это мероприятие</p>
+                        <Typography color="text.secondary">Вы не зарегистрированы на это мероприятие</Typography>
                     )}
-                </div>
-            </div>
+                </CardContent>
+            </Card>
+
             <SelectVacancyModal
                 isOpen={isVacancyModalOpen}
                 onClose={() => setIsVacancyModalOpen(false)}
@@ -409,8 +503,10 @@ function EventPage() {
                 onSubmit={handleSendInvite}
                 participant={selectedParticipant}
             />
-        </div>
-    );
+        </Box>
+            </Container>
+        </>
+            );
 }
 
 export default EventPage;

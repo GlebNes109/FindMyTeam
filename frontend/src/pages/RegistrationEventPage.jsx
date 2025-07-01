@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import styles from "../styles/RegistrationEventModal.module.css";
 import { useNavigate, useParams } from "react-router-dom";
+import {Box, Button, FormControl, InputLabel, MenuItem, Select, TextField, Toolbar, Typography} from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function RegistrationEventPage() {
     const [event_role, setEventRole] = useState("PARTICIPANT");
@@ -12,7 +14,6 @@ function RegistrationEventPage() {
     const navigate = useNavigate();
     const [event, setEvent] = useState(null);
     const { event_id } = useParams();
-
     useEffect(() => {
         fetch(`http://localhost:8080/events/${event_id}`)
             .then(res => res.json())
@@ -28,6 +29,10 @@ function RegistrationEventPage() {
     const addVacancy = () => {
         setVacancies([...vacancies, { event_track_id: "", description: "" }]);
     };
+
+    const removeVacancy = (indexToRemove) => {
+        setVacancies(vacancies.filter((_, index) => index !== indexToRemove));
+    }
 
     const updateVacancy = (index, field, value) => {
         const updated = [...vacancies];
@@ -83,121 +88,136 @@ function RegistrationEventPage() {
     }
 
     return (
-        <div className="container py-5">
-            <h3 className="mb-4">Регистрация на мероприятие</h3>
+        // на маленьких экранах 1 px, на средних - 15
+        <>
+            <Toolbar />
+        <Box sx={{ px: { xs: 1, md: 15 }, py: 5 }}>
+            <Typography variant="h5" mb={4}>
+                Регистрация на мероприятие
+            </Typography>
 
-            <div className="mb-3">
-                <label htmlFor="resume" className="form-label">Расскажите о себе</label>
-                <textarea
-                    className="form-control bg-dark border-secondary text-light"
-                    id="resume"
-                    rows="5"
-                    maxLength="1000"
+            <Box mb={3}>
+                <TextField
+                    fullWidth
+                    multiline
+                    rows={5}
+                    label="Расскажите о себе"
                     placeholder="Небольшое резюме, стек технологий и т.д."
                     value={resume}
                     onChange={(e) => setResume(e.target.value)}
+                    inputProps={{ maxLength: 1000 }}
+                    variant="outlined"
                 />
-            </div>
+            </Box>
 
-            {/* Командные поля — отображаются только для TEAMLEAD */}
-            <div className={event_role === "TEAMLEAD" ? "" : "d-none"}>
-                <div className="mb-3">
-                    <label htmlFor="teamName" className="form-label">Название команды</label>
-                    <input
-                        type="text"
-                        className="form-control bg-dark border-secondary text-light"
-                        id="teamName"
-                        placeholder="Название команды"
-                        value={team_name}
-                        onChange={(e) => setTeamName(e.target.value)}
-                    />
-                </div>
-
-                <div className="mb-3">
-                    <label htmlFor="teamDescription" className="form-label">Описание команды</label>
-                    <textarea
-                        className="form-control bg-dark border-secondary text-light"
-                        id="teamDescription"
-                        rows="3"
-                        maxLength="500"
-                        placeholder="Описание команды"
-                        value={team_description}
-                        onChange={(e) => setTeamDescription(e.target.value)}
-                    />
-                </div>
-
-                <div className="mb-3">
-                    <button type="button" className="btn btn-outline-light" onClick={addVacancy}>
-                        + Добавить вакансию
-                    </button>
-                </div>
-
-                {vacancies.map((vacancy, index) => (
-                    <div key={index} className="mb-3 border p-3 rounded bg-dark border-dark">
-                        <label className="form-label">Трек для вакансии</label>
-                        <select
-                            className="form-select bg-dark border-secondary text-light mb-2"
-                            value={vacancy.event_track_id}
-                            onChange={(e) =>
-                                updateVacancy(index, "event_track_id", e.target.value)
-                            }
-                        >
-                            <option value="">Выберите трек</option>
-                            {event?.event_tracks?.map((track) => (
-                                <option key={track.id} value={track.id}>
-                                    {track.name}
-                                </option>
-                            ))}
-                        </select>
-
-                        <label className="form-label">Описание вакансии</label>
-                        <textarea
-                            className="form-control bg-dark border-secondary text-light"
-                            rows="2"
-                            placeholder="Описание вакансии"
-                            value={vacancy.description}
-                            onChange={(e) =>
-                                updateVacancy(index, "description", e.target.value)
-                            }
+            {event_role === "TEAMLEAD" && (
+                <>
+                    <Box mb={3}>
+                        <TextField
+                            fullWidth
+                            label="Название команды"
+                            placeholder="Название команды"
+                            value={team_name}
+                            onChange={(e) => setTeamName(e.target.value)}
+                            variant="outlined"
                         />
-                    </div>
-                ))}
-            </div>
+                    </Box>
 
-            <div className="mb-3">
-                <label htmlFor="roleSelect" className="form-label">Роль</label>
-                <select
-                    id="roleSelect"
-                    className="form-select bg-dark text-secondary border-secondary text-light"
-                    value={event_role}
-                    onChange={(e) => setEventRole(e.target.value)}
-                >
-                    <option value="PARTICIPANT">Участник</option>
-                    <option value="TEAMLEAD">Капитан команды</option>
-                </select>
-            </div>
+                    <Box mb={3}>
+                        <TextField
+                            fullWidth
+                            multiline
+                            rows={3}
+                            label="Описание команды"
+                            placeholder="Описание команды"
+                            inputProps={{ maxLength: 500 }}
+                            value={team_description}
+                            onChange={(e) => setTeamDescription(e.target.value)}
+                            variant="outlined"
+                        />
+                    </Box>
 
-            <div className="mb-4">
-                <label htmlFor="trackSelect" className="form-label">Трек</label>
-                <select
-                    id="trackSelect"
-                    className="form-select bg-dark text-secondary border-secondary text-light"
-                    value={event_track}
-                    onChange={(e) => setEventTrack(e.target.value)}
-                >
-                    <option value="">Выберите трек</option>
-                    {event?.event_tracks?.map((track) => (
-                        <option key={track.id} value={track.id}>
-                            {track.name}
-                        </option>
+                    <Box mb={3}>
+                        <Button variant="outlined" onClick={addVacancy}>
+                            + Добавить вакансию
+                        </Button>
+                    </Box>
+
+                    {vacancies.map((vacancy, index) => (
+                        <Box key={index} mb={3} p={2} borderRadius={2} sx={{ bgcolor: "grey.900", border: "1px solid", borderColor: "grey.800" }}>
+                            <FormControl fullWidth sx={{ mb: 2 }}>
+                                <InputLabel>Трек для вакансии</InputLabel>
+                                <Select
+                                    value={vacancy.event_track_id}
+                                    onChange={(e) => updateVacancy(index, "event_track_id", e.target.value)}
+                                    label="Трек для вакансии"
+                                    variant="outlined"
+                                     >
+                                    <MenuItem value="">Выберите трек</MenuItem>
+                                    {event?.event_tracks?.map((track) => (
+                                        <MenuItem key={track.id} value={track.id}>
+                                            {track.name}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+
+                            <TextField
+                                fullWidth
+                                multiline
+                                rows={2}
+                                label="Описание вакансии"
+                                placeholder="Описание вакансии"
+                                value={vacancy.description}
+                                onChange={(e) => updateVacancy(index, "description", e.target.value)}
+                                variant="outlined"
+                            />
+                            <DeleteIcon
+                                onClick={() => removeVacancy(index)}
+                                sx={{ cursor: "pointer", color: "error.main", my: 2, mx: 2 }}
+                            />
+                        </Box>
                     ))}
-                </select>
-            </div>
+                </>
+            )}
 
-            <button className="btn btn-primary" onClick={RegisterNewParticipant}>
+            <Box mb={3}>
+                <FormControl fullWidth>
+                    <InputLabel>Роль</InputLabel>
+                    <Select
+                        value={event_role}
+                        onChange={(e) => setEventRole(e.target.value)}
+                        label="Роль"
+                    >
+                        <MenuItem value="PARTICIPANT">Участник</MenuItem>
+                        <MenuItem value="TEAMLEAD">Капитан команды</MenuItem>
+                    </Select>
+                </FormControl>
+            </Box>
+
+            <Box mb={4}>
+                <FormControl fullWidth>
+                    <InputLabel>Трек</InputLabel>
+                    <Select
+                        value={event_track}
+                        onChange={(e) => setEventTrack(e.target.value)}
+                        label="Трек"
+                    >
+                        <MenuItem value="">Выберите трек</MenuItem>
+                        {event?.event_tracks?.map((track) => (
+                            <MenuItem key={track.id} value={track.id}>
+                                {track.name}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+            </Box>
+
+            <Button variant="contained" onClick={RegisterNewParticipant}>
                 Подтвердить
-            </button>
-        </div>
+            </Button>
+        </Box>
+        </>
     );
 }
 
