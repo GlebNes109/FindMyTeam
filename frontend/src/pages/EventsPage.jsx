@@ -35,7 +35,12 @@ function EventsPage() {
                         {events.map(event => (
                             <Card
                                 key={event.id}
-                                sx={{ cursor: 'pointer' }}
+                                sx={{ cursor: 'pointer',
+                                    transition: 'transform 0.2s, box-shadow 0.2s',
+                                    '&:hover': {
+                                        transform: 'translateY(-4px)',
+                                        boxShadow: 6,
+                                    },}}
                                 onClick={() => navigate(`/event/${event.id}`)}
                             >
                                 <CardContent>

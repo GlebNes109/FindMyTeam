@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import styles from "../styles/RegistrationEventModal.module.css";
 import { useNavigate, useParams } from "react-router-dom";
 import {Box, Button, FormControl, InputLabel, MenuItem, Select, TextField, Toolbar, Typography} from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -100,12 +99,12 @@ function RegistrationEventPage() {
                 <TextField
                     fullWidth
                     multiline
-                    rows={5}
+                    maxRows={10}
                     label="Расскажите о себе"
                     placeholder="Небольшое резюме, стек технологий и т.д."
                     value={resume}
                     onChange={(e) => setResume(e.target.value)}
-                    inputProps={{ maxLength: 1000 }}
+                    inputProps={{ maxLength: 10000 }}
                     variant="outlined"
                 />
             </Box>
@@ -127,10 +126,10 @@ function RegistrationEventPage() {
                         <TextField
                             fullWidth
                             multiline
-                            rows={3}
+                            maxRows={10}
                             label="Описание команды"
                             placeholder="Описание команды"
-                            inputProps={{ maxLength: 500 }}
+                            inputProps={{ maxLength: 10000 }}
                             value={team_description}
                             onChange={(e) => setTeamDescription(e.target.value)}
                             variant="outlined"
@@ -165,7 +164,7 @@ function RegistrationEventPage() {
                             <TextField
                                 fullWidth
                                 multiline
-                                rows={2}
+                                maxRows={10}
                                 label="Описание вакансии"
                                 placeholder="Описание вакансии"
                                 value={vacancy.description}

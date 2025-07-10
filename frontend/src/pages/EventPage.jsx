@@ -1,6 +1,8 @@
-import { useParams, useLocation } from 'react-router-dom';
-import {useEffect, useMemo, useState} from 'react';
+import {useParams, useLocation, useNavigate} from 'react-router-dom';
+import { Link as RouterLink } from "react-router-dom";
+import React, {useEffect, useMemo, useState} from 'react';
 import SelectVacancyModal from "../components/SelectVacancyModel.jsx";
+import ReactMarkdown from 'react-markdown';
 import {
     Box,
     Button,
@@ -8,7 +10,7 @@ import {
     CardContent,
     Chip,
     Divider,
-    Grid,
+    Link,
     Stack,
     Tab,
     Tabs,
@@ -18,8 +20,10 @@ import {
     ListItemText,
     ListItemSecondaryAction,
     Badge,
-    Alert, Toolbar, Container, TableRow, TableCell, TableHead, TableBody, Table,
+    Alert, Toolbar, Container, TableRow, TableCell, TableHead, TableBody, Table, useTheme,
 } from "@mui/material";
+import {grey} from "@mui/material/colors";
+import ParticipantsList from "../components/ParticipantsList.jsx";
 
 function EventPage() {
     const { eventId } = useParams();
@@ -33,11 +37,13 @@ function EventPage() {
     const [outgoingRequests, setOutgoingRequests] = useState([]);
     const [selectedParticipant, setSelectedParticipant] = useState(null);
     const [isVacancyModalOpen, setIsVacancyModalOpen] = useState(false);
+    const navigate = useNavigate()
     const [loadedTabs, setLoadedTabs] = useState({
         teams: false,
         participants: false,
         requests: false,
     });
+    const theme = useTheme();
 
     const isTeamlead = useMemo(() => {
         return participantData?.event_role === 'TEAMLEAD';
@@ -108,6 +114,7 @@ function EventPage() {
                 if (!res.ok) throw new Error("Не удалось получить участника");
                 const data = await res.json();
                 setParticipantData(data);
+                localStorage.setItem("CurrentParticipantId", participant_id);
             } catch (error) {
                 console.error("Ошибка при получении участника:", error);
             }
@@ -189,16 +196,16 @@ function EventPage() {
         );
     }, [eventData, participantsInTeams]);
 
-    const myVacancies = useMemo(() => {
-        if (!eventData?.event_teams || !participantData) return [];
-        const myTeam = eventData.event_teams.find(team =>
-            team.teamlead_id === participantData.id
-        );
-        console.log("fsd");
-        console.log(myTeam);
+    const myTeam = useMemo(() => {
+        if (!eventData?.event_teams || !participantData) return null;
+        return eventData.event_teams.find(team =>
+            team.members?.some(member => member.id === participantData.id)
+        ) || null;
+        }, [eventData, participantData]);
 
+    const myVacancies = useMemo(() => {
         return myTeam?.vacancies || [];
-    }, [eventData, participantData]);
+    }, [myTeam]);
 
     useEffect(() => {
         handleTabChange(activeTab);
@@ -250,9 +257,9 @@ function EventPage() {
             </Tabs>
 
             {activeTab === "teams" && (
-                <Card variant="outlined" sx={{ mb: 4, bgcolor: "#303030"}}>
+                <Card variant="outlined" sx={{ mb: 4, bgcolor: "#303030" , borderRadius: 3}}>
                     <CardContent>
-                        <Table sx={{ minWidth: '100%' }}>
+                        <Table sx={{ minWidth: '100%'}}>
                         <TableHead sx={{ borderBottom: "1px solid #e0e0e0" }}>
                             <TableCell sx={{ fontWeight: "bold", color: "white" }}>Команда</TableCell>
                             <TableCell sx={{ fontWeight: "bold", color: "white" }}>Участники</TableCell>
@@ -260,11 +267,15 @@ function EventPage() {
                         <TableBody sx={{justify: "center" }}>
                             {eventData.event_teams.map((team, index) => (
                                 <TableRow
-                                    key={team.id}
+                                        key={team.id}
                                     sx={{
+                                        cursor: 'pointer',
                                         '&:last-child td, &:last-child th': { border: 0 },
                                         borderBottom: index < eventData.event_teams.length - 1 ? "1px solid #424242" : "none",
+                                        backgroundColor: myTeam?.id === team.id ? 'rgba(100, 255, 218, 0.1)' : 'inherit',
+                                        borderLeft: myTeam?.id === team.id ? '4px solid #64ffda' : 'none',
                                     }}
+                                    onClick={() => navigate(`/team/${team.id}`)}
                                 >
                                     {/* первая колонка */}
                                     <TableCell component="th" scope="row" sx={{ fontWeight: "medium", color: "white" }}>
@@ -280,7 +291,7 @@ function EventPage() {
                                                     label={`${member.login} [${member.track.name}]`}
                                                     color={member.event_role === "PARTICIPANT" ? "primary" : "success"}
                                                     size="small"
-                                                    sx={{ color: "white" }}
+                                                    sx={{ color: "white"}}
                                                 />
                                             ))}
                                             {team.vacancies.map((vacancy, i) => (
@@ -307,48 +318,32 @@ function EventPage() {
                 freeParticipants.length === 0 ? (
                     <Typography color="text.secondary">Нет доступных участников</Typography>
                 ) : (
-                    <Grid container spacing={3}>
-                        {freeParticipants.map((p, i) => (
-                            <Grid item xs={12} md={6} lg={4} key={i}>
-                                <Card sx={{ bgcolor: "background.paper", height: "100%", display: "flex", flexDirection: "column" }}>
-                                    <CardContent sx={{ flexGrow: 1 }}>
-                                        <Typography variant="h6">{p.login}</Typography>
-                                        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                                            Трек: {p.track.name}
-                                        </Typography>
-                                        <Typography
-                                            variant="body2"
-                                            sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
-                                        >
-                                            <strong>Резюме:</strong> {p.resume || "—"}
-                                        </Typography>
-                                    </CardContent>
-                                    <Box sx={{ p: 2, pt: 0 }}>
-                                        {isTeamlead ? (
-                                            myVacancies.length > 0 ? (
-                                                <Button
-                                                    variant="contained"
-                                                    size="small"
-                                                    onClick={() => handleOpenVacancyModal(p)}
-                                                    fullWidth
-                                                >
-                                                    Пригласить
-                                                </Button>
-                                            ) : (
-                                                <Button variant="outlined" size="small" disabled fullWidth>
-                                                    Нет вакансий
-                                                </Button>
-                                            )
-                                        ) : (
-                                            <Button variant="outlined" size="small" disabled fullWidth title="Вы не капитан">
-                                                Недоступно
-                                            </Button>
-                                        )}
-                                    </Box>
-                                </Card>
-                            </Grid>
-                        ))}
-                    </Grid>
+                    <Box display="flex" flexDirection="column" gap={3}>
+                        {freeParticipants.map((p, i) => {
+                            const action = isTeamlead ? (
+                                myVacancies.length > 0 ? (
+                                    <Button
+                                        variant="contained"
+                                        sx={{ maxWidth: 200 }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleOpenVacancyModal(p)}}
+                                        fullWidth
+                                    >
+                                        Пригласить
+                                    </Button>
+                                ) : (
+                                    <Button variant="outlined" size="small" disabled fullWidth>
+                                        Нет вакансий
+                                    </Button>
+                                )
+                            ) : null;
+
+                            return (
+                                <ParticipantsList key={i} participant={p} action={action} />
+                            );
+                        })}
+                        </Box>
                 )
             )}
 
@@ -363,14 +358,42 @@ function EventPage() {
                                     key={request.id}
                                     divider
                                     secondaryAction={
-                                        <Stack direction="row" spacing={1} alignItems="center">
+                                        <Stack direction="row" spacing={1} alignItems="center" sx={{marginRight: 3}}>
                                             <Badge
                                                 badgeContent={request.approved_by_teamlead ? "Одобрено" : "Ожидает"}
                                                 color={request.approved_by_teamlead ? "success" : "warning"}
-                                                sx={{ minWidth: 80 }}
                                             />
-                                            {isTeamlead && !request.approved_by_teamlead && (
-                                                <Stack direction="row" spacing={1}>
+                                        </Stack>
+                                    }
+                                >
+                                    <ListItemText
+                                        primary={`Запрос #${request.id.slice(0, 8)}`}
+                                        secondary={
+                                            <>
+                                                <Typography variant="body2">Вакансия: {request.vacancy.track.name}</Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {isTeamlead ? (
+                                                        <>
+                                                            От&nbsp;
+                                                            <Link
+                                                                component={RouterLink}
+                                                                to={`/participant/${request.participant.id}`}
+                                                                underline="hover"
+                                                            >
+                                                                {request.participant.login}
+                                                            </Link>
+                                                        </>
+                                                    ): (
+                                                        `Отправлено в команду ${request.team.name}`
+                                                    )}
+                                                </Typography>
+
+                                                {isTeamlead && !request.approved_by_teamlead && (
+                                                    <Box sx={{
+                                                        mt: 1,
+                                                        display: "flex",
+                                                        gap: 1,
+                                                    }}>
                                                     <Button
                                                         variant="contained"
                                                         size="small"
@@ -380,30 +403,17 @@ function EventPage() {
                                                         Подтвердить
                                                     </Button>
                                                     <Button
-                                                        variant="outlined"
-                                                        size="small"
-                                                        color="error"
-                                                        onClick={() => RejectRequest(request.id)}
+                                                    variant="outlined"
+                                                    size="small"
+                                                    color="error"
+                                                    onClick={() => RejectRequest(request.id)}
                                                     >
-                                                        Отклонить
-                                                    </Button>
-                                                </Stack>
-                                            )}
-                                        </Stack>
-                                    }
-                                >
-                                    <ListItemText
-                                        primary={`Запрос #${request.id.slice(0, 8)}`}
-                                        secondary={
-                                            <>
-                                                <Typography variant="body2">Вакансия: {request.vacancy.id}</Typography>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {isTeamlead
-                                                        ? `От участника ${request.participant.login}`
-                                                        : `Отправлено в команду`}
-                                                </Typography>
+                                                Отклонить
+                                                </Button>
+                                                    </Box>
+                                                )}
                                             </>
-                                        }
+                                    }
                                     />
                                 </ListItem>
                             ))}
@@ -423,25 +433,36 @@ function EventPage() {
                                     key={invite.id}
                                     divider
                                     secondaryAction={
-                                        <Stack direction="row" spacing={1} alignItems="center">
+                                        <Stack direction="row" spacing={1} alignItems="center" sx={{marginRight: 3}}>
                                             <Badge
                                                 badgeContent={invite.approved_by_participant ? "Принято" : "Ожидает"}
-                                                color="primary"
-                                                sx={{ minWidth: 60 }}
+                                                color={invite.approved_by_participant ? "success" : "warning"}
                                             />
                                         </Stack>
                                     }
                                 >
                                     <ListItemText
-                                        primary={`Запрос #${invite.id.slice(0, 8)}`}
+                                        primary={`Приглашение #${invite.id.slice(0, 8)}`}
                                         secondary={
                                             <>
-                                                <Typography variant="body2">Вакансия: {invite.vacancy.id}</Typography>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {isTeamlead
-                                                        ? `Отправлено участнику ${invite.participant.login}`
-                                                        : `Приглашение в команду ${invite.team.name}`}
+                                                <Typography variant="body">На трек: {invite.vacancy.track.name}</Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {isTeamlead ? (
+                                                        `Отправлено участнику ${invite.participant.login}`
+                                                    ) : (
+                                                        <>
+                                                            Приглашение в команду&nbsp;
+                                                            <Link
+                                                                component={RouterLink}
+                                                                to={`/team/${invite.team.id}`}
+                                                                underline="hover"
+                                                            >
+                                                                {invite.team.name}
+                                                            </Link>
+                                                        </>
+                                                    )}
                                                 </Typography>
+
 
                                                 {!isTeamlead && !invite.approved_by_participant && (
                                                     <Box sx={{
@@ -477,17 +498,28 @@ function EventPage() {
                 </Box>
             )}
 
-            <Card sx={{ mt: 4, bgcolor: "background.paper" }}>
+            <Card sx={{ mt: 4, bgcolor: "background.paper", borderRadius: 3 }} variant={"outlined"}>
                 <CardContent>
                     {participantData ? (
                         <>
+                            <Stack direction="row" spacing={2} mb={2}>
                             <Typography variant="h6" mb={2}>
                                 Вы участвуете в этом мероприятии
                             </Typography>
+                            {myTeam ? (
+                                <Button variant="contained"
+                                        size="small"
+                                        color="success"
+                                        onClick={() => navigate(`/team/${myTeam.id}`)}
+                                >Моя команда</Button>
+                            ) : (null)
+                            }
+                            </Stack>
                             <Typography><strong>Роль:</strong> {participantData.event_role === "TEAMLEAD" ? "Тимлид" : "Участник"}</Typography>
                             <Typography><strong>Трек:</strong> {participantData.track.name}</Typography>
                             <Typography sx={{ whiteSpace: "pre-wrap" }}>
-                                <strong>Резюме:</strong> {participantData.resume || "—"}
+                                <strong>Резюме:</strong>
+                                <ReactMarkdown>{participantData.resume || "—"}</ReactMarkdown>
                             </Typography>
                         </>
                     ) : (

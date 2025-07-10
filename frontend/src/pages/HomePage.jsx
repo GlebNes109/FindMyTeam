@@ -10,7 +10,7 @@ import {
     CardContent,
     Grid,
     Container,
-    Badge, useTheme, Divider,
+    Badge, useTheme, Divider, Toolbar,
 } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -109,6 +109,8 @@ function HomePage() {
 
 
     return (
+        <>
+            <Toolbar />
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <Box
                 sx={{
@@ -302,6 +304,7 @@ function HomePage() {
                 </Grid>
             )}
         </Container>
+        </>
     );
 }
 

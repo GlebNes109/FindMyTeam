@@ -8,6 +8,8 @@ import HomePage from "./pages/HomePage.jsx";
 import EventsPage from "./pages/EventsPage.jsx";
 import EventPage from "./pages/EventPage.jsx";
 import RegistrationEventPage from "./pages/RegistrationEventPage.jsx";
+import TeamPage from "./pages/TeamPage.jsx";
+import ParticipantPage from "./pages/ParticipantPage.jsx";
 function App() {
     return (
         <Router>
@@ -20,6 +22,8 @@ function App() {
                 <Route path="/events" element={<EventsPage />} />
                 <Route path="/event/:eventId" element={<EventPage />} />
                 <Route path="/event/:event_id/register" element={<RegistrationEventPage />} />
+                <Route path="/team/:teamId" element={<TeamPage />} />
+                <Route path="/participant/:participantId" element={<ParticipantPage />} />
             </Routes>
         </Router>
     );
