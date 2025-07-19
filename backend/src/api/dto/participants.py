@@ -1,9 +1,7 @@
 from typing import Optional
 
 from backend.src.api.dto.strictbasemodel import StrictBaseModel
-from backend.src.domain.models.events import EventTracksRead
 from backend.src.domain.models.participants import EventRole
-from pydantic import model_validator
 
 class VacanciesCreateAPI(StrictBaseModel):
     event_track_id: str

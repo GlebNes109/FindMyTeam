@@ -31,9 +31,6 @@ class ParticipantsCreate(CreateBaseModel):
         if self.event_role == EventRole.PARTICIPANT and self.team:
             raise ValueError
         return self
-    @classmethod
-    def map_to_domain_read_model(cls, user_id: str, data: BaseModel) -> "ParticipantsCreate":
-        return cls(user_id=user_id, **data.model_dump())
 
 
 class ParticipantsUpdate(UpdateBaseModel):
@@ -59,7 +56,7 @@ class ParticipantsRead(BaseModel):
     resume: str
 
     @classmethod
-    def from_domain(cls, participant: "ParticipantsDomainModel", track: EventTracksRead) -> "ParticipantsRead":
+    def from_domain(cls, participant: "ParticipantsBasicRead", track: EventTracksRead) -> "ParticipantsRead":
         return cls(
             id=participant.id,
             event_id=participant.event_id,
@@ -72,7 +69,10 @@ class ParticipantsRead(BaseModel):
     def check_user_id(cls, user_id) -> bool:
         return cls.user_id == user_id
 
-class ParticipantsDomainModel(BaseModel):
+    def is_teamlead(cls):
+        return cls.event_role == EventRole.TEAMLEAD
+
+class ParticipantsBasicRead(BaseModel):
     id: str
     event_id: str
     track_id: str
