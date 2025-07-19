@@ -16,7 +16,7 @@ from ..domain.interfaces.repositories.teams_repository import TeamsRepository
 from ..domain.interfaces.token_creator import TokenCreator
 from backend.src.domain.interfaces.repositories.user_repository import UserRepository
 from ..domain.models.events import EventsRead
-from ..domain.models.participants import ParticipantsDomainModel
+from ..domain.models.participants import ParticipantsBasicRead
 from ..domain.models.teamrequests import TeamRequestsRead
 from ..domain.models.teams import TeamsRead, TeamsBasicRead
 from ..domain.models.user import UsersRead
@@ -50,14 +50,14 @@ def get_participants_repository(
     return ParticipantsRepositoryImpl(
         session=session,
         model=ParticipantsDB,
-        read_schema=ParticipantsDomainModel
+        read_schema=ParticipantsBasicRead
     ) # TODO все репозитории в одной зависимости?
 
 def get_hash_creator() -> HashCreator:
     return sha256HashCreator()
 
 def get_token_creator() -> TokenCreator:
-    return JWTTokenCreator()
+    return JWTTokenCreator(secret_key=settings.secret_key, algorithm=settings.algorithm, repository=get_user_repository())
 
 def get_user_service(
     token_creator: TokenCreator= Depends(get_token_creator),
@@ -109,12 +109,6 @@ def get_teams_repository(
         read_schema=TeamsBasicRead
     )
 
-def get_teams_service(
-    repo: TeamsRepository = Depends(get_teams_repository),
-    event_service: EventsService = Depends(get_event_service)
-    ) -> TeamsService:
-    return TeamsService(repo, event_service)
-
 def get_teams_requests_repository(
     session: AsyncSession = Depends(get_session),
     ) -> TeamRequestsRepositoryImpl:
@@ -126,11 +120,18 @@ def get_teams_requests_repository(
 
 def get_participants_service(
     repo: ParticipantsRepository = Depends(get_participants_repository),
+    teams_repo: TeamsRepository = Depends(get_teams_repository),
     event_service: EventsService = Depends(get_event_service),
-    teams_service: TeamsService = Depends(get_teams_service),
     user_service: UsersService = Depends(get_user_service)
     ) -> ParticipantsService:
-    return ParticipantsService(repo, event_service, teams_service, user_service)
+    return ParticipantsService(repo, teams_repo, event_service, user_service)
+
+def get_teams_service(
+    repo: TeamsRepository = Depends(get_teams_repository),
+    event_service: EventsService = Depends(get_event_service),
+    participants_service: ParticipantsService = Depends(get_participants_service)
+    ) -> TeamsService:
+    return TeamsService(repo, event_service, participants_service)
 
 def get_team_requests_service(
     repo: TeamRequestsRepository = Depends(get_teams_requests_repository),
