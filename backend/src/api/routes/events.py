@@ -28,7 +28,8 @@ async def get_events(EventId: str, service: TeamsService = Depends(get_teams_ser
 
 @router.get("/{EventId}/participants", summary="Получение участников мероприятия", description="Доступно для юзеров и админов")
 async def get_events(EventId: str, service: ParticipantsService = Depends(get_participants_service)):
-    return await service.get_event_participants(EventId) # использован participants сервис, так как участники - его зона ответственности
+    return await service.get_event_participants_by_event_id(
+        EventId)  # использован participants сервис, так как участники - его зона ответственности
 
 
 '''@router.delete("/{EventId}", summary="Получение всех ивентов", description="Доступно для юзеров и админов")
