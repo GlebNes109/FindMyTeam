@@ -18,3 +18,9 @@ class UserRepositoryImpl(
         if obj is None:
             raise ObjectNotFoundError
         return self.read_schema.model_validate(obj, from_attributes=True)
+
+    async def get_users_by_ids(self, ids: list[str]) -> list[UsersRead]:
+        stmt = select(UsersDB).where(UsersDB.id.in_(ids))
+        result = await self.session.execute(stmt)
+        objs = result.scalars().all()
+        return [self.read_schema.model_validate(obj, from_attributes=True) for obj in objs]

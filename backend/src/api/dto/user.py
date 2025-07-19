@@ -38,3 +38,7 @@ class UserUpdateAPI(StrictBaseModel):
     password: Optional[str] = None
     email: Optional[str] = None
     tg_nickname: Optional[str] = None
+
+class TokenRead(BaseModel):
+    access_token: str
+    user_id: str
