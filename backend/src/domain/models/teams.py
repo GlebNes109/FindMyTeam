@@ -4,7 +4,8 @@ from backend.src.domain.models.events import EventTracksRead
 from backend.src.domain.models.models import CreateBaseModel, UpdateBaseModel
 from pydantic import BaseModel
 
-from backend.src.domain.models.participants import ParticipantsRead
+from backend.src.domain.models.participants import ParticipantsDetailsRead
+
 
 class VacanciesCreate(CreateBaseModel):
     event_track_id: str
@@ -30,7 +31,7 @@ class TeamsCreate(CreateBaseModel):
     vacancies: Optional[list[VacanciesCreate]] = None
     @classmethod
     def map_to_domain_model(cls, event_id: str, teamlead_id: str, data: Any) -> "TeamsCreate":
-        return cls(event_id=event_id, teamlead_id=teamlead_id, **data.model_dump())
+        return cls(event_id=event_id, teamlead_id=teamlead_id, **data.model_dump(mode="json", by_alias=True))
 
 class TeamsUpdate(UpdateBaseModel):
     name: Optional[str]
@@ -41,9 +42,19 @@ class TeamsRead(BaseModel):
     id: str
     name: str
     event_id: str
+    teamlead_id: str
     description: str
     vacancies: Optional[list[VacanciesRead]] = None
-    members: list[ParticipantsRead]
+    members_ids: list[str]
+
+class TeamsDetailsRead(BaseModel):
+    id: str
+    name: str
+    event_id: str
+    teamlead_id: str
+    description: str
+    vacancies: Optional[list[VacanciesRead]] = None
+    members: list[ParticipantsDetailsRead]
 
 class TeamsBasicRead(BaseModel):
     id: str

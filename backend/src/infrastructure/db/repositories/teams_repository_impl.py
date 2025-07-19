@@ -80,7 +80,6 @@ class TeamsRepositoryImpl(
             .options(
                 selectinload(TeamsDB.vacancies),
                 selectinload(TeamsDB.members)
-                .selectinload(TeamMembersDB.participant)
             )
         )
         result = await self.session.execute(stmt)
@@ -90,51 +89,7 @@ class TeamsRepositoryImpl(
         track_result = await self.session.execute(track_stmt)
         tracks = {track.id: track for track in track_result.scalars().all()} # в словарь, чтобы потом по id доставать
 
-        teams_read = []
-        for team in teams:
-            vacancies_read = [
-                VacanciesRead(
-                    id=vacancy.id,
-                    track=EventTracksRead(
-                        id=vacancy.event_track_id,
-                        name=tracks.get(vacancy.event_track_id).name,
-                        event_id=event_id
-                    ),
-                    description=vacancy.description,
-                    team_id=team.id
-                )
-                for vacancy in team.vacancies
-            ] if team.vacancies else []
-
-            members_read = []
-            for member in team.members:
-                if member.participant is None:
-                    # print(member)
-                    continue
-
-                members_read.append(ParticipantsRead(
-                    id=member.participant.id,
-                    user_id=member.participant.user_id,
-                    event_id=member.participant.event_id,
-                    track=EventTracksRead(
-                        id=member.participant.track_id,
-                        name=tracks.get(member.participant.track_id).name,
-                        event_id=member.participant.event_id
-                    ),
-                    event_role=member.participant.event_role,
-                    resume=member.participant.resume
-                ))
-
-            teams_read.append(TeamsRead(
-                id=team.id,
-                name=team.name,
-                description=team.description,
-                vacancies=vacancies_read,
-                members=members_read,
-                event_id=event_id
-            ))
-
-        return teams_read
+        return [await self._assemble_team_read(team, tracks) for team in teams]
 
     async def get_vacancy(self, vacancy_id: Any) -> VacanciesBasicRead:
         stmt = select(TeamVacanciesDB).where(TeamVacanciesDB.id == vacancy_id)
@@ -163,3 +118,66 @@ class TeamsRepositoryImpl(
             if isinstance(e.orig, UniqueViolationError):
                 raise ObjectAlreadyExistsError
             raise
+
+    async def get_by_teamlead_id(self, teamlead_id: Any) -> TeamsRead:
+        stmt = (
+            select(TeamsDB)
+            .where(TeamsDB.teamlead_id == teamlead_id)
+            .options(
+                selectinload(TeamsDB.vacancies),
+                selectinload(TeamsDB.members)
+            )
+        )
+        result = await self.session.execute(stmt)
+        team = result.scalar_one_or_none()
+
+        track_stmt = select(EventTracksDB)
+        track_result = await self.session.execute(track_stmt)
+        tracks = {track.id: track for track in track_result.scalars().all()}  # в словарь, чтобы потом по id доставать
+
+        return await self._assemble_team_read(team, tracks)
+
+    async def get_read_model(self, id: Any) -> TeamsRead:
+        stmt = (
+            select(TeamsDB)
+            .where(TeamsDB.id == id)
+            .options(
+                selectinload(TeamsDB.vacancies),
+                selectinload(TeamsDB.members)
+            )
+        )
+        result = await self.session.execute(stmt)
+        team = result.scalar_one_or_none()
+
+        track_stmt = select(EventTracksDB)
+        track_result = await self.session.execute(track_stmt)
+        tracks = {track.id: track for track in track_result.scalars().all()}  # в словарь, чтобы потом по id доставать
+
+        return await self._assemble_team_read(team, tracks)
+
+    async def _assemble_team_read(self, team: TeamsDB, tracks: dict[str, EventTracksDB]) -> TeamsRead:
+        vacancies_read = [
+            VacanciesRead(
+                id=vacancy.id,
+                track=EventTracksRead(
+                    id=vacancy.event_track_id,
+                    name=tracks.get(vacancy.event_track_id).name,
+                    event_id=team.event_id
+                ),
+                description=vacancy.description,
+                team_id=team.id
+            )
+            for vacancy in team.vacancies or []
+        ]
+
+        members_ids = [member.participant_id for member in team.members]
+
+        return TeamsRead(
+            id=team.id,
+            name=team.name,
+            description=team.description,
+            vacancies=vacancies_read,
+            members_ids=members_ids,
+            event_id=team.event_id,
+            teamlead_id=team.teamlead_id
+        )
