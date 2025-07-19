@@ -21,3 +21,7 @@ class AccessDeniedError(AppException):
 class BadRequestError(AppException):
     status_code = 400
     message = "Ошибка в данных запроса"
+
+class UnauthorizedError(AppException):
+    status_code = 401
+    message = "Не авторизован"
