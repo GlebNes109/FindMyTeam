@@ -8,7 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
 
 from backend.src.api.dependencies import get_hash_creator
-from backend.src.api.routes import users, events, participants, team_requests
+from backend.src.api.routes import users, events, participants, team_requests, teams
 from backend.src.core.config import settings
 from backend.src.core.init_data import add_super_admin, create_tables
 from backend.src.domain.exceptions import AppException
@@ -31,14 +31,14 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # add_super_admin(hash_creator)
-
+app.include_router(teams.router, prefix="/teams", tags=["Teams"])
 app.include_router(users.router, prefix="/users", tags=["Users"])
 app.include_router(events.router, prefix="/events", tags=["Events management"])
 app.include_router(participants.router, prefix="/participants", tags=["Participants management"])
