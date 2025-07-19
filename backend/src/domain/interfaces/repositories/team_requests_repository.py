@@ -5,5 +5,5 @@ from backend.src.domain.models.teamrequests import TeamRequestsRead, TeamRequest
 
 
 class TeamRequestsRepository(BaseRepository[Any, TeamRequestsRead, TeamRequestsCreate, TeamRequestsUpdate], Protocol):
-    async def get_all_with_params(self, participant_id, approved_by_teamlead,
-                                  approved_by_participant)-> list[TeamRequestsRead]: ...
+    async def get_all_with_params(self, approved_by_teamlead,
+                                  approved_by_participant, participant_id=None, vacancies_ids=None)-> list[TeamRequestsRead]: ...

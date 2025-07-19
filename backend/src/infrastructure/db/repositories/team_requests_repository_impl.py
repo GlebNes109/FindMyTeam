@@ -9,12 +9,17 @@ from sqlalchemy import select, and_, or_, true, false, null
 
 class TeamRequestsRepositoryImpl(BaseRepositoryImpl[Any, TeamRequestsRead, TeamRequestsCreate, TeamRequestsUpdate],
                                  TeamRequestsRepository):
-    async def get_all_with_params(self, participant_id, approved_by_teamlead,
-                                  approved_by_participant) -> list[TeamRequestsRead]:
+    async def get_all_with_params(self, approved_by_teamlead,
+                                  approved_by_participant, participant_id=None, vacancies_ids=None) -> list[TeamRequestsRead]:
         conditions = [
-            TeamRequestsDB.participant_id == participant_id,
             TeamRequestsDB.is_active == True
         ]
+
+        if vacancies_ids is not None:
+            TeamRequestsDB.vacancy_id.in_(vacancies_ids)
+
+        if participant_id is not None:
+            conditions.append(TeamRequestsDB.participant_id == participant_id)
 
         if approved_by_teamlead is not None:
             conditions.append(TeamRequestsDB.approved_by_teamlead == approved_by_teamlead)

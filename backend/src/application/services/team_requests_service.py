@@ -4,9 +4,10 @@ from backend.src.application.services.teams_service import TeamsService
 from backend.src.domain.exceptions import BadRequestError, AccessDeniedError
 from backend.src.domain.interfaces.repositories.team_requests_repository import TeamRequestsRepository
 from backend.src.domain.models.participants import EventRole
-from backend.src.domain.models.teamrequests import TeamRequestsCreate, TeamRequestsPartialCreate, TeamRequestsUpdate
+from backend.src.domain.models.teamrequests import TeamRequestsCreate, TeamRequestsPartialCreate, TeamRequestsUpdate, \
+    TeamRequestsDetailsRead
 from backend.src.domain.models.teams import TeamMembersCreate
-
+from typing import List
 
 class TeamRequestsService:
     def __init__(self, repository: TeamRequestsRepository, teams_service: TeamsService, participants_service: ParticipantsService, event_service: EventsService):
@@ -20,7 +21,8 @@ class TeamRequestsService:
         participant = await self.participants_service.get_participant(team_request_partial_create.participant_id) # получить участника, который указан в реквесте
         vacancy_read = await self.teams_service.get_vacancy(team_request_partial_create.vacancy_id) # получить вакансию
         team = await self.teams_service.get_team(vacancy_read.team_id) # по вакансии получить id команды
-        this_user_participants = await self.participants_service.get_event_participants(team.event_id) # по команде получить участия юзера (пользователя системы, который инициировал запрос)
+        this_user_participants = await self.participants_service.get_event_participants_by_event_id(
+            team.event_id)  # по команде получить участия юзера (пользователя системы, который инициировал запрос)
         this_user_participants_ids = [participant.id for participant in this_user_participants] # айди его участия в удобном формате списка
 
         # если отклик -> user_id соотвествует указанному participant
@@ -35,7 +37,7 @@ class TeamRequestsService:
         elif user_id != participant.user_id and participant.event_role == EventRole.PARTICIPANT and team.teamlead_id in this_user_participants_ids: # приглашение - participant не является юзером, однако user в числе прочих регистраций зареган на этот ивент как тимлид
             teams_create = TeamRequestsCreate(
                 # approved_by_teamlead=False,
-                approved_by_participant=True,
+                approved_by_teamlead=True,
                 **team_request_partial_create.model_dump()
             )
 
@@ -55,66 +57,124 @@ class TeamRequestsService:
         # TODO по возможности вынести логику в domain модель
      # TODO сделать проверку что participant не состоит в командах (можно приглашать)
 
-    async def get_outgoing(self, participant_id, user_id):
+    async def get_team_requests(self,
+            participant_id: str,
+            user_id: str,
+            direction: str  # 'incoming' или 'outgoing'
+    ) -> List[TeamRequestsDetailsRead]:
         participant = await self.participants_service.get_participant(participant_id)
 
-        # проверка, что participant_id принадлежит юзеру
         if not participant.check_user_id(user_id):
             raise BadRequestError
-        # team_requests = []
-        if participant.event_role == EventRole.PARTICIPANT:
-            team_requests = await self.repository.get_all_with_params(participant_id, approved_by_participant=True, approved_by_teamlead=None)
 
-        elif participant.event_role == EventRole.TEAMLEAD: # None - значит еще не просмотрена
-            team_requests = await self.repository.get_all_with_params(participant_id, approved_by_participant=None, approved_by_teamlead=True)
+        if participant.event_role not in (EventRole.PARTICIPANT, EventRole.TEAMLEAD):
+            raise Exception("Некорректная роль участника")
 
-        # если у participant нет роли, то 500 ошибка
-        return team_requests
+        params = {}
+
+        if direction == 'outgoing':
+            if participant.event_role == EventRole.PARTICIPANT:
+                params = {
+                    'approved_by_participant': True,
+                    'approved_by_teamlead': None,
+                    'participant_id': participant_id
+                }
+            else:  # TEAMLEAD
+                team = await self.teams_service.get_team_by_teamlead_id(participant.id)
+                vacancies_ids = [vacancy.id for vacancy in team.vacancies]
+                params = {
+                    'approved_by_participant': None,
+                    'approved_by_teamlead': True,
+                    'vacancies_ids': vacancies_ids
+                }
+        elif direction == 'incoming':
+            if participant.event_role == EventRole.PARTICIPANT:
+                params = {
+                    'approved_by_participant': None,
+                    'approved_by_teamlead': True,
+                    'participant_id': participant_id
+                }
+            else:  # TEAMLEAD
+                team = await self.teams_service.get_team_by_teamlead_id(participant.id)
+                vacancies_ids = [vacancy.id for vacancy in team.vacancies]
+                params = {
+                    'approved_by_participant': True,
+                    'approved_by_teamlead': None,
+                    'vacancies_ids': vacancies_ids
+                }
+        else:
+            raise ValueError("Неверное значение direction")
+
+        # базовые read модели из репозитория
+        read_requests = await self.repository.get_all_with_params(**params)
+
+        result = []
+        for request in read_requests:
+            # По vacancy_id загружаем vacancy, team
+            vacancy = await self.teams_service.get_vacancy(request.vacancy_id)
+            # По participant_id загружаем участника
+            if participant.is_teamlead():
+                participant_obj = await self.participants_service.get_detail_participant(request.participant_id)
+                model = TeamRequestsDetailsRead(
+                    id=request.id,
+                    vacancy=vacancy,
+                    team=None,
+                    participant=participant_obj,
+                    approved_by_teamlead=request.approved_by_teamlead,
+                    approved_by_participant=request.approved_by_participant,
+                )
+            else:
+                team = await self.teams_service.get_team(vacancy.team_id) if vacancy else None
+                model = TeamRequestsDetailsRead(
+                    id=request.id,
+                    vacancy=vacancy,
+                    team=team,
+                    participant=None,
+                    approved_by_teamlead=request.approved_by_teamlead,
+                    approved_by_participant=request.approved_by_participant,
+                )
+            result.append(model)
+
+        return result
+
+    # Для удобства можно определить методы get_outgoing и get_incoming через этот общий:
+    async def get_outgoing(self, participant_id, user_id):
+        return await self.get_team_requests(participant_id, user_id, direction='outgoing')
 
     async def get_incoming(self, participant_id, user_id):
-        participant = await self.participants_service.get_participant(participant_id)
+        return await self.get_team_requests(participant_id, user_id, direction='incoming')
 
-        # проверка, что participant_id принадлежит юзеру
-        if not participant.check_user_id(user_id):
-            raise BadRequestError
-        # team_requests = []
-        if participant.event_role == EventRole.PARTICIPANT:
-            team_requests = await self.repository.get_all_with_params(participant_id, approved_by_participant=None,
-                                                                      approved_by_teamlead=True)
-
-        elif participant.event_role == EventRole.TEAMLEAD:
-            team_requests = await self.repository.get_all_with_params(participant_id, approved_by_participant=None,
-                                                                      approved_by_teamlead=False)
-
-        # если у participant нет роли, то 500 ошибка
-        return team_requests
-
-    async def accept_request(self, request_id, user_id):
+    async def _handle_request_approval(self, request_id: int, user_id: int, approve: bool):
         request = await self.repository.get(request_id)
         participant = await self.participants_service.get_participant(request.participant_id)
         vacancy_read = await self.teams_service.get_vacancy(request.vacancy_id)  # получить вакансию
         team = await self.teams_service.get_team(vacancy_read.team_id)
-        this_user_participants = await self.participants_service.get_event_participants(team.event_id)  # по команде получить участия юзера (пользователя системы, который инициировал запрос)
+        this_user_participants = await self.participants_service.get_event_participants_by_event_id(
+            team.event_id)  # по команде получить участия юзера (пользователя системы, который инициировал запрос)
         this_user_participants_ids = [participant.id for participant in this_user_participants]
-        if user_id != participant.user_id and participant.event_role == EventRole.PARTICIPANT and team.teamlead_id in this_user_participants_ids:
-            request.approved_by_teamlead = True
-        # TODO вынести проверку на тимлида в отдельный метод или в модель
-
-        elif participant.user_id == user_id and participant.event_role == EventRole.PARTICIPANT:
-            request.approved_by_participant = True
+        if user_id != participant.user_id and not participant.is_teamlead() and team.teamlead_id in this_user_participants_ids:
+            request.approved_by_teamlead = approve
+        # TODO исправить баг когда юзер один, а участники разные
+        elif participant.user_id == user_id and not participant.is_teamlead():
+            request.approved_by_participant = approve
 
         else:
             raise AccessDeniedError # нет прав доступа чтобы апрувнуть приглашение
 
-        if request.approved_by_teamlead and request.approved_by_participant:
+        if approve and request.approved_by_teamlead and request.approved_by_participant:
             await self.teams_service.create_member(TeamMembersCreate(
                 participant_id=request.participant_id,
                 team_id=vacancy_read.team_id
             ))
-            await self.repository.update(TeamRequestsUpdate.model_validate(request, from_attributes=True))  # в базу сохраняется уже не активный отклик, чтобы потом можно было посмотреть старые отклики
-            return True
-        await self.teams_service.create_member(TeamMembersCreate(
-            participant_id=request.participant_id,
-            team_id=vacancy_read.team_id
-        ))
-        raise BadRequestError # попытался сам заапрувить свой запрос - 400 ошибка
+        await self.repository.update(TeamRequestsUpdate.model_validate(request, from_attributes=True))
+
+        if approve and not (request.approved_by_teamlead and request.approved_by_participant):
+            raise BadRequestError # попытался сам заапрувить свой запрос - 400 ошибка
+
+        return approve
+
+    async def accept_request(self, request_id, user_id):
+        return await self._handle_request_approval(request_id, user_id, approve=True)
+
+    async def reject_request(self, request_id, user_id):
+        return await self._handle_request_approval(request_id, user_id, approve=False)

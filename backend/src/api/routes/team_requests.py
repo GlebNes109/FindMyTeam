@@ -31,10 +31,13 @@ async def get_team_request_incoming(participant_id: str = Query(None, descriptio
     return await service.get_incoming(participant_id, user_id)
 
 @router.put("/{RequestId}/accept", summary="подтвердить request", description="-")
-async def get_team_request(# participant_id: str = Query(None, description="participant id"),
-                           RequestId: str,
+async def get_team_request(RequestId: str,
                            user_id: str = Depends(get_user_id),
                            service: TeamRequestsService = Depends(get_team_requests_service)):
-    # if participant_id is None:
-    #    raise BadRequestError
     return await service.accept_request(RequestId, user_id)
+
+@router.put("/{RequestId}/reject", summary="подтвердить request", description="-")
+async def get_team_request(RequestId: str,
+                           user_id: str = Depends(get_user_id),
+                           service: TeamRequestsService = Depends(get_team_requests_service)):
+    return await service.reject_request(RequestId, user_id)
