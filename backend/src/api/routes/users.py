@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Cookie
+from fastapi import APIRouter, Depends, HTTPException, status, Cookie, Response
 from fastapi.responses import JSONResponse
 
 from backend.src.api.dto.user import UserCreateAPI, UserReadAPI, UserUpdateAPI, TokenRead
@@ -51,3 +51,8 @@ async def refresh_token(refresh_token: str = Cookie(...), service: UsersService 
         access_token=data.access_token,
         user_id=data.user_id
     )
+
+@router.post("/logout")
+def logout(response: Response):
+    response.delete_cookie("refresh_token")
+    return {"message": "Logged out | вы вышли"}
