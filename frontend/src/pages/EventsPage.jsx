@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {Box, Button, Card, CardContent, Chip, Container, Divider, Stack, Toolbar, Typography} from "@mui/material";
+import {apiFetch} from "../apiClient.js";
 
 
 function EventsPage() {
@@ -13,7 +14,7 @@ function EventsPage() {
 
 
     useEffect(() => {
-        fetch('http://localhost:8080/events', {
+        apiFetch('/events', {
             method: 'GET'
         })
             .then(res => res.json())

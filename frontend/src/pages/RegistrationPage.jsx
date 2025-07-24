@@ -9,6 +9,8 @@ import {
     Alert,
     Stack
 } from "@mui/material";
+import {apiFetch} from "../apiClient.js";
+import {setAccessToken} from "../tokenStore.js";
 
 const RegistrationPage = () => {
     const [email, setEmail] = useState("");
@@ -19,39 +21,40 @@ const RegistrationPage = () => {
     const navigate = useNavigate();
     const [errorMessage, setErrorMessage] = useState("");
 
-    function RegisterRequest() {
+    const RegisterRequest = async () => {
         if (password !== confirmPassword) {
-            console.log("Passwords don't match");
+            setErrorMessage("Пароли отличаются");
             return;
         }
 
-        fetch('http://localhost:8080/users/signup', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                login: login,
-                password: password,
-                email: email,
-                tg_nickname: tg_nickname,
-            })
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    if (response.status === 400) {
-                        setErrorMessage("Не все поля заполнены или некорректные значения");
-                    }
-                    if (response.status === 409) {
-                        setErrorMessage("Такой логин уже есть, возьмите другой");
-                    }
-                    return Promise.reject();
+        try {
+            const response = await apiFetch("/users/signup", {
+                method: "POST",
+                body: JSON.stringify({
+                    login,
+                    password,
+                    email,
+                    tg_nickname,
+                }),
+            });
+            if (!response.ok) {
+                if (response.status === 400) {
+                    setErrorMessage("Не все поля заполнены или некорректные значения");
                 }
-                return response.json();
-            })
-            .then((data) => {
-                // console.log("Токен:", data.token);
-                localStorage.setItem("token", data.token);
-                navigate('/events');})
-            .catch(error => console.error('Ошибка:', error));
+                if (response.status === 409) {
+                    setErrorMessage("Такой логин уже есть, возьмите другой");
+                }
+                else {
+                    setErrorMessage("HTTP ошибка: " + response.status);
+                }
+                return;
+            }
+            const data = await response.json();
+            setAccessToken(data.access_token);
+            navigate("/events");
+        } catch {
+            setErrorMessage("Ошибка при попытке входа");
+        }
     }
 
     return (

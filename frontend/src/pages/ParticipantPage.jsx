@@ -15,6 +15,7 @@ import {
 import {grey} from "@mui/material/colors";
 import ReactMarkdown from "react-markdown";
 import {useParams} from "react-router-dom";
+import {apiFetch} from "../apiClient.js";
 
 function ParticipantPage() {
     const [participant, setParticipant] = useState(location.state?.team || null);
@@ -22,7 +23,7 @@ function ParticipantPage() {
     const theme = useTheme();
     useEffect(() => {
         if (!participant) {
-            fetch(`http://localhost:8080/participants/${params.participantId}`)
+            apiFetch(`/participants/${params.participantId}`)
                 .then(res => res.json())
                 .then(setParticipant);
         }

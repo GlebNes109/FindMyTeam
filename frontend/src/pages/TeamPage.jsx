@@ -17,6 +17,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import {blueGrey, cyan, deepPurple, grey, indigo, lightGreen, lime, teal} from '@mui/material/colors';
 import ParticipantsList from "../components/ParticipantsList.jsx";
+import {apiFetch} from "../apiClient.js";
 
 function TeamVacancy({ vacancy, participant}) {
     const [expanded, setExpanded] = useState(false);
@@ -24,12 +25,8 @@ function TeamVacancy({ vacancy, participant}) {
     const handleRespond = async () => {
         const token = localStorage.getItem("token");
         try {
-            const res = await fetch("http://localhost:8080/team_requests", {
+            const res = await apiFetch("/team_requests", {
                 method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                },
                 body: JSON.stringify({
                     vacancy_id: vacancy.id,
                     participant_id: participant.id
@@ -106,7 +103,7 @@ function TeamPage() {
     const [participant, setParticipant] = useState(null);
     useEffect(() => {
         if (!team) {
-            fetch(`http://localhost:8080/teams/${params.teamId}`)
+            apiFetch(`/teams/${params.teamId}`)
                 .then(res => res.json())
                 .then(setTeam);
         }
@@ -115,7 +112,7 @@ function TeamPage() {
     useEffect(() => {
         const id = localStorage.getItem("CurrentParticipantId");
         if (!id) return;
-        fetch(`http://localhost:8080/participants/${id}`)
+        apiFetch(`/participants/${id}`)
             .then(res => res.json())
             .then(setParticipant);
     }, []);

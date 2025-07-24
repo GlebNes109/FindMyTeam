@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {Box, Button, FormControl, InputLabel, MenuItem, Select, TextField, Toolbar, Typography} from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
+import {apiFetch} from "../apiClient.js";
 
 function RegistrationEventPage() {
     const [event_role, setEventRole] = useState("PARTICIPANT");
@@ -14,7 +15,7 @@ function RegistrationEventPage() {
     const [event, setEvent] = useState(null);
     const { event_id } = useParams();
     useEffect(() => {
-        fetch(`http://localhost:8080/events/${event_id}`)
+        apiFetch(`/events/${event_id}`)
             .then(res => res.json())
             .then(data => {
                 setEvent(data);
@@ -61,7 +62,7 @@ function RegistrationEventPage() {
             };
         }
 
-        fetch("http://localhost:8080/participants", {
+        apiFetch("/participants", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${token}`,

@@ -1,6 +1,7 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Navbar from './components/NavBar.jsx'; // Импортируем Navbar
+// App.jsx
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import Navbar from './components/NavBar.jsx';
 import MainPage from './pages/MainPage.jsx';
 import LoginPage from "./pages/LoginPage.jsx";
 import RegPage from "./pages/RegistrationPage.jsx";
@@ -10,9 +11,19 @@ import EventPage from "./pages/EventPage.jsx";
 import RegistrationEventPage from "./pages/RegistrationEventPage.jsx";
 import TeamPage from "./pages/TeamPage.jsx";
 import ParticipantPage from "./pages/ParticipantPage.jsx";
-function App() {
+import {setAuthFailureHandler} from "./authHandler.js";
+
+function AppRoutesWithAuthHandler() {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        setAuthFailureHandler(() => {
+            navigate('/signin');
+        });
+    }, [navigate]);
+
     return (
-        <Router>
+        <>
             <Navbar />
             <Routes>
                 <Route path="/" element={<MainPage />} />
@@ -25,6 +36,14 @@ function App() {
                 <Route path="/team/:teamId" element={<TeamPage />} />
                 <Route path="/participant/:participantId" element={<ParticipantPage />} />
             </Routes>
+        </>
+    );
+}
+
+function App() {
+    return (
+        <Router>
+            <AppRoutesWithAuthHandler />
         </Router>
     );
 }

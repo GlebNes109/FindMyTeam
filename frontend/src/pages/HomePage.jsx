@@ -15,59 +15,38 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LogoutIcon from '@mui/icons-material/Logout';
+import {clearAccessToken} from "../tokenStore.js";
+import {apiFetch} from "../apiClient.js";
 
 function HomePage() {
     const navigate = useNavigate();
     const [data, setData] = useState("");
     const [participants, setParticipants] = useState([]);
-    const [EventDetails, setEventDetails] = useState([]); // Состояние для хранения событий
+    const [eventDetails, setEventDetails] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const theme = useTheme();
     useEffect(() => {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-            navigate('/signin');
-            return;
-        }
-
-        fetch('http://localhost:8080/users', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            },
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        navigate('/signin');
-                        return Promise.reject("не авторизован");
-                    }
-                }
-                return response.json();
+        apiFetch("/users")
+            .then(async (response) => {
+                const data = await response.json();
+                setData(data);
             })
-            .then(setData)
-            .catch(error => console.error('Ошибка HomePage:', error));
+            .catch((err) => {
+                if (err.code === "UNABLE_TO_UPDATE_TOKEN") {
+                    navigate("/signin");
+                }
+                // временно, потом сделать нормально (чтобы навигация была централизована)
+            });
 
-        fetch('http://localhost:8080/participants', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            },
-        })
+        apiFetch("/participants")
             .then(res => res.json())
-            .then(async participants => {
+            .then(async (participants) => {
                 setParticipants(participants || []);
 
                 const eventsMap = {};
                 await Promise.all(participants.map(async (p) => {
                     try {
-                        const res = await fetch(`http://localhost:8080/events/${p.event_id}`, {
-                            method: 'GET',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                            },
-                        });
+                        const res = await apiFetch(`/events/${p.event_id}`);
                         if (res.ok) {
                             const event = await res.json();
                             eventsMap[p.event_id] = event;
@@ -78,28 +57,30 @@ function HomePage() {
                 }));
                 setEventDetails(eventsMap);
             })
-            .catch(error => console.error('Ошибка загрузки участий:', error));
-
+            .catch(error => console.error("Ошибка загрузки участий:", error));
     }, [navigate]);
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
+    const handleLogout = async () => {
+        clearAccessToken();
+        try {
+            await apiFetch("/users/logout", {
+                method: "POST",
+                credentials: "include",
+            });
+        } catch (err) {
+            console.warn("Не удалось удалить refresh_token на сервере!!", err);
+        }
         navigate("/signin");
     };
 
     const handleDelete = () => {
         if (window.confirm("Вы уверены, что хотите удалить аккаунт?")) {
-            fetch("http://localhost:8080/users", {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`
-                }
-            })
+            apiFetch("/users", { method: "DELETE" })
                 .then(() => {
-                    localStorage.removeItem("token");
+                    clearAccessToken();
                     navigate("/signup");
                 })
-                .catch(error => console.error("Ошибка удаления:", error));
+                .catch((error) => console.error("Ошибка удаления:", error));
         }
     };
 
@@ -209,7 +190,7 @@ function HomePage() {
             ) : (
                 <Grid container spacing={3}>
                     {participants.map((participant) => {
-                        const event = EventDetails[participant.event_id];
+                        const event = eventDetails[participant.event_id];
                         if (!event) {
                             return (
                                 <Grid item xs={12} sm={6} md={4} key={participant.id}>

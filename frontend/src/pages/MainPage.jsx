@@ -21,21 +21,24 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import {grey} from "@mui/material/colors";
+import {apiFetch, refreshAccessToken} from "../apiClient.js";
 function MainPage() {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            setIsLoggedIn(true);
-        }
-        fetch("http://localhost:8080/events")
+        apiFetch("/events")
             .then((res) => res.json())
             .then((data) => setEvents(data || []))
             .catch((err) => console.error("Ошибка загрузки событий:", err));
     }, [navigate]);
+
+    useEffect(() => {
+        refreshAccessToken()
+            .then(() => setIsLoggedIn(true))
+            .catch(() => setIsLoggedIn(false));
+    }, []);
 
     return (
         <>

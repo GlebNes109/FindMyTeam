@@ -1,7 +1,9 @@
 import React, {useState} from "react";
 import styles from "../styles/LoginRegisterPage.module.css";
 import {useNavigate} from "react-router-dom";
-import {Alert, Box, Button, Container, Stack, TextField, Typography} from "@mui/material"; // Подключаем стили
+import {Alert, Box, Button, Container, Stack, TextField, Typography} from "@mui/material";
+import {apiFetch} from "../apiClient.js";
+import {setAccessToken} from "../tokenStore.js"; // Подключаем стили
 
 const LoginPage = () => {
     const [password, setPassword] = useState("");
@@ -9,38 +11,36 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const [errorMessage, setErrorMessage] = useState("");
 
-    function LoginRequest() {
-        fetch('http://localhost:8080/users/signin', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                login: login,
-                password: password
-            })
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        // console.log("неверный логин пароль))");
-                        setErrorMessage("неверный логин или пароль");
-                    }
-                    else if (response.status === 400) {
-                        setErrorMessage("некорректные значения или поля не заполнены");
-                    }
-                    else {
-                        setErrorMessage("HTTP код ошибки: " + response.status);
-                    }
-                    return Promise.reject();
+    const LoginRequest = async () => {
+        try {
+            const response = await apiFetch("/users/signin", {
+                method: "POST",
+                body: JSON.stringify({
+                    login,
+                    password,
+                }),
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    setErrorMessage("Неверный логин или пароль");
+                } else if (response.status === 400) {
+                    setErrorMessage("Некорректные значения или поля не заполнены");
+                } else {
+                    setErrorMessage("HTTP ошибка: " + response.status);
                 }
-                return response.json();
-            })
-            .then((data) => {
-                localStorage.setItem("token", data.token);
-                navigate('/events');
-                // console.log("Токен в логине:", data.token);
-            })
-            .catch(error => console.error('Ошибка loginPage:', error));
-    }
+                return;
+            }
+
+            const data = await response.json();
+            setAccessToken(data.access_token);
+            navigate("/events");
+        } catch {
+            // console.error("Ошибка на странице входа:", error);
+            setErrorMessage("Ошибка при попытке входа");
+        }
+    };
+
 
     return (
         <Container maxWidth="sm">

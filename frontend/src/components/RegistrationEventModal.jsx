@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import BaseModal from "./BaseModal.jsx";
 import styles_modal from "../styles/RegistrationEventModal.module.css";
 import {useNavigate} from "react-router-dom";
+import {apiFetch} from "../apiClient.js";
 /*import styles_basemodal from "../styles/BaseModal.module.css";*/
 
 const RegistrationEventModal = ({ isOpen, onClose, event}) => {
@@ -37,13 +38,9 @@ const RegistrationEventModal = ({ isOpen, onClose, event}) => {
         }
 
 
-        fetch("http://localhost:8080/events/user/registration", {
+        apiFetch("/events/user/registration", {
 
             method: "POST",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
             body:JSON.stringify(requestBody)
             ,
         })

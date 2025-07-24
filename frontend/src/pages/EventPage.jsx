@@ -24,6 +24,8 @@ import {
 } from "@mui/material";
 import {grey} from "@mui/material/colors";
 import ParticipantsList from "../components/ParticipantsList.jsx";
+import {getAccessToken} from "../tokenStore.js";
+import {apiFetch} from "../apiClient.js";
 
 function EventPage() {
     const { eventId } = useParams();
@@ -64,11 +66,9 @@ function EventPage() {
 
         try {
             const [eventRes, teamsRes] = await Promise.all([
-                fetch(`http://localhost:8080/events/${eventId}`, {
-                    headers: { Authorization: `Bearer ${token}` },
+                apiFetch(`/events/${eventId}`, {
                 }),
-                fetch(`http://localhost:8080/events/${eventId}/teams`, {
-                    headers: { Authorization: `Bearer ${token}` },
+                apiFetch(`/events/${eventId}/teams`, {
                 }),
             ]);
 
@@ -86,11 +86,9 @@ function EventPage() {
 
     const loadParticipants = async () => {
         if (!eventId || loadedTabs.participants) return;
-        const token = localStorage.getItem("token");
 
         try {
-            const res = await fetch(`http://localhost:8080/events/${eventId}/participants`, {
-                headers: { Authorization: `Bearer ${token}` },
+            const res = await apiFetch(`/events/${eventId}/participants`, {
             });
             const participants = await res.json();
 
@@ -108,9 +106,7 @@ function EventPage() {
 
         const fetchParticipantData = async () => {
             try {
-                const res = await fetch(`http://localhost:8080/participants/${participant_id}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+                const res = await apiFetch(`/participants/${participant_id}`, );
                 if (!res.ok) throw new Error("Не удалось получить участника");
                 const data = await res.json();
                 setParticipantData(data);
@@ -126,13 +122,13 @@ function EventPage() {
     const loadRequests = async () => {
         if (!participant_id || loadedTabs.responses) return;
         const token = localStorage.getItem("token");
-        const incomingUrl = `http://localhost:8080/team_requests/${isTeamlead ? 'incoming' : 'outgoing'}?participant_id=${participant_id}`;
-        const outgoingUrl = `http://localhost:8080/team_requests/${isTeamlead ? 'outgoing' : 'incoming'}?participant_id=${participant_id}`;
+        const incomingUrl = `/team_requests/${isTeamlead ? 'incoming' : 'outgoing'}?participant_id=${participant_id}`;
+        const outgoingUrl = `/team_requests/${isTeamlead ? 'outgoing' : 'incoming'}?participant_id=${participant_id}`;
 
         try {
             const [incomingRes, outgoingRes] = await Promise.all([
-                fetch(incomingUrl, { headers: { Authorization: `Bearer ${token}` } }),
-                fetch(outgoingUrl, { headers: { Authorization: `Bearer ${token}` } }),
+                apiFetch(incomingUrl),
+                apiFetch(outgoingUrl),
             ]);
 
             const [incoming, outgoing] = await Promise.all([
@@ -166,13 +162,8 @@ function EventPage() {
 
     /*функция для приглашения новых участников в свою команду - если participant который просматривает страницу является teamlead*/
     function CreateNewTeamRequest(vacancy_id, participant_to_invite_id) {
-        const token = localStorage.getItem("token");
-        const res = fetch('http://localhost:8080/team_requests', {
+        const res = apiFetch('/team_requests', {
             method: 'POST',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify({
                 vacancy_id: vacancy_id,
                 participant_id: participant_to_invite_id
@@ -212,24 +203,14 @@ function EventPage() {
     }, []);
 
     function AcceptRequest(request_id) {
-        const token = localStorage.getItem("token");
-        const res = fetch(`http://localhost:8080/team_requests/${request_id}/accept`, {
+        const res = apiFetch(`/team_requests/${request_id}/accept`, {
             method: 'PUT',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
         })
     }
 
     function RejectRequest(request_id) {
-        const token = localStorage.getItem("token");
-        const res = fetch(`http://localhost:8080/team_requests/${request_id}/reject`, {
+        const res = apiFetch(`/team_requests/${request_id}/reject`, {
             method: 'PUT',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
         })
     }
 
