@@ -1,3 +1,5 @@
+from pydantic_core._pydantic_core import ValidationError
+
 from backend.src.application.services.events_service import EventsService
 from backend.src.application.services.participants_service import ParticipantsService
 from backend.src.application.services.teams_service import TeamsService
@@ -137,7 +139,6 @@ class TeamRequestsService:
 
         return result
 
-    # Для удобства можно определить методы get_outgoing и get_incoming через этот общий:
     async def get_outgoing(self, participant_id, user_id):
         return await self.get_team_requests(participant_id, user_id, direction='outgoing')
 
@@ -166,8 +167,10 @@ class TeamRequestsService:
                 participant_id=request.participant_id,
                 team_id=vacancy_read.team_id
             ))
-        await self.repository.update(TeamRequestsUpdate.model_validate(request, from_attributes=True))
-
+        try:
+            await self.repository.update(TeamRequestsUpdate.model_validate(request, from_attributes=True))
+        except ValidationError:
+            raise BadRequestError
         if approve and not (request.approved_by_teamlead and request.approved_by_participant):
             raise BadRequestError # попытался сам заапрувить свой запрос - 400 ошибка
 
