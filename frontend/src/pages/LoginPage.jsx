@@ -1,6 +1,9 @@
 import React, {useState} from "react";
 import styles from "../styles/LoginRegisterPage.module.css";
-import {useNavigate} from "react-router-dom"; // Подключаем стили
+import {useNavigate} from "react-router-dom";
+import {Alert, Box, Button, Container, Stack, TextField, Typography} from "@mui/material";
+import {apiFetch} from "../apiClient.js";
+import {setAccessToken} from "../tokenStore.js"; // Подключаем стили
 
 const LoginPage = () => {
     const [password, setPassword] = useState("");
@@ -8,51 +11,79 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const [errorMessage, setErrorMessage] = useState("");
 
-    function LoginRequest() {
-        fetch('http://localhost:8080/user/signin', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                login: login,
-                password: password
-            })
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        // console.log("неверный логин пароль))");
-                        setErrorMessage("неверный логин или пароль");
-                        return;
-                    }
+    const LoginRequest = async () => {
+        try {
+            const response = await apiFetch("/users/signin", {
+                method: "POST",
+                body: JSON.stringify({
+                    login,
+                    password,
+                }),
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    setErrorMessage("Неверный логин или пароль");
+                } else if (response.status === 400) {
+                    setErrorMessage("Некорректные значения или поля не заполнены");
+                } else {
+                    setErrorMessage("HTTP ошибка: " + response.status);
                 }
-                return response.json();
-            })
-            .then((data) => {
-                localStorage.setItem("token", data.token);
-                navigate('/events');
-                // console.log("Токен в логине:", data.token);
-            })
-            .catch(error => console.error('Ошибка loginPage:', error));
-    }
+                return;
+            }
+
+            const data = await response.json();
+            setAccessToken(data.access_token);
+            navigate("/events");
+        } catch {
+            // console.error("Ошибка на странице входа:", error);
+            setErrorMessage("Ошибка при попытке входа");
+        }
+    };
+
 
     return (
-        <div className={styles['main-content']}>
-            <div className={styles['fields-content']}>
-                <h2>Вход в аккаунт</h2>
-                <input type="text" placeholder="Введите логин" className={`form-control ${styles['input-dark']}`} value={login}
-                       onChange={(e) => setLogin(e.target.value)}/>
-                <input type="password" placeholder="Введите пароль" className={`form-control ${styles['input-dark']}`} value={password}
-                       onChange={(e) => setPassword(e.target.value)}/>
-                <button type="submit"  className="btn btn-primary"  onClick={LoginRequest}>Войти</button>
-                <button className={styles["link-button"]} onClick={() => navigate("/signup")}>еще нет аккаунта?
-                    зарегистрируйтесь!</button>
-                {errorMessage && (
-                    <div className="alert alert-danger mt-3" role="alert">
-                        {errorMessage}
-                    </div>
-                )}
-            </div>
-        </div>
+        <Container maxWidth="sm">
+            <Box sx={{ mt: 8, p: 4, borderRadius: 2, boxShadow: 3, bgcolor: 'background.paper' }}>
+                <Typography variant="h4" gutterBottom>
+                    Вход в аккаунт
+                </Typography>
+
+                <Stack spacing={2}>
+
+                    <TextField
+                        fullWidth
+                        label="Логин"
+                        value={login}
+                        onChange={(e) => setLogin(e.target.value)}
+                    />
+
+                    <TextField
+                        fullWidth
+                        label="Пароль"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+
+                    <Button variant="contained" fullWidth onClick={LoginRequest}>
+                        Войти
+                    </Button>
+
+                    <Button
+                        variant="text"
+                        onClick={() => navigate("/signup")}
+                        sx={{ textTransform: "none" }}
+                    >
+                        Еще нет аккаунта?
+                    </Button>
+
+                    {errorMessage && (
+                        <Alert severity="error">{errorMessage}</Alert>
+                    )}
+                </Stack>
+            </Box>
+        </Container>
     );
 };
 

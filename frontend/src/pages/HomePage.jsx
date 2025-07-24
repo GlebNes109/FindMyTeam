@@ -1,74 +1,86 @@
-import styles from "../styles/HomePage.module.css";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import PatchUserModal from "../components/PatchUserModal.jsx";
+import {
+    Box,
+    Button,
+    Typography,
+    Stack,
+    Chip,
+    Card,
+    CardContent,
+    Grid,
+    Container,
+    Badge, useTheme, Divider, Toolbar,
+} from "@mui/material";
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import LogoutIcon from '@mui/icons-material/Logout';
+import {clearAccessToken} from "../tokenStore.js";
+import {apiFetch} from "../apiClient.js";
 
 function HomePage() {
     const navigate = useNavigate();
     const [data, setData] = useState("");
-    const [events, setEvents] = useState([]); // Состояние для хранения событий
+    const [participants, setParticipants] = useState([]);
+    const [eventDetails, setEventDetails] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
+    const theme = useTheme();
     useEffect(() => {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-            // если токен не был выдан - пусть идет на sign in вводить пароль
-            navigate('/signin');
-        }
-
-        // Получаем данные пользователя
-        fetch('http://localhost:8080/user/data', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            },
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        navigate('/signin');
-                        Promise.reject("не авторизован");
-                    }
-                }
-                return response.json();
-            })
-            .then(data => {
+        apiFetch("/users")
+            .then(async (response) => {
+                const data = await response.json();
                 setData(data);
             })
-            .catch(error => console.error('Ошибка HomePage:', error));
+            .catch((err) => {
+                if (err.code === "UNABLE_TO_UPDATE_TOKEN") {
+                    navigate("/signin");
+                }
+                // временно, потом сделать нормально (чтобы навигация была централизована)
+            });
 
-        // Получаем события, в которых участвует пользователь
-        fetch('http://localhost:8080/events/user/get_user_events', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            },
-        })
-            .then((response) => response.json())
-            .then(events => setEvents(events || [])) // Устанавливаем события
-            .catch(error => console.error('Ошибка загрузки событий:', error));
+        apiFetch("/participants")
+            .then(res => res.json())
+            .then(async (participants) => {
+                setParticipants(participants || []);
 
+                const eventsMap = {};
+                await Promise.all(participants.map(async (p) => {
+                    try {
+                        const res = await apiFetch(`/events/${p.event_id}`);
+                        if (res.ok) {
+                            const event = await res.json();
+                            eventsMap[p.event_id] = event;
+                        }
+                    } catch (err) {
+                        console.error(`Ошибка загрузки события ${p.event_id}:`, err);
+                    }
+                }));
+                setEventDetails(eventsMap);
+            })
+            .catch(error => console.error("Ошибка загрузки участий:", error));
     }, [navigate]);
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
+    const handleLogout = async () => {
+        clearAccessToken();
+        try {
+            await apiFetch("/users/logout", {
+                method: "POST",
+                credentials: "include",
+            });
+        } catch (err) {
+            console.warn("Не удалось удалить refresh_token на сервере!!", err);
+        }
         navigate("/signin");
     };
 
     const handleDelete = () => {
         if (window.confirm("Вы уверены, что хотите удалить аккаунт?")) {
-            fetch("http://localhost:8080/user/delete", {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`
-                }
-            })
+            apiFetch("/users", { method: "DELETE" })
                 .then(() => {
-                    localStorage.removeItem("token");
+                    clearAccessToken();
                     navigate("/signup");
                 })
-                .catch(error => console.error("Ошибка удаления:", error));
+                .catch((error) => console.error("Ошибка удаления:", error));
         }
     };
 
@@ -76,59 +88,204 @@ function HomePage() {
         return <p>Загрузка...</p>;
     }
 
+
     return (
-        <div className="container py-5">
-            <div className={styles['user-info']}>
-                <div className={styles['user-info-content-left']}>
-                    <h2>Здравствуйте, {data.login}!</h2>
-                    <p>Email: {data.email}</p>
-                    <p>Telegram: {data.tg_nickname}</p>
-                </div>
-                <div className={styles['user-info-content-right']}>
-                    <button onClick={handleLogout} className="btn btn-warning mb-2">Выйти</button>
-                    <button onClick={handleDelete} className="btn btn-danger mb-2">Удалить профиль</button>
-                    <button className="btn btn-primary" onClick={() => { setIsModalOpen(true) }}>Редактировать профиль</button>
-                </div>
-            </div>
+        <>
+            <Toolbar />
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Box
+                sx={{
+                    mb: 5,
+                    p: 4,
+                    bgcolor: "background.paper",
+                    borderRadius: 3,
+                    boxShadow: 3,
+                    display: "flex",
+                    flexDirection: { xs: "column", md: "row" }, // столбец на мобильных, строка на десктопах
+                    justifyContent: "space-between",
+                    alignItems: { xs: "flex-start", md: "center" },
+                    gap: 3,
+                    borderLeft: `8px solid ${theme.palette.primary.main}`,
+                }}
+            >
+                {/* Информация о пользователе */}
+                <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
+                        Здравствуйте, {data?.login || 'Пользователь'}!
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                        Email: <strong>{data?.email || 'Не указан'}</strong>
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                        Telegram: <strong>{data?.tg_nickname || 'Не указан'}</strong>
+                    </Typography>
+                </Box>
 
-            <h1>Ваши мероприятия</h1>
+                <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={2}
+                    sx={{
+                        flexShrink: 0,
+                        width: { xs: '100%', sm: 'auto' }
+                    }}
+                >
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        startIcon={<EditIcon />}
+                        onClick={() => setIsModalOpen(true)}
+                        sx={{ textTransform: 'none' }}
+                    >
+                        Редактировать профиль
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        onClick={handleDelete}
+                        sx={{ textTransform: 'none' }}
+                    >
+                        Удалить профиль
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="inherit"
+                        startIcon={<LogoutIcon />}
+                        onClick={handleLogout}
+                        sx={{ textTransform: 'none' }}
+                    >
+                        Выйти
+                    </Button>
+                </Stack>
+            </Box>
 
-            {/* Секция с карточками мероприятий */}
-            <div className="row g-4">
-                {events.length === 0 ? (
-                    <p>Вы не участвуете в мероприятиях.</p>
-                ) : (
-                    events.map(event => (
-                        <div key={event.id} className="col-md-4">
-                            <div className={`card h-100 shadow-sm bg-dark border-2 ${styles['card-clickable']}`} onClick={() => navigate(`/home/myevent/${event.id}`, {
-                                state: {
-                                participant_id: event.participant_id
-                            }})}>
-                                <div className="card-body">
-                                    <h5 className="card-title">{event.name}</h5>
-                                    <span className="badge bg-secondary me-2"> {event.event_role === "PARTICIPANT" ? "Участник" : "Тимлид"}</span>
-                                    <span className="badge bg-secondary me-2">{event.participant_track}</span>
-                                    <p className="card-text">{event.description}</p>
-                                    <p><b>Дата начала:</b> {event.start_date}</p>
-                                    <p><b>Дата окончания:</b> {event.end_date}</p>
-                                    {/*<div>
-                                        <b>Треки:</b>
-                                        {event.event_tracks.map(track => (
-                                            <span key={track.id} className="badge bg-secondary me-2">{track.name}</span>
-                                        ))}
-                                    </div>*/}
-                                </div>
-                            </div>
-                        </div>
-                    ))
-                )}
-            </div>
+            <Typography variant="h4" gutterBottom sx={{ mb: 3, fontWeight: 600 }}>
+                Ваши мероприятия
+            </Typography>
 
-            <PatchUserModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-            />
-        </div>
+            {participants.length === 0 ? (
+                <Box
+                    sx={{
+                        p: 4,
+                        bgcolor: "background.paper",
+                        borderRadius: 2,
+                        boxShadow: 1,
+                        textAlign: "center",
+                        color: "text.secondary"
+                    }}
+                >
+                    <Typography variant="h6">Вы пока не участвуете ни в одном мероприятии.</Typography>
+                    <Typography variant="body1" mt={1}>
+                        Вы можете выбрать мероприятия прямо сейчас!
+                    </Typography>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{ mt: 3 }}
+                        onClick={() => navigate('/events')}
+                    >
+                        Найти мероприятия
+                    </Button>
+                </Box>
+            ) : (
+                <Grid container spacing={3}>
+                    {participants.map((participant) => {
+                        const event = eventDetails[participant.event_id];
+                        if (!event) {
+                            return (
+                                <Grid item xs={12} sm={6} md={4} key={participant.id}>
+                                    <Card sx={{ height: "100%", display: 'flex', flexDirection: 'column', boxShadow: 3 }}>
+                                        <CardContent sx={{ flexGrow: 1 }}>
+                                            <Typography variant="h6" color="text.primary">Загрузка данных мероприятия...</Typography>
+                                            <Typography variant="body2" color="text.secondary">Пожалуйста, подождите.</Typography>
+                                        </CardContent>
+                                    </Card>
+                                </Grid>
+                            );
+                        }
+
+                        // карточки мероприятия
+                        return (
+                            <Grid item xs={12} sm={6} md={4} key={participant.id}> {/* xs=12 для полной ширины на мобильных, sm=6 для двух колонок на планшетах md=4 для трех колонок на десктопах */}
+                                <Card
+                                    sx={{
+                                        height: "100%",
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        cursor: "pointer",
+                                        boxShadow: 3,
+                                        transition: "transform 0.2s, box-shadow 0.2s",
+                                        "&:hover": {
+                                            boxShadow: 8,
+                                            transform: "translateY(-5px)",
+                                        },
+                                        bgcolor: "background.paper",
+                                    }}
+                                    onClick={() =>
+                                        navigate(`/event/${participant.event_id}`, {
+                                            state: { participant_id: participant.id },
+                                        })
+                                    }
+                                >
+                                    <CardContent sx={{ flexGrow: 1 }}>
+                                        <Stack
+                                            direction="row"
+                                            spacing={1}
+                                            alignItems="center"
+                                            mb={1.5}
+                                            flexWrap="wrap"
+                                        >
+                                            <Chip
+                                                label={
+                                                    participant.event_role === "PARTICIPANT"
+                                                        ? "Участник"
+                                                        : "Тимлид"
+                                                }
+                                                color={
+                                                    participant.event_role === "PARTICIPANT"
+                                                        ? "secondary"
+                                                        : "primary"
+                                                }
+                                                size="small"
+                                            />
+                                            {participant.track && (
+                                                <Chip
+                                                    label={participant.track.name}
+                                                    color="info"
+                                                    size="small"
+                                                />
+                                            )}
+                                        </Stack>
+
+                                        <Typography variant="h6" gutterBottom sx={{ fontWeight: 500 }} noWrap>
+                                            {event.name}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary" mb={2} sx={{
+                                            display: '-webkit-box',
+                                            overflow: 'hidden',
+                                            WebkitBoxOrient: 'vertical',
+                                            WebkitLineClamp: 3,
+                                        }}>
+                                            {event.description}
+                                        </Typography>
+
+                                        <Divider sx={{ my: 1.5 }} /> {/* Разделитель для дат */}
+
+                                        <Typography variant="body2" color="text.primary">
+                                            <strong>Начало:</strong> {event.start_date}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.primary">
+                                            <strong>Окончание:</strong> {event.end_date}
+                                        </Typography>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        );
+                    })}
+                </Grid>
+            )}
+        </Container>
+        </>
     );
 }
 

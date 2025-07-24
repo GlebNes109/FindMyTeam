@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import BaseModal from "./BaseModal.jsx";
 import styles_modal from "../styles/PatchUserModal.module.css";
 import {useNavigate} from "react-router-dom";
+import {apiFetch} from "../apiClient.js";
 /*import styles_basemodal from "../styles/BaseModal.module.css";*/
 
 const RegistrationEventModal = ({ isOpen, onClose}) => {
@@ -17,7 +18,7 @@ const RegistrationEventModal = ({ isOpen, onClose}) => {
     };
 
     const handleUpdate = () => {
-        fetch("http://localhost:8080/user/patch", {
+        apiFetch("http://localhost:8080/user/patch", {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
@@ -31,6 +32,7 @@ const RegistrationEventModal = ({ isOpen, onClose}) => {
                 onClose();
             })
             .catch(error => console.error("Ошибка обновления:", error));
+
     };
 
     return (
