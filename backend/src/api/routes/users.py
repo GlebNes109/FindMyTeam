@@ -54,5 +54,10 @@ async def refresh_token(refresh_token: str = Cookie(...), service: UsersService 
 
 @router.post("/logout")
 def logout(response: Response):
-    response.delete_cookie("refresh_token")
+    response.delete_cookie(
+        key="refresh_token",
+        httponly=True,
+        secure=True,  # все как при установке чтобы удалилась
+        samesite="strict"
+    )
     return {"message": "Logged out | вы вышли"}

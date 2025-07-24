@@ -1,7 +1,7 @@
 import uuid
 from typing import Any
 
-from sqlmodel import select
+from sqlmodel import select, delete
 from sqlalchemy.orm import selectinload
 
 from backend.src.domain.exceptions import ObjectAlreadyExistsError, ObjectNotFoundError
@@ -181,3 +181,9 @@ class TeamsRepositoryImpl(
             event_id=team.event_id,
             teamlead_id=team.teamlead_id
         )
+
+    async def delete_vacancy(self, id: Any) -> bool:
+        await self.get(id)  # проверка что существует (чтобы не удаляли по нескольку раз одно и то же)))
+        await self.session.execute(delete(TeamVacanciesDB).where(TeamVacanciesDB == id))
+        await self.session.commit()
+        return True
