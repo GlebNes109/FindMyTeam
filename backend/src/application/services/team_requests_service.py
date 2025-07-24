@@ -168,6 +168,7 @@ class TeamRequestsService:
                 participant_id=request.participant_id,
                 team_id=vacancy_read.team_id
             ))
+            await self.teams_service.delete_vacancy(vacancy_read.id)
         try:
             await self.repository.update(TeamRequestsUpdate.model_validate(request, from_attributes=True))
         except ValidationError:

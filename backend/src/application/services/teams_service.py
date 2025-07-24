@@ -69,3 +69,6 @@ class TeamsService:
 
     async def get_team_by_teamlead_id(self, teamlead_id):
         return await self.repository.get_by_teamlead_id(teamlead_id)
+
+    async def delete_vacancy(self, vacancy_id):
+        return await self.repository.delete_vacancy(vacancy_id)
