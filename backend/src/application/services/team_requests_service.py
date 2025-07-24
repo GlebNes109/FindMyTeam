@@ -112,9 +112,10 @@ class TeamRequestsService:
 
         result = []
         for request in read_requests:
-            # По vacancy_id загружаем vacancy, team
+            # загрузка vacancy по id из реквеста
             vacancy = await self.teams_service.get_vacancy(request.vacancy_id)
-            # По participant_id загружаем участника
+
+            # Создание модели TeamRequestsDetailsRead в зависимости от роли (необходимо переделать . сейчас есть проблема)
             if participant.is_teamlead():
                 participant_obj = await self.participants_service.get_detail_participant(request.participant_id)
                 model = TeamRequestsDetailsRead(
