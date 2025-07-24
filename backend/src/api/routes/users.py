@@ -16,20 +16,14 @@ async def add_new_user(new_user: UserCreateAPI, service: UsersService = Depends(
     data = await service.create_user(new_user)
     response = JSONResponse(content=data.model_dump())
     response.set_cookie("refresh_token", data.refresh_token, httponly=True, secure=True, samesite="strict")
-    return TokenRead(
-        access_token=data.access_token,
-        user_id=data.user_id
-    )
+    return response
 
 @router.post("/signin", summary="Вход по логину/паролю", description="Вход по кредам и получение токена")
 async def sign_in_user(user: SigninUser, service: UsersService = Depends(get_user_service)):
     data = await service.sign_in_user(user)
     response = JSONResponse(content=data.model_dump())
     response.set_cookie("refresh_token", data.refresh_token, httponly=True, secure=True, samesite="strict")
-    return TokenRead(
-        access_token=data.access_token,
-        user_id=data.user_id
-    )
+    return response
 
 @router.get("", summary="Информация", description="Все данные пользователя кроме конфиденциальных")
 async def get_user_data(user_id: str = Depends(get_user_id), service: UsersService = Depends(get_user_service)):

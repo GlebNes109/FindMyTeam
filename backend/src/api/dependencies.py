@@ -56,8 +56,8 @@ def get_participants_repository(
 def get_hash_creator() -> HashCreator:
     return sha256HashCreator()
 
-def get_token_creator() -> TokenCreator:
-    return JWTTokenCreator(secret_key=settings.secret_key, algorithm=settings.algorithm, repository=get_user_repository())
+def get_token_creator(repo: UserRepository = Depends(get_user_repository)) -> TokenCreator:
+    return JWTTokenCreator(secret_key=settings.secret_key, algorithm=settings.algorithm, repository=repo)
 
 def get_user_service(
     token_creator: TokenCreator= Depends(get_token_creator),
