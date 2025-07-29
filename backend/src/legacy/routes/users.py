@@ -1,8 +1,8 @@
 '''from fastapi import APIRouter, Depends
 
-from backend.src.legacy.db_models.api_models import NewUser, SigninUser, PatchUser
-from backend.src.domain.services.user_services import UsersService
-from backend.src.domain.services.utility_services import get_user_id
+from legacy.db_models.api_models import NewUser, SigninUser, PatchUser
+from domain.services.user_services import UsersService
+from domain.services.utility_services import get_user_id
 
 router = APIRouter()
 user_service = UsersService()

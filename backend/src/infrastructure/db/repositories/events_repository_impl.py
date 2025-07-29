@@ -3,11 +3,11 @@ from sqlite3 import IntegrityError
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
 
-from backend.src.domain.exceptions import ObjectAlreadyExistsError, ObjectNotFoundError
-from backend.src.domain.interfaces.repositories.events_repository import EventsRepository
-from backend.src.domain.models.events import EventsRead, EventsCreate, EventsUpdate, EventTracksRead
-from backend.src.infrastructure.db.db_models.events import EventsDB, EventTracksDB
-from backend.src.infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
+from domain.exceptions import ObjectAlreadyExistsError, ObjectNotFoundError
+from domain.interfaces.repositories.events_repository import EventsRepository
+from domain.models.events import EventsRead, EventsCreate, EventsUpdate, EventTracksRead
+from infrastructure.db.db_models.events import EventsDB, EventTracksDB
+from infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
 
 
 class EventsRepositoryImpl(

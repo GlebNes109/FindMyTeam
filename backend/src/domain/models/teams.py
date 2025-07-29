@@ -1,10 +1,10 @@
 from typing import Optional, ForwardRef, Any
 
-from backend.src.domain.models.events import EventTracksRead
-from backend.src.domain.models.models import CreateBaseModel, UpdateBaseModel
+from domain.models.events import EventTracksRead
+from domain.models.models import CreateBaseModel, UpdateBaseModel
 from pydantic import BaseModel
 
-from backend.src.domain.models.participants import ParticipantsDetailsRead
+from domain.models.participants import ParticipantsDetailsRead
 
 
 class VacanciesCreate(CreateBaseModel):

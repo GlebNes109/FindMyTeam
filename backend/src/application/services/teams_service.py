@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING
 
-from backend.src.application.services.events_service import EventsService
-from backend.src.domain.interfaces.repositories.teams_repository import TeamsRepository
-from backend.src.domain.models.teams import VacanciesRead, TeamMembersCreate, TeamMembersRead, TeamsDetailsRead
-from ...domain.exceptions import ObjectAlreadyExistsError
+from application.services.events_service import EventsService
+from domain.interfaces.repositories.teams_repository import TeamsRepository
+from domain.models.teams import VacanciesRead, TeamMembersCreate, TeamMembersRead, TeamsDetailsRead
+from domain.exceptions import ObjectAlreadyExistsError
 
 if TYPE_CHECKING: # чтобы не было циклического импорта
     from .participants_service import ParticipantsService

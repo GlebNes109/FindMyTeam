@@ -1,8 +1,8 @@
 from enum import Enum
 from typing import Optional
 
-from backend.src.core.config import settings
-from backend.src.domain.models.models import UpdateBaseModel, CreateBaseModel
+from core.config import settings
+from domain.models.models import UpdateBaseModel, CreateBaseModel
 from pydantic import BaseModel
 
 class Role(str, Enum):

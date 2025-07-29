@@ -1,7 +1,7 @@
 from typing import Any, Protocol
 
-from backend.src.domain.interfaces.repositories.base_repository import BaseRepository
-from backend.src.domain.models.participants import ParticipantsCreate, ParticipantsUpdate, \
+from domain.interfaces.repositories.base_repository import BaseRepository
+from domain.models.participants import ParticipantsCreate, ParticipantsUpdate, \
     ParticipantsBasicRead
 
 

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 
-from backend.src.api.dependencies import get_user_id, get_participants_service
-from backend.src.api.dto.participants import ParticipantsCreateAPI
-from backend.src.application.services.participants_service import ParticipantsService
+from api.dependencies import get_user_id, get_participants_service
+from api.dto.participants import ParticipantsCreateAPI
+from application.services.participants_service import ParticipantsService
 
 router = APIRouter()
 

@@ -1,9 +1,9 @@
 from typing import Any
 from sqlmodel import select
-from backend.src.domain.interfaces.repositories.team_requests_repository import TeamRequestsRepository
-from backend.src.domain.models.teamrequests import TeamRequestsRead, TeamRequestsCreate, TeamRequestsUpdate
-from backend.src.infrastructure.db.db_models.teamrequests import TeamRequestsDB
-from backend.src.infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
+from domain.interfaces.repositories.team_requests_repository import TeamRequestsRepository
+from domain.models.teamrequests import TeamRequestsRead, TeamRequestsCreate, TeamRequestsUpdate
+from infrastructure.db.db_models.teamrequests import TeamRequestsDB
+from infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
 
 from sqlalchemy import select, and_, or_, true, false, null
 

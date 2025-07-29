@@ -4,17 +4,17 @@ from typing import Any
 from sqlmodel import select, delete
 from sqlalchemy.orm import selectinload
 
-from backend.src.domain.exceptions import ObjectAlreadyExistsError, ObjectNotFoundError
-from backend.src.domain.interfaces.repositories.teams_repository import TeamsRepository
-from backend.src.domain.models.events import EventTracksRead
-from backend.src.domain.models.models import CreateModelType, ReadModelType
-from backend.src.domain.models.participants import ParticipantsRead
-from backend.src.domain.models.teams import TeamsRead, TeamsCreate, TeamsUpdate, VacanciesRead, TeamsBasicRead, \
+from domain.exceptions import ObjectAlreadyExistsError, ObjectNotFoundError
+from domain.interfaces.repositories.teams_repository import TeamsRepository
+from domain.models.events import EventTracksRead
+from domain.models.models import CreateModelType, ReadModelType
+from domain.models.participants import ParticipantsRead
+from domain.models.teams import TeamsRead, TeamsCreate, TeamsUpdate, VacanciesRead, TeamsBasicRead, \
     VacanciesBasicRead, TeamMembersCreate, TeamMembersRead
-from backend.src.infrastructure.db.db_models.events import EventTracksDB
-from backend.src.infrastructure.db.db_models.participants import ParticipantsDB
-from backend.src.infrastructure.db.db_models.teams import TeamsDB, TeamMembersDB, TeamVacanciesDB
-from backend.src.infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
+from infrastructure.db.db_models.events import EventTracksDB
+from infrastructure.db.db_models.participants import ParticipantsDB
+from infrastructure.db.db_models.teams import TeamsDB, TeamMembersDB, TeamVacanciesDB
+from infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from asyncpg.exceptions import UniqueViolationError
 

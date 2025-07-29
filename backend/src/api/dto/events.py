@@ -1,4 +1,4 @@
-from backend.src.api.dto.strictbasemodel import StrictBaseModel
+from api.dto.strictbasemodel import StrictBaseModel
 
 
 class EventTracksCreateAPI(StrictBaseModel):

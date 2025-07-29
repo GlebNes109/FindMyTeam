@@ -1,6 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel
-from backend.src.domain.models.models import CreateBaseModel, UpdateBaseModel
+from domain.models.models import CreateBaseModel, UpdateBaseModel
 
 class EventTracksCreate(CreateBaseModel):
     name: str

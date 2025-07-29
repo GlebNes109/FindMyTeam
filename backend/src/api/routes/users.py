@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Cookie, Response
 from fastapi.responses import JSONResponse
 
-from backend.src.api.dto.user import UserCreateAPI, UserReadAPI, UserUpdateAPI, TokenRead
-from backend.src.api.dependencies import get_user_service, get_user_id, get_hash_creator
-from backend.src.application.services.user_service import UsersService
-from backend.src.domain.exceptions import ObjectAlreadyExistsError, AccessDeniedError, ObjectNotFoundError
-from backend.src.domain.models.user import TokenPair, UsersUpdate
-from backend.src.legacy.db_models.api_models import NewUser, SigninUser, PatchUser
+from api.dto.user import UserCreateAPI, UserReadAPI, UserUpdateAPI, TokenRead
+from api.dependencies import get_user_service, get_user_id, get_hash_creator
+from application.services.user_service import UsersService
+from domain.exceptions import ObjectAlreadyExistsError, AccessDeniedError, ObjectNotFoundError
+from domain.models.user import TokenPair, UsersUpdate
+from legacy.db_models.api_models import NewUser, SigninUser, PatchUser
 
 
 router = APIRouter()

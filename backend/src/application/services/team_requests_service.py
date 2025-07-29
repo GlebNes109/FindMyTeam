@@ -1,14 +1,14 @@
 from pydantic_core._pydantic_core import ValidationError
 
-from backend.src.application.services.events_service import EventsService
-from backend.src.application.services.participants_service import ParticipantsService
-from backend.src.application.services.teams_service import TeamsService
-from backend.src.domain.exceptions import BadRequestError, AccessDeniedError
-from backend.src.domain.interfaces.repositories.team_requests_repository import TeamRequestsRepository
-from backend.src.domain.models.participants import EventRole
-from backend.src.domain.models.teamrequests import TeamRequestsCreate, TeamRequestsPartialCreate, TeamRequestsUpdate, \
+from application.services.events_service import EventsService
+from application.services.participants_service import ParticipantsService
+from application.services.teams_service import TeamsService
+from domain.exceptions import BadRequestError, AccessDeniedError
+from domain.interfaces.repositories.team_requests_repository import TeamRequestsRepository
+from domain.models.participants import EventRole
+from domain.models.teamrequests import TeamRequestsCreate, TeamRequestsPartialCreate, TeamRequestsUpdate, \
     TeamRequestsDetailsRead
-from backend.src.domain.models.teams import TeamMembersCreate
+from domain.models.teams import TeamMembersCreate
 from typing import List
 
 class TeamRequestsService:

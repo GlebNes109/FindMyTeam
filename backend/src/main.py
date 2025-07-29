@@ -1,28 +1,29 @@
 import asyncio
 from contextlib import asynccontextmanager
 from http.client import HTTPException
+from fastapi.staticfiles import StaticFiles
 
 import uvicorn
 from fastapi import FastAPI, Request, Depends
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
 
-from backend.src.api.dependencies import get_hash_creator
-from backend.src.api.routes import users, events, participants, team_requests, teams
-from backend.src.core.config import settings
-from backend.src.core.init_data import add_super_admin, create_tables
-from backend.src.domain.exceptions import AppException
+from api.dependencies import get_hash_creator
+from api.routes import users, events, participants, team_requests, teams
+from core.config import settings
+from core.init_data import add_super_admin, create_tables
+from domain.exceptions import AppException
 from fastapi.responses import JSONResponse
 
-from backend.src.infrastructure.db.session import get_session, async_session_maker
+from infrastructure.db.session import get_session, async_session_maker
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with async_session_maker() as session:
         hash_creator = get_hash_creator()
-        await add_super_admin(hash_creator, session)
         await create_tables()
+        await add_super_admin(hash_creator, session)
     yield
 
 app = FastAPI(lifespan=lifespan)
@@ -31,7 +32,10 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost",
+        "http://localhost:80"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

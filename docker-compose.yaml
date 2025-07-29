@@ -4,16 +4,17 @@ services:
     build: ./frontend
     ports:
       - "80:80"
-    restart: always
+    depends_on:
+      - backend
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8080:8080"
     depends_on:
       - db
-    environment:
-      - DATABASE_URL=postgresql://user:password@db/dbname
     restart: always
 
   db:

@@ -2,12 +2,12 @@ from enum import Enum
 from typing import Optional, Any, ForwardRef
 from pydantic import model_validator
 
-from backend.src.domain.exceptions import BadRequestError
-from backend.src.domain.models.events import EventTracksRead
-from backend.src.domain.models.models import CreateBaseModel, UpdateBaseModel
+from domain.exceptions import BadRequestError
+from domain.models.events import EventTracksRead
+from domain.models.models import CreateBaseModel, UpdateBaseModel
 from pydantic import BaseModel
 
-from backend.src.domain.models.user import Role, UsersRead
+from domain.models.user import Role, UsersRead
 
 
 # TeamsCreate = ForwardRef('TeamsCreate')

@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, Query
 
-from backend.src.api.dependencies import get_user_id, get_team_requests_service
-from backend.src.api.dto.teamrequests import TeamRequestsCreateAPI
-from backend.src.application.services.team_requests_service import TeamRequestsService
-from backend.src.domain.exceptions import BadRequestError
-from backend.src.domain.models.teamrequests import TeamRequestsPartialCreate
+from api.dependencies import get_user_id, get_team_requests_service
+from api.dto.teamrequests import TeamRequestsCreateAPI
+from application.services.team_requests_service import TeamRequestsService
+from domain.exceptions import BadRequestError
+from domain.models.teamrequests import TeamRequestsPartialCreate
 
 router = APIRouter()
 

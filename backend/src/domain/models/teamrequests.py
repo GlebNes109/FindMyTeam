@@ -2,10 +2,10 @@ from typing import Optional
 
 from pydantic import BaseModel, model_validator
 
-from backend.src.domain.exceptions import BadRequestError
-from backend.src.domain.models.models import CreateBaseModel, UpdateBaseModel
-from backend.src.domain.models.participants import ParticipantsDetailsRead
-from backend.src.domain.models.teams import VacanciesRead, TeamsRead
+from domain.exceptions import BadRequestError
+from domain.models.models import CreateBaseModel, UpdateBaseModel
+from domain.models.participants import ParticipantsDetailsRead
+from domain.models.teams import VacanciesRead, TeamsRead
 
 
 class TeamRequestsCreate(CreateBaseModel):

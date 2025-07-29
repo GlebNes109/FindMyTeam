@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from backend.src.api.dependencies import get_teams_service
+from api.dependencies import get_teams_service
 
 router = APIRouter()
 

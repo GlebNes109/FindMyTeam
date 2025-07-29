@@ -1,7 +1,7 @@
 from typing import TypeVar, Protocol, Any, Generic
 from pydantic import BaseModel
 
-from backend.src.domain.models.models import ModelType, ReadModelType, UpdateModelType, CreateModelType
+from domain.models.models import ModelType, ReadModelType, UpdateModelType, CreateModelType
 
 
 class BaseRepository(Protocol[ModelType, ReadModelType, CreateModelType, UpdateModelType]):

@@ -1,11 +1,11 @@
-from backend.src.application.services.events_service import EventsService
-from backend.src.application.services.user_service import UsersService
-from backend.src.domain.exceptions import ObjectNotFoundError, BadRequestError
-from backend.src.domain.interfaces.repositories.participants_repository import ParticipantsRepository
-from backend.src.domain.interfaces.repositories.teams_repository import TeamsRepository
-from backend.src.domain.models.events import EventTracksRead
-from backend.src.domain.models.participants import ParticipantsCreate, ParticipantsRead, ParticipantsDetailsRead
-from backend.src.domain.models.teams import TeamsCreate
+from application.services.events_service import EventsService
+from application.services.user_service import UsersService
+from domain.exceptions import ObjectNotFoundError, BadRequestError
+from domain.interfaces.repositories.participants_repository import ParticipantsRepository
+from domain.interfaces.repositories.teams_repository import TeamsRepository
+from domain.models.events import EventTracksRead
+from domain.models.participants import ParticipantsCreate, ParticipantsRead, ParticipantsDetailsRead
+from domain.models.teams import TeamsCreate
 
 
 class ParticipantsService:

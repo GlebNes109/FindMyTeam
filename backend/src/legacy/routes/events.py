@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 
-from backend.src.legacy.db_models.api_models import NewEvent, NewEventParticipant, NewInvitation, NewResponse
-from backend.src.domain.services.event_management_service import EventManagementService
-from backend.src.domain.services.utility_services import get_user_id
+from legacy.db_models.api_models import NewEvent, NewEventParticipant, NewInvitation, NewResponse
+from domain.services.event_management_service import EventManagementService
+from domain.services.utility_services import get_user_id
 
 router = APIRouter()
 event_service = EventManagementService()

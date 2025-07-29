@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional, List
 from sqlmodel import SQLModel, Field
 
-from backend.src.domain.models.user import Role
+from domain.models.user import Role
 
 
 class UsersDB(SQLModel, table=True):

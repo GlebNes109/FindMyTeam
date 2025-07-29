@@ -1,6 +1,6 @@
 import hashlib
 
-from backend.src.domain.interfaces.hash_creator import HashCreator
+from domain.interfaces.hash_creator import HashCreator
 
 
 class sha256HashCreator(HashCreator):

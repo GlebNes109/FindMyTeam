@@ -3,10 +3,11 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 from typing import Generic, Type, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
-from asyncpg.exceptions import UniqueViolationError
-from backend.src.domain.exceptions import ObjectAlreadyExistsError, ObjectNotFoundError
-from backend.src.domain.models.models import CreateModelType, ReadModelType, ModelType, UpdateModelType
-from backend.src.domain.interfaces.repositories.base_repository import BaseRepository
+from domain.exceptions import ObjectNotFoundError
+from domain.models.models import CreateModelType, ReadModelType, ModelType, UpdateModelType
+from domain.interfaces.repositories.base_repository import BaseRepository
+from domain.exceptions import ObjectAlreadyExistsError
+
 
 class BaseRepositoryImpl(
     BaseRepository[ModelType, ReadModelType, CreateModelType, UpdateModelType],
@@ -40,9 +41,10 @@ class BaseRepositoryImpl(
             await self.session.refresh(db_obj)
             return self.read_schema.model_validate(db_obj, from_attributes=True)
         except IntegrityError as e:
-            if isinstance(e.orig, UniqueViolationError):
-                raise ObjectAlreadyExistsError
-            raise
+            if e.orig.sqlstate == '23505':
+                raise ObjectAlreadyExistsError from e
+            else:
+                raise
 
     async def update(self, obj: UpdateModelType) -> ReadModelType:
         await self.session.execute(

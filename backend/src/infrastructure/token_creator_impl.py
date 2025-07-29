@@ -1,10 +1,10 @@
 import time
 import jwt
 from datetime import datetime, timedelta
-from backend.src.core.config import settings
-from backend.src.domain.exceptions import UnauthorizedError
-from backend.src.domain.interfaces.repositories.user_repository import UserRepository
-from backend.src.domain.interfaces.token_creator import TokenCreator
+from core.config import settings
+from domain.exceptions import UnauthorizedError
+from domain.interfaces.repositories.user_repository import UserRepository
+from domain.interfaces.token_creator import TokenCreator
 
 class JWTTokenCreator(TokenCreator):
     def __init__(self, secret_key, algorithm, repository: UserRepository):

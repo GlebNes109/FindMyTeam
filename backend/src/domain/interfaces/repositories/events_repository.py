@@ -1,7 +1,7 @@
 from typing import Any, Protocol
 
-from backend.src.domain.interfaces.repositories.base_repository import BaseRepository
-from backend.src.domain.models.events import EventsCreate, EventsUpdate, EventsRead, EventTracksRead
+from domain.interfaces.repositories.base_repository import BaseRepository
+from domain.models.events import EventsCreate, EventsUpdate, EventsRead, EventTracksRead
 
 
 class EventsRepository(BaseRepository[Any, EventsRead, EventsCreate, EventsUpdate], Protocol):

@@ -3,8 +3,8 @@ from typing import Optional, Any
 
 from pydantic import BaseModel, model_validator, validator, field_validator
 
-from backend.src.api.dto.strictbasemodel import StrictBaseModel
-from backend.src.domain.models.user import UsersRead
+from api.dto.strictbasemodel import StrictBaseModel
+from domain.models.user import UsersRead
 
 
 class UserCreateAPI(StrictBaseModel):

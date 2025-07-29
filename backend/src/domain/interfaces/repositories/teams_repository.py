@@ -1,8 +1,8 @@
 from typing import Any, Protocol
 
-from backend.src.domain.interfaces.repositories.base_repository import BaseRepository
-from backend.src.domain.models.models import CreateModelType, ReadModelType
-from backend.src.domain.models.teams import TeamsRead, TeamsCreate, TeamsUpdate, VacanciesRead, TeamsBasicRead, \
+from domain.interfaces.repositories.base_repository import BaseRepository
+from domain.models.models import CreateModelType, ReadModelType
+from domain.models.teams import TeamsRead, TeamsCreate, TeamsUpdate, VacanciesRead, TeamsBasicRead, \
     VacanciesBasicRead, TeamMembersCreate, TeamMembersRead
 
 

@@ -1,10 +1,10 @@
 from sqlmodel import select
 from typing import Any
 
-from backend.src.domain.interfaces.repositories.participants_repository import ParticipantsRepository
-from backend.src.domain.models.participants import ParticipantsUpdate, ParticipantsCreate, ParticipantsBasicRead
-from backend.src.infrastructure.db.db_models.participants import ParticipantsDB
-from backend.src.infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
+from domain.interfaces.repositories.participants_repository import ParticipantsRepository
+from domain.models.participants import ParticipantsUpdate, ParticipantsCreate, ParticipantsBasicRead
+from infrastructure.db.db_models.participants import ParticipantsDB
+from infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
 
 
 class ParticipantsRepositoryImpl(

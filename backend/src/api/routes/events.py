@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends
 
-from backend.src.api.dependencies import get_user_id, get_event_service, get_user_service, get_teams_service, \
+from api.dependencies import get_user_id, get_event_service, get_user_service, get_teams_service, \
     get_participants_service
-from backend.src.api.dto.events import EventsCreateAPI
-from backend.src.application.services.events_service import EventsService
-from backend.src.application.services.participants_service import ParticipantsService
-from backend.src.application.services.teams_service import TeamsService
-from backend.src.application.services.user_service import UsersService
+from api.dto.events import EventsCreateAPI
+from application.services.events_service import EventsService
+from application.services.participants_service import ParticipantsService
+from application.services.teams_service import TeamsService
+from application.services.user_service import UsersService
 
 router = APIRouter()
 

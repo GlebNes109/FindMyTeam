@@ -1,7 +1,7 @@
 from sqlmodel import SQLModel, Field, Relationship
 from typing import List, Optional
 
-from backend.src.infrastructure.db.db_models.participants import ParticipantsDB
+from infrastructure.db.db_models.participants import ParticipantsDB
 
 
 class TeamsDB(SQLModel, table=True):

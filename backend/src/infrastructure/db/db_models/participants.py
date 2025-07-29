@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from sqlmodel import SQLModel, Field, Relationship
 
-from backend.src.domain.models.participants import EventRole
+from domain.models.participants import EventRole
 
 
 class ParticipantsDB(SQLModel, table=True):

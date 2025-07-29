@@ -1,4 +1,4 @@
-from backend.src.legacy.repository.repository import Repository
+from legacy.repository.repository import Repository
 
 repository = Repository()
 

@@ -1,7 +1,7 @@
-from backend.src.application.services.user_service import UsersService
-from backend.src.core.config import settings
-from backend.src.domain.exceptions import AccessDeniedError
-from backend.src.domain.interfaces.repositories.events_repository import EventsRepository
+from application.services.user_service import UsersService
+from core.config import settings
+from domain.exceptions import AccessDeniedError
+from domain.interfaces.repositories.events_repository import EventsRepository
 
 
 class EventsService:

@@ -1,8 +1,8 @@
-from backend.src.domain.exceptions import ObjectNotFoundError
-from backend.src.domain.interfaces.hash_creator import HashCreator
-from backend.src.domain.interfaces.token_creator import TokenCreator
-from backend.src.domain.models.user import UsersCreate, TokenPair, UsersRead, UsersUpdate
-from backend.src.domain.interfaces.repositories.user_repository import UserRepository
+from domain.exceptions import ObjectNotFoundError
+from domain.interfaces.hash_creator import HashCreator
+from domain.interfaces.token_creator import TokenCreator
+from domain.models.user import UsersCreate, TokenPair, UsersRead, UsersUpdate
+from domain.interfaces.repositories.user_repository import UserRepository
 
 
 class UsersService:
