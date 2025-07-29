@@ -1,0 +1,29 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan glebnesyutin.fvds.ru >> ~/.ssh/known_hosts
+
+      - name: Deploy with rsync
+        run: |
+          rsync -avz ./ deployer@glebnesyutin.fvds.ru:/home/deployer/FindMyTeam
+
+      - name: Restart container
+        run: |
+            ssh deployer@glebnesyutin.fvds.ru "cd /home/deployer/FindMyTeam && docker compose down && docker compose up --build"
