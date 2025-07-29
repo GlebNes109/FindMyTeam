@@ -35,8 +35,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost",
         "http://localhost:80",
-        "http://http://glebnesyutin.fvds.ru",
-        "http://http://glebnesyutin.fvds.ru:80"
+        "http://glebnesyutin.fvds.ru",
+        "http://glebnesyutin.fvds.ru:80"
     ],
     allow_credentials=True,
     allow_methods=["*"],
