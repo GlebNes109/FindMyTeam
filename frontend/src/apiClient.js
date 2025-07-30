@@ -2,7 +2,7 @@ import { getAccessToken, setAccessToken, clearAccessToken } from './tokenStore';
 import {handleAuthFailure} from "./authHandler.js";
 
 export async function refreshAccessToken() {
-    const res = await fetch("http://glebnesyutin.fvds.ru:8080/users/auth/refresh", {
+    const res = await fetch("/api/users/auth/refresh", {
         method: "POST",
         credentials: "include",
     });
@@ -23,7 +23,7 @@ export async function apiFetch(url, options = {}, retry = true) {
         "Content-Type": "application/json",
     };
 
-    const response = await fetch(`http://glebnesyutin.fvds.ru:8080${url}`, {
+    const response = await fetch(`/api${url}`, {
         ...options,
         method: options.method || 'GET',
         headers,

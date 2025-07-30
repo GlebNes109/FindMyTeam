@@ -33,10 +33,7 @@ app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost",
-        "http://localhost:80",
-        "http://glebnesyutin.fvds.ru",
-        "http://glebnesyutin.fvds.ru:80"
+        "http://findmyteam.ru"
     ],
     allow_credentials=True,
     allow_methods=["*"],
