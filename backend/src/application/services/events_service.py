@@ -11,7 +11,7 @@ class EventsService:
 
     async def create_event(self, event_create, admin_id):
         user = await self.user_service.get_user(admin_id)
-        if not user.is_admin():
+        if not user.role in settings.admins:
             raise AccessDeniedError
         event = await self.repository.create(event_create)
         return event
