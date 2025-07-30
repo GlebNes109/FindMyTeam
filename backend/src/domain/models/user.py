@@ -24,8 +24,8 @@ class UsersRead(BaseModel):
     password_hash: Optional[str] = None # в бизнес модели хеш допустим, эта модель не отдается в апи
     role: Role
     @classmethod
-    def is_admin(cls):
-        return cls.role in settings.admins
+    def is_admin(self):
+        return self.role in settings.admins
 
 class UsersUpdate(UpdateBaseModel):
     id: str
