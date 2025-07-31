@@ -41,12 +41,6 @@ function RegistrationEventPage() {
     };
 
     function RegisterNewParticipant() {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            navigate("/signin");
-            return;
-        }
-
         const requestBody = {
             event_id: event.id,
             event_role: event_role,
@@ -64,10 +58,6 @@ function RegistrationEventPage() {
 
         apiFetch("/participants", {
             method: "POST",
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
             body: JSON.stringify(requestBody),
         })
             .then((response) => {
