@@ -126,8 +126,10 @@ function MainPage() {
                                                 <Button
                                                     fullWidth
                                                     variant="contained"
-                                                    onClick={() => navigate(`/event/${event.id}/register`)}
-                                                >
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/event/${event.id}/register`);
+                                                    }}>
                                                     Я участвую
                                                 </Button>
                                             </Box>
