@@ -1,22 +1,24 @@
-import asyncio
 from contextlib import asynccontextmanager
-from http.client import HTTPException
-from fastapi.staticfiles import StaticFiles
-
+from sqlmodel import create_engine
 import uvicorn
 from fastapi import FastAPI, Request, Depends
 from fastapi.exceptions import RequestValidationError
-from starlette.middleware.cors import CORSMiddleware
-
+from fastapi.middleware.cors import CORSMiddleware
+from sqladmin import Admin, ModelView
 from api.dependencies import get_hash_creator
 from api.routes import users, events, participants, team_requests, teams
+from infrastructure.admin_auth import AuthAdmin
+from infrastructure.admin_models import (
+    EventsAdmin, EventTracksAdmin, TeamsAdmin,
+    TeamMembersAdmin, TeamVacanciesAdmin, TeamRequestsAdmin, ParticipantsAdmin, UserAdmin
+)
 from core.config import settings
 from core.init_data import add_super_admin, create_tables
 from domain.exceptions import AppException
 from fastapi.responses import JSONResponse
+from starlette.middleware.sessions import SessionMiddleware
 
-from infrastructure.db.session import get_session, async_session_maker
-
+from infrastructure.db.session import async_session_maker
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -33,7 +35,8 @@ app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://findmyteam.ru"
+        "http://findmyteam.ru",
+        "http://localhost:5173"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -59,7 +62,27 @@ async def handle_app_exception(request, exc: AppException):
         content={"detail": exc.message}
     )
 
+sync_engine = create_engine(
+    f"postgresql://{settings.postgres_username}:{settings.postgres_password}@{settings.postgres_host}:{settings.postgres_port}/{settings.postgres_database}"
+)
+
+app.add_middleware(SessionMiddleware, secret_key=settings.secret_key)
+
+
+def setup_admin(app):
+    admin = Admin(app, sync_engine, authentication_backend=AuthAdmin(settings.secret_key))
+    admin.add_view(UserAdmin)
+    admin.add_view(EventsAdmin)
+    admin.add_view(EventTracksAdmin)
+    admin.add_view(TeamsAdmin)
+    admin.add_view(TeamMembersAdmin)
+    admin.add_view(TeamVacanciesAdmin)
+    admin.add_view(TeamRequestsAdmin)
+    admin.add_view(ParticipantsAdmin)
+
+setup_admin(app)
 if __name__ == "__main__":
     server_address = settings.server_address
+    setup_admin(app)
     host, port = server_address.split(":")
     uvicorn.run(app, host=host, port=int(port))
