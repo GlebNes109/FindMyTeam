@@ -10,7 +10,7 @@ class AuthAdmin(AuthenticationBackend):
         username = form.get("username")
         password = form.get("password")
 
-        if username == "1" and password == "1":
+        if username == settings.admin_login and password == settings.admin_password:
             request.session['user'] = username
             return True
         return False
