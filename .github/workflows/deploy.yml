@@ -26,4 +26,4 @@ jobs:
 
       - name: Restart container
         run: |
-            ssh deployer@glebnesyutin.fvds.ru "cd /home/deployer/FindMyTeam && docker compose down && docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build -d"
+            ssh deployer@glebnesyutin.fvds.ru "cd /home/deployer/FindMyTeam && docker compose down && docker compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build -d"
