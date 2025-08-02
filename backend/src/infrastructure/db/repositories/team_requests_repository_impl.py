@@ -16,7 +16,7 @@ class TeamRequestsRepositoryImpl(BaseRepositoryImpl[Any, TeamRequestsRead, TeamR
         ]
 
         if vacancies_ids is not None:
-            TeamRequestsDB.vacancy_id.in_(vacancies_ids)
+            conditions.append(TeamRequestsDB.vacancy_id.in_(vacancies_ids))
 
         if participant_id is not None:
             conditions.append(TeamRequestsDB.participant_id == participant_id)

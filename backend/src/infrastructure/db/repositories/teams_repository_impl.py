@@ -14,9 +14,10 @@ from domain.models.teams import TeamsRead, TeamsCreate, TeamsUpdate, VacanciesRe
 from infrastructure.db.db_models.events import EventTracksDB
 from infrastructure.db.db_models.participants import ParticipantsDB
 from infrastructure.db.db_models.teams import TeamsDB, TeamMembersDB, TeamVacanciesDB
-from infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from asyncpg.exceptions import UniqueViolationError
+
+from infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
 
 
 class TeamsRepositoryImpl(
@@ -183,7 +184,7 @@ class TeamsRepositoryImpl(
         )
 
     async def delete_vacancy(self, id: Any) -> bool:
-        await self.get(id)  # проверка что существует (чтобы не удаляли по нескольку раз одно и то же)))
+        await self.get_vacancy(id)  # проверка что существует (чтобы не удаляли по нескольку раз одно и то же)))
         await self.session.execute(delete(TeamVacanciesDB).where(TeamVacanciesDB == id))
         await self.session.commit()
         return True
