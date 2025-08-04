@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 
 from api.dependencies import get_user_id, get_participants_service
 from api.dto.participants import ParticipantsCreateAPI

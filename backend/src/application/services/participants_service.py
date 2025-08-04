@@ -46,10 +46,14 @@ class ParticipantsService:
         # TODO вынести в api слой, application не должен знать про апи модель !
         # print(participants_create.team)
         if participants_create.team:
-            print(participants_create.team)
+            # print(participants_create.team)
             new_team = TeamsCreate.map_to_domain_model(participant_read.event_id, participant_read.id, participants_create.team) # маппинг модели новой тимы , это нельзя сделать до вставки в бд, ведь нужен id участника, а он получается после вставки в бд
             # event_id есть только в domain модели, api слой не должен про него знать. добавление новой команды с таким же event_id - это бизнес логика
-
+            for vacancy in new_team.vacancies:
+                try:
+                    self.event_service.get_track(vacancy.event_track_id)
+                except ObjectNotFoundError:
+                    raise BadRequestError
             await self.teams_repository.create(new_team)
             # к репозиториям других сервисов так нельзя обращаться, но это вынужденный компромисс - иначе получилась бы цикличная зависимость
 

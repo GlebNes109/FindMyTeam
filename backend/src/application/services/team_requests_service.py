@@ -23,9 +23,11 @@ class TeamRequestsService:
         participant = await self.participants_service.get_participant(team_request_partial_create.participant_id) # получить участника, который указан в реквесте
         vacancy_read = await self.teams_service.get_vacancy(team_request_partial_create.vacancy_id) # получить вакансию
         team = await self.teams_service.get_team(vacancy_read.team_id) # по вакансии получить id команды
-        this_user_participants = await self.participants_service.get_event_participants_by_event_id(
-            team.event_id)  # по команде получить участия юзера (пользователя системы, который инициировал запрос)
+        """this_user_participants = await self.participants_service.get_participants(
+            user_id)  # по команде получить участия юзера (пользователя системы, который инициировал запрос)
         this_user_participants_ids = [participant.id for participant in this_user_participants] # айди его участия в удобном формате списка
+"""
+        teamlead = await self.participants_service.get_participant(team.teamlead_id)
 
         # если отклик -> user_id соотвествует указанному participant
         if user_id == participant.user_id and participant.event_role == EventRole.PARTICIPANT: # отклик - participant это и есть юзер.
@@ -36,7 +38,7 @@ class TeamRequestsService:
             )
 
         # если приглашение -> user_id соотвествует тимлиду в команде, в которой вакансия
-        elif user_id != participant.user_id and participant.event_role == EventRole.PARTICIPANT and team.teamlead_id in this_user_participants_ids: # приглашение - participant не является юзером, однако user в числе прочих регистраций зареган на этот ивент как тимлид
+        elif user_id != participant.user_id and participant.event_role == EventRole.PARTICIPANT and teamlead.user_id == user_id: # приглашение - participant не является юзером, однако user в числе прочих регистраций зареган на этот ивент как тимлид
             teams_create = TeamRequestsCreate(
                 # approved_by_teamlead=False,
                 approved_by_teamlead=True,
@@ -151,10 +153,12 @@ class TeamRequestsService:
         participant = await self.participants_service.get_participant(request.participant_id)
         vacancy_read = await self.teams_service.get_vacancy(request.vacancy_id)  # получить вакансию
         team = await self.teams_service.get_team(vacancy_read.team_id)
-        this_user_participants = await self.participants_service.get_event_participants_by_event_id(
-            team.event_id)  # по команде получить участия юзера (пользователя системы, который инициировал запрос)
-        this_user_participants_ids = [participant.id for participant in this_user_participants]
-        if user_id != participant.user_id and not participant.is_teamlead() and team.teamlead_id in this_user_participants_ids:
+        """this_user_participants = await self.participants_service.get_participants(
+            user_id)  # по команде получить участия юзера (пользователя системы, который инициировал запрос)
+        this_user_participants_ids = [participant.id for participant in this_user_participants]"""
+        teamlead = await self.participants_service.get_participant(team.teamlead_id)
+
+        if user_id != participant.user_id and not participant.is_teamlead() and teamlead.user_id == user_id:
             request.approved_by_teamlead = approve
         # TODO исправить баг когда юзер один, а участники разные
         elif participant.user_id == user_id and not participant.is_teamlead():

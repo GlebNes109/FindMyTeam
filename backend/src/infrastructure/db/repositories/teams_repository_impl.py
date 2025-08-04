@@ -19,6 +19,8 @@ from asyncpg.exceptions import UniqueViolationError
 
 from infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
 
+from domain.models.teams import VacanciesCreate
+
 
 class TeamsRepositoryImpl(
     BaseRepositoryImpl[TeamsDB, TeamsBasicRead, TeamsCreate, TeamsUpdate],
@@ -157,6 +159,8 @@ class TeamsRepositoryImpl(
         return await self._assemble_team_read(team, tracks)
 
     async def _assemble_team_read(self, team: TeamsDB, tracks: dict[str, EventTracksDB]) -> TeamsRead:
+        if team is None:
+            return None
         vacancies_read = [
             VacanciesRead(
                 id=vacancy.id,
@@ -184,7 +188,61 @@ class TeamsRepositoryImpl(
         )
 
     async def delete_vacancy(self, id: Any) -> bool:
-        await self.get_vacancy(id)  # проверка что существует (чтобы не удаляли по нескольку раз одно и то же)))
-        await self.session.execute(delete(TeamVacanciesDB).where(TeamVacanciesDB == id))
+        await self.get_vacancy(id) # проверка что существует (чтобы не удаляли по нескольку раз одно и то же)))
+        # print(await self.get_vacancy(id))
+        await self.session.execute(delete(TeamVacanciesDB).where(TeamVacanciesDB.id == id))
+        await self.session.commit()
+        return True
+
+    async def update(self, obj: TeamsUpdate) -> TeamsBasicRead:
+        try:
+            stmt = select(self.model).where(self.model.id == obj.id)
+            result = await self.session.execute(stmt)
+            db_team = result.scalar_one()
+
+            # поле обновляется только если передано
+            if obj.name is not None:
+                db_team.name = obj.name
+            if obj.description is not None:
+                db_team.description = obj.description
+
+            await self.session.commit()
+            await self.session.refresh(db_team)
+
+            return TeamsBasicRead.model_validate(db_team, from_attributes=True)
+
+        except NoResultFound:
+            raise ObjectNotFoundError
+
+    async def create_vacancy(self, obj: VacanciesCreate, team_id: Any) -> VacanciesBasicRead:
+        db_obj = TeamVacanciesDB(
+            id=str(uuid.uuid4()),
+            team_id=team_id,
+            event_track_id=obj.event_track_id,
+            description=obj.description
+        )
+        self.session.add(db_obj)
+        try:
+            self.session.add(db_obj)
+            await self.session.commit()
+            await self.session.refresh(db_obj)
+            validate_obj = VacanciesBasicRead(
+                id=db_obj.id,
+                track_id=db_obj.event_track_id,
+                description=db_obj.description,
+                team_id=db_obj.team_id
+            )
+            return VacanciesBasicRead.model_validate(validate_obj, from_attributes=True)
+        except IntegrityError as e:
+            if e.orig.sqlstate == '23505':
+                raise ObjectAlreadyExistsError from e
+            else:
+                raise
+
+    async def delete_team_member(self, team_id: Any, participant_id: Any) -> bool:
+        await self.session.execute(delete(TeamMembersDB).where(
+            (TeamMembersDB.participant_id == participant_id) &
+            (TeamMembersDB.team_id == team_id)
+        ))
         await self.session.commit()
         return True
