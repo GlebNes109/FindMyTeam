@@ -73,7 +73,10 @@ function RegistrationEventPage() {
             })
             .then((data) => {
                 console.log("Успешно зарегистрирован:", data);
-                navigate(`/event/${event.id}`);
+                navigate(`/event/${event.id}`, {
+                    state: { participant_id: data.id },
+                })
+                ;
             });
     }
 
