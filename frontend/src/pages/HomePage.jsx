@@ -17,6 +17,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {clearAccessToken} from "../tokenStore.js";
 import {apiFetch} from "../apiClient.js";
+import PatchUserModal from "../components/PatchUserModal.jsx";
 
 function HomePage() {
     const navigate = useNavigate();
@@ -284,6 +285,11 @@ function HomePage() {
                     })}
                 </Grid>
             )}
+            <PatchUserModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
+
         </Container>
         </>
     );
