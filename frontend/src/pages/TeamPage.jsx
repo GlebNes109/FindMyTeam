@@ -32,7 +32,16 @@ import ParticipantsList from "../components/ParticipantsList.jsx";
 
 const TeamVacancy = ({ vacancy, index, participant, onRemove, isTeamLead }) =>  {
     const [expanded, setExpanded] = useState(false);
+    const [isOverflowing, setIsOverflowing] = useState(false);
+    const contentRef = useRef(null);
+    const collapsedSize = 150;
 
+    useEffect(() => {
+        if (contentRef.current) {
+            const height = contentRef.current.scrollHeight;
+            setIsOverflowing(height > collapsedSize);
+        }
+    }, [vacancy.description]);
     const handleRespond = async () => {
         try {
             const res = await apiFetch("/team_requests", {
@@ -70,7 +79,7 @@ const TeamVacancy = ({ vacancy, index, participant, onRemove, isTeamLead }) =>  
             {isTeamLead && (
                 <IconButton
                     aria-label="Удалить"
-                    onClick={() => onRemove(index, vacancy.id)}
+                    onClick={() => onRemove({ index, id: vacancy.id })}
                     sx={{
                         position: "absolute",
                         top: 8,
@@ -95,20 +104,25 @@ const TeamVacancy = ({ vacancy, index, participant, onRemove, isTeamLead }) =>  
                 </Stack>
                 <Divider sx={{ mb: 3 }}/>
 
-                <Collapse in={expanded} collapsedSize={80}>
-                    <Card sx={{ bgcolor: grey[900], p: 2, borderRadius: 3 }}>
-                        <Typography
-                            variant="body2"
-                            sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
-                        >
+                <Collapse in={expanded} collapsedSize={collapsedSize}>
+                    <Card sx={{ bgcolor: grey[900], p: 4, borderRadius: 3 }}>
+                        <Box ref={contentRef} sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                             <ReactMarkdown>{vacancy.description || "—"}</ReactMarkdown>
-                        </Typography>
+                        </Box>
                     </Card>
                 </Collapse>
-                <Stack direction="row" spacing={2} mt={2}>
-                    <Button size="small" onClick={() => setExpanded(!expanded)}>
+
+                {isOverflowing && (
+                    <Button
+                        size="small"
+                        sx={{ mt: 1 }}
+                        onClick={(e) => {e.stopPropagation();
+                            setExpanded(!expanded)}}
+                    >
                         {expanded ? "Свернуть" : "Развернуть"}
                     </Button>
+                )}
+                <Stack direction="row" spacing={2} mt={2}>
                     {canRespond && (
                         <Button size="small" variant="contained" color="primary" onClick={handleRespond}>
                             Откликнуться
@@ -135,8 +149,12 @@ function TeamPage() {
     const [tracks, setTracks] = useState([]);
     const [newVacancy, setNewVacancy] = useState({ event_track_id: "", description: "" });
     const [showVacancyForm, setShowVacancyForm] = useState(false);
+    const [confirmRemoveVacancy, setConfirmRemoveVacancy] = useState({ open: false, index: null, id: null });
+    const [confirmKickMember, setConfirmKickMember] = useState({ open: false, id: null });
+
 
     const isTeamLead = participant && team && participant.id === team.teamlead_id;
+    const inTeam = team?.members?.some(member => member.id === participant?.id);
 
     const fetchTeam = async () => {
         const res = await apiFetch(`/teams/${params.teamId}`);
@@ -202,6 +220,7 @@ function TeamPage() {
     }
 
     const handleSaveVacancy = async () => {
+        console.log("Saving vacancy:", newVacancy);
         const res = await apiFetch(`/teams/${team.id}/vacancy`, {
             method: "POST",
             body: JSON.stringify(newVacancy),
@@ -317,8 +336,9 @@ function TeamPage() {
                             key={vacancy.id || index}
                             vacancy={vacancy}
                             index={index}
-                            onRemove={removeVacancy}
+                            onRemove={(info) => setConfirmRemoveVacancy({ open: true, ...info })}
                             isTeamLead={isTeamLead}
+                            participant={participant}
                         />
                     ))}
                 </Stack>
@@ -332,12 +352,14 @@ function TeamPage() {
                                 <Button
                                     variant="outlined"
                                     color="error"
-                                    onClick={async (e) => {
+                                    onClick={(e) => {
                                         e.stopPropagation();
-                                        await apiFetch(`/teams/${team.id}/members/${member.id}`, { method: "DELETE" });
-                                        setTeam(prev => ({ ...prev, members: prev.members.filter(m => m.id !== member.id) }));
+                                        setConfirmKickMember({ open: true, id: member.id });
                                     }}
-                                >Выгнать</Button>
+                                >
+                                    Выгнать
+                                </Button>
+
                             ) : null}
                         />
                     ))}
@@ -349,9 +371,12 @@ function TeamPage() {
                             Удалить команду
                         </Button>
                     )}
-                    <Button variant="outlined" color="warning" onClick={() => setOpenLeaveDialog(true)}>
-                        Выйти из команды
-                    </Button>
+                    {inTeam && (
+                        <Button variant="outlined" color="warning" onClick={() => setOpenLeaveDialog(true)}>
+                            Выйти из команды
+                        </Button>
+                    )}
+
                 </Box>
 
                 <Dialog open={openLeaveDialog} onClose={() => setOpenLeaveDialog(false)}>
@@ -383,6 +408,62 @@ function TeamPage() {
                             await apiFetch(`/teams/${team.id}`, { method: "DELETE" });
                             window.location.href = "/";
                         }}>Удалить</Button>
+                    </DialogActions>
+                </Dialog>
+                <Dialog
+                    open={confirmRemoveVacancy.open}
+                    onClose={() => setConfirmRemoveVacancy({ open: false, index: null, id: null })}
+                >
+                    <DialogTitle>Удалить вакансию?</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            Это действие нельзя отменить. Удалить эту вакансию?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setConfirmRemoveVacancy({ open: false, index: null, id: null })}>
+                            Отмена
+                        </Button>
+                        <Button
+                            color="error"
+                            onClick={async () => {
+                                await removeVacancy(confirmRemoveVacancy.index, confirmRemoveVacancy.id);
+                                setConfirmRemoveVacancy({ open: false, index: null, id: null });
+                            }}
+                        >
+                            Удалить
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+                <Dialog
+                    open={confirmKickMember.open}
+                    onClose={() => setConfirmKickMember({ open: false, id: null })}
+                >
+                    <DialogTitle>Исключить участника?</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            Участник будет удалён из команды. Продолжить?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setConfirmKickMember({ open: false, id: null })}>
+                            Отмена
+                        </Button>
+                        <Button
+                            color="error"
+                            onClick={async () => {
+                                await apiFetch(`/teams/${team.id}/members/${confirmKickMember.id}`, {
+                                    method: "DELETE"
+                                });
+                                setTeam(prev => ({
+                                    ...prev,
+                                    members: prev.members.filter(m => m.id !== confirmKickMember.id)
+                                }));
+                                setConfirmKickMember({ open: false, id: null });
+                            }}
+                        >
+                            Исключить
+                        </Button>
                     </DialogActions>
                 </Dialog>
             </Container>
