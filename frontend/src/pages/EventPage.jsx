@@ -26,6 +26,7 @@ import {grey} from "@mui/material/colors";
 import ParticipantsList from "../components/ParticipantsList.jsx";
 import {getAccessToken} from "../tokenStore.js";
 import {apiFetch} from "../apiClient.js";
+import ParticipantCard from "../components/ParticipantCard.jsx";
 
 function EventPage() {
     const { eventId } = useParams();
@@ -62,7 +63,7 @@ function EventPage() {
 
     const loadEventAndTeams = async () => {
         if (!eventId || loadedTabs.teams) return;
-        const token = localStorage.getItem("token");
+        // const token = localStorage.getItem("token");
 
         try {
             const [eventRes, teamsRes] = await Promise.all([
@@ -101,7 +102,6 @@ function EventPage() {
 
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
         if (!participant_id) return;
 
         const fetchParticipantData = async () => {
@@ -227,7 +227,7 @@ function EventPage() {
         <>
             <Toolbar />
             <Container>
-        <Box p={5}>
+                <Box p={{ xs: 1, sm: 5 }}>
             <Typography variant="h4" mb={2}>{eventData.name}</Typography>
             <Typography mb={3}>{eventData.description}</Typography>
 
@@ -265,7 +265,7 @@ function EventPage() {
 
                                     {/* вторая колонка */}
                                     <TableCell sx={{ color: "white" }}>
-                                        <Stack direction="row" flexWrap="wrap" spacing={1}>
+                                        <Stack direction="row" flexWrap="wrap" spacing={1} rowGap={1}>
                                             {team.members.map((member, i) => (
                                                 <Chip
                                                     key={i}
@@ -479,35 +479,14 @@ function EventPage() {
                 </Box>
             )}
 
-            <Card sx={{ mt: 4, bgcolor: "background.paper", borderRadius: 3 }} variant={"outlined"}>
-                <CardContent>
-                    {participantData ? (
-                        <>
-                            <Stack direction="row" spacing={2} mb={2}>
-                            <Typography variant="h6" mb={2}>
-                                Вы участвуете в этом мероприятии
-                            </Typography>
-                            {myTeam ? (
-                                <Button variant="contained"
-                                        size="small"
-                                        color="success"
-                                        onClick={() => navigate(`/team/${myTeam.id}`)}
-                                >Моя команда</Button>
-                            ) : (null)
-                            }
-                            </Stack>
-                            <Typography><strong>Роль:</strong> {participantData.event_role === "TEAMLEAD" ? "Тимлид" : "Участник"}</Typography>
-                            <Typography><strong>Трек:</strong> {participantData.track.name}</Typography>
-                            <Typography sx={{ whiteSpace: "pre-wrap" }}>
-                                <strong>Резюме:</strong>
-                                <ReactMarkdown>{participantData.resume || "—"}</ReactMarkdown>
-                            </Typography>
-                        </>
-                    ) : (
-                        <Typography color="text.secondary">Вы не зарегистрированы на это мероприятие</Typography>
-                    )}
-                </CardContent>
-            </Card>
+            <ParticipantCard
+                participantData={participantData}
+                setParticipantData={setParticipantData}
+                myTeam={myTeam}
+                navigate={navigate}
+                eventTracks={eventData.event_tracks}
+                onUpdated={loadEventAndTeams} // чтобы обновляло данные после PATCH
+            />
 
             <SelectVacancyModal
                 isOpen={isVacancyModalOpen}
