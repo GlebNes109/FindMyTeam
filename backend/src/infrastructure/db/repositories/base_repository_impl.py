@@ -47,13 +47,19 @@ class BaseRepositoryImpl(
                 raise
 
     async def update(self, obj: UpdateModelType) -> ReadModelType:
-        await self.session.execute(
-            update(self.model)
-            .where(self.model.id == obj.id)
-            .values(**obj.model_dump())
-        )
-        await self.session.commit()
-        return await self.get(obj.id)
+        try:
+            await self.session.execute(
+                update(self.model)
+                .where(self.model.id == obj.id)
+                .values(**obj.model_dump(exclude_none=True))
+            )
+            await self.session.commit()
+            return await self.get(obj.id)
+        except IntegrityError as e:
+            if e.orig.sqlstate == '23505':
+                raise ObjectAlreadyExistsError from e
+            else:
+                raise
 
     async def delete(self, id: Any) -> bool:
         await self.get(id) # проверка что существует (чтобы не удаляли по нескольку раз одно и то же)))
