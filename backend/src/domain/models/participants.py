@@ -34,18 +34,18 @@ class ParticipantsCreate(CreateBaseModel):
 
 
 class ParticipantsUpdate(UpdateBaseModel):
-    event_id: Optional[str]
-    track_id: Optional[str]
-    event_role: Optional[EventRole]
-    resume: Optional[str]
-    team: Optional[BaseModel] = None # все валидируется в апи
-    @model_validator(mode="after")
+    # event_id: Optional[str] = None
+    track_id: Optional[str] = None
+    event_role: Optional[EventRole] = None
+    resume: Optional[str] = None
+    # team: Optional[BaseModel] = None # все валидируется в апи
+    '''@model_validator(mode="after")
     def validate(self):
         if self.event_role == EventRole.TEAMLEAD and self.team == None:
             raise BadRequestError
         if self.event_role == EventRole.PARTICIPANT and self.team:
             raise BadRequestError
-        return self
+        return self'''
 
 class ParticipantsRead(BaseModel):
     id: str

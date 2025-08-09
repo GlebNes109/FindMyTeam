@@ -7,6 +7,10 @@ from domain.models.events import EventTracksRead
 from domain.models.participants import ParticipantsCreate, ParticipantsRead, ParticipantsDetailsRead
 from domain.models.teams import TeamsCreate
 
+from domain.models.participants import ParticipantsUpdate
+
+from domain.exceptions import AccessDeniedError
+
 
 class ParticipantsService:
     def __init__(self, repository: ParticipantsRepository, teams_repository: TeamsRepository, event_service: EventsService, users_service: UsersService):
@@ -37,6 +41,7 @@ class ParticipantsService:
         # проверка что event id реальный
         try:
             event = await self.event_service.get_event(participants_create_api.event_id)
+            track = await self.event_service.get_track(participants_create_api.track_id)
         except ObjectNotFoundError:
             raise BadRequestError # 400 в этом случае будет понятнее чем 404, так как ошибка именно в данных
         participants_create = ParticipantsCreate.model_validate(participants_create_api.model_copy(update={"user_id": user_id}), from_attributes=True)
@@ -134,3 +139,25 @@ class ParticipantsService:
             ))
 
         return participants_detail_read
+
+    async def change_participant_role(self, participant_id):
+        participant = await self.repository.get(participant_id)
+        participant_update_model = ParticipantsUpdate(
+            id=participant.id)
+        if participant.event_role == "PARTICIPANT":
+            participant_update_model.event_role = "TEAMLEAD"
+        elif participant.event_role == "TEAMLEAD":
+            participant_update_model.event_role = "PARTICIPANT"
+        await self.repository.update(participant_update_model)
+
+    async def patch_participant(self, update_participant, user_id):
+        participant = await self.repository.get(update_participant.id)
+        if update_participant.track_id:
+            try:
+                track = await self.event_service.get_track(update_participant.track_id)
+            except:
+                raise ObjectNotFoundError
+        if participant.user_id == user_id:
+            return await self.repository.update(update_participant)
+        else:
+            raise AccessDeniedError

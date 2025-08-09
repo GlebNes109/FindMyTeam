@@ -20,3 +20,9 @@ class ParticipantsCreateAPI(StrictBaseModel):
     event_role: EventRole
     resume: str
     team: Optional[TeamsCreateAPI] = None
+
+class ParticipantsUpdateApi(StrictBaseModel):
+    # event_id: Optional[str] = None
+    track_id: Optional[str] = None
+    # event_role: Optional[EventRole] = None
+    resume: Optional[str] = None
