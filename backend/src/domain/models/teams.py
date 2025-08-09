@@ -34,9 +34,10 @@ class TeamsCreate(CreateBaseModel):
         return cls(event_id=event_id, teamlead_id=teamlead_id, **data.model_dump(mode="json", by_alias=True))
 
 class TeamsUpdate(UpdateBaseModel):
-    name: Optional[str]
-    description: Optional[str]
-    vacancies: Optional[list[VacanciesCreate]] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    # vacancies: Optional[list[VacanciesCreate]] = None
+    # members_ids: Optional[list[str]]
 
 class TeamsRead(BaseModel):
     id: str

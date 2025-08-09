@@ -48,7 +48,8 @@ class UsersService:
 
     async def update_user(self, user_update: UsersUpdate, password) -> UsersRead:
         # user_db = self.repository.get(user.user_id)
-        user_update.password_hash = await self.hash_creator.create_hash(password)
+        if password:
+            user_update.password_hash = await self.hash_creator.create_hash(password)
         user_read = await self.repository.update(user_update)
         return user_read
 

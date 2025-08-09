@@ -1,8 +1,12 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 
 from api.dependencies import get_user_id, get_participants_service
 from api.dto.participants import ParticipantsCreateAPI
 from application.services.participants_service import ParticipantsService
+
+from domain.models.participants import ParticipantsUpdate
+
+from api.dto.participants import ParticipantsUpdateApi
 
 router = APIRouter()
 
@@ -17,6 +21,11 @@ async def get_participants(user_id: str = Depends(get_user_id), service: Partici
 @router.get("/{ParticipantsId}", summary="Получение участника", description="-")
 async def get_participants(ParticipantsId: str, service: ParticipantsService = Depends(get_participants_service)):
     return await service.get_detail_participant(ParticipantsId)
+
+@router.patch("", summary="Редактирование участника", description="-")
+async def create_participants(update_participant: ParticipantsUpdateApi, user_id: str = Depends(get_user_id), service: ParticipantsService = Depends(get_participants_service)):
+    update_participant_domain = ParticipantsUpdate(**update_participant.model_dump())
+    return await service.patch_participant(update_participant_domain, user_id)
 
 '''@router.get("", summary="Получение данных об участнике", description="-")
 async def create_participants(new_participant: ParticipantsCreateAPI, user_id: str = Depends(get_user_id), service: ParticipantsService = Depends(get_participants_service)):
