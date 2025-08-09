@@ -122,6 +122,8 @@ class TeamsService:
 
     async def delete(self, team_id, user_id):
         if await self.check_teamlead(user_id, team_id):
+            team = await self.get_team(team_id)
+            await self.participants_service.change_participant_role(team.teamlead_id)
             await self.repository.delete(team_id)
         else:
             raise AccessDeniedError
@@ -135,8 +137,10 @@ class TeamsService:
     async def leave_team(self, team_id, participant_id, user_id):
         team = await self.get_team(team_id)
         participant = await self.participants_service.get_participant(participant_id)
-        if participant.user_id == user_id and participant in team.members_ids:
-            if participant.role == "TEAMLEAD":
-                await self.repository.delete(team_id) # когда тимлид выходит, вся команда удаляется )
+        if participant.user_id == user_id and participant.id in team.members_ids:
+            if participant.event_role == "TEAMLEAD":
+                await self.participants_service.change_participant_role(participant_id)
+                await self.repository.delete_team_member(team_id, participant_id)
+                await self.repository.delete(team_id)  # когда тимлид выходит, вся команда удаляется )
             else:
                 await self.repository.delete_team_member(team_id, participant_id)

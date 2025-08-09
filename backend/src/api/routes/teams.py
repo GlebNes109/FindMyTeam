@@ -38,7 +38,7 @@ async def delete_team_member(TeamId: str, ParticipantId: str, user_id = Depends(
     await service.delete_team_member(TeamId, ParticipantId, user_id)
     return Response(status_code=204)
 
-@router.delete("/{TeamId}/leave", summary="Уйти из команды", description="Уйти из команды, если вы не тимлид. Если вы тимлид, команда удаляется.")
+@router.delete("/{TeamId}/leave/{ParticipantId}", summary="Уйти из команды", description="Уйти из команды, если вы не тимлид. Если вы тимлид, команда удаляется.")
 async def delete_team_member(TeamId: str, ParticipantId: str, user_id = Depends(get_user_id), service = Depends(get_teams_service)):
     await service.leave_team(TeamId, ParticipantId, user_id)
     return Response(status_code=204)

@@ -246,3 +246,16 @@ class TeamsRepositoryImpl(
         ))
         await self.session.commit()
         return True
+
+    async def delete(self, team_id: Any) -> bool:
+        await self.session.execute(
+            delete(TeamMembersDB).where(TeamMembersDB.team_id == team_id)
+        )
+        await self.session.execute(
+            delete(TeamVacanciesDB).where(TeamVacanciesDB.team_id == team_id)
+        )
+        await self.session.execute(
+            delete(TeamsDB).where(TeamsDB.id == team_id)
+        )
+        await self.session.commit()
+        return True
