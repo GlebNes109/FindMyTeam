@@ -1,8 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import {Box, Button, FormControl, InputLabel, MenuItem, Select, TextField, Toolbar, Typography} from "@mui/material";
+import {useLocation, useNavigate, useParams} from "react-router-dom";
+import {
+    Alert,
+    Box,
+    Button,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
+    TextField,
+    Toolbar,
+    Typography
+} from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
-import {apiFetch} from "../apiClient.js";
+import {apiFetch, refreshAccessToken} from "../apiClient.js";
+
 
 function RegistrationEventPage() {
     const [event_role, setEventRole] = useState("PARTICIPANT");
@@ -14,6 +26,27 @@ function RegistrationEventPage() {
     const navigate = useNavigate();
     const [event, setEvent] = useState(null);
     const { event_id } = useParams();
+    const location = useLocation()
+    const [errorMessage, setErrorMessage] = useState("");
+    useEffect(() => {
+        let isMounted = true;
+
+        const checkAuth = async () => {
+            try {
+                await refreshAccessToken();
+            } catch {
+                if (!isMounted) return;
+                navigate(`/auth?redirect=${encodeURIComponent(location.pathname)}`, { replace: true });
+            }
+        };
+
+        checkAuth();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [navigate, location.pathname]);
+
     useEffect(() => {
         apiFetch(`/events/${event_id}`)
             .then(res => res.json())
@@ -66,13 +99,16 @@ function RegistrationEventPage() {
                         navigate("/signin");
                         throw new Error("Ошибка регистрации");
                     } else if (response.status === 400) {
-                        throw new Error("Ошибка регистрации");
+                        setErrorMessage("Некорректные данные, заполните все поля");
+                        throw new Error;
+                    } else if (response.status === 409) {
+                        setErrorMessage("Вы уже участвуете в мероприятии");
+                        throw new Error;
                     }
                 }
                 return response.json();
             })
             .then((data) => {
-                console.log("Успешно зарегистрирован:", data);
                 navigate(`/event/${event.id}`, {
                     state: { participant_id: data.id },
                 })
@@ -209,6 +245,7 @@ function RegistrationEventPage() {
             <Button variant="contained" onClick={RegisterNewParticipant}>
                 Подтвердить
             </Button>
+            {errorMessage && <Alert sx={{my: 3}} severity="error">{errorMessage}</Alert>}
         </Box>
         </>
     );
