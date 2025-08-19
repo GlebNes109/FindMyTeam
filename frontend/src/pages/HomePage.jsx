@@ -34,7 +34,7 @@ function HomePage() {
             })
             .catch((err) => {
                 if (err.code === "UNABLE_TO_UPDATE_TOKEN") {
-                    navigate("/signin");
+                    navigate("/auth");
                 }
                 // временно, потом сделать нормально (чтобы навигация была централизована)
             });
@@ -71,7 +71,7 @@ function HomePage() {
         } catch (err) {
             console.warn("Не удалось удалить refresh_token на сервере!!", err);
         }
-        navigate("/signin");
+        navigate("/auth");
     };
 
     const handleDelete = () => {
@@ -207,12 +207,16 @@ function HomePage() {
 
                         // карточки мероприятия
                         return (
-                            <Grid item xs={12} sm={6} md={4} key={participant.id}> {/* xs=12 для полной ширины на мобильных, sm=6 для двух колонок на планшетах md=4 для трех колонок на десктопах */}
+                            <Grid item xs={12} sm={6} md={4} key={participant.id}>
                                 <Card
                                     sx={{
-                                        height: "100%",
-                                        display: 'flex',
-                                        flexDirection: 'column',
+                                        width: {
+                                            xs: "100%",   // на мобильных карточка занимает всю ширину
+                                            sm: 270,
+                                        },
+                                        height: 250,          // фиксированная высота карточки
+                                        display: "flex",
+                                        flexDirection: "column",
                                         cursor: "pointer",
                                         boxShadow: 3,
                                         transition: "transform 0.2s, box-shadow 0.2s",
@@ -228,7 +232,12 @@ function HomePage() {
                                         })
                                     }
                                 >
-                                    <CardContent sx={{ flexGrow: 1 }}>
+                                    <CardContent
+                                        sx={{
+                                            flexGrow: 1,
+                                            overflow: "hidden", // ничего не выйдет за пределы карточки
+                                        }}
+                                    >
                                         <Stack
                                             direction="row"
                                             spacing={1}
@@ -250,27 +259,35 @@ function HomePage() {
                                                 size="small"
                                             />
                                             {participant.track && (
-                                                <Chip
-                                                    label={participant.track.name}
-                                                    color="info"
-                                                    size="small"
-                                                />
+                                                <Chip label={participant.track.name} color="info" size="small" />
                                             )}
                                         </Stack>
 
-                                        <Typography variant="h6" gutterBottom sx={{ fontWeight: 500 }} noWrap>
+                                        <Typography
+                                            variant="h6"
+                                            gutterBottom
+                                            sx={{ fontWeight: 500 }}
+                                            noWrap
+                                        >
                                             {event.name}
                                         </Typography>
-                                        <Typography variant="body2" color="text.secondary" mb={2} sx={{
-                                            display: '-webkit-box',
-                                            overflow: 'hidden',
-                                            WebkitBoxOrient: 'vertical',
-                                            WebkitLineClamp: 3,
-                                        }}>
+
+                                        <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                            mb={2}
+                                            sx={{
+                                                display: "-webkit-box",
+                                                WebkitLineClamp: 3,
+                                                WebkitBoxOrient: "vertical",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis", // троеточие
+                                            }}
+                                        >
                                             {event.description}
                                         </Typography>
 
-                                        <Divider sx={{ my: 1.5 }} /> {/* Разделитель для дат */}
+                                        <Divider sx={{ my: 1.5 }} />
 
                                         <Typography variant="body2" color="text.primary">
                                             <strong>Начало:</strong> {event.start_date}
@@ -281,6 +298,7 @@ function HomePage() {
                                     </CardContent>
                                 </Card>
                             </Grid>
+
                         );
                     })}
                 </Grid>
