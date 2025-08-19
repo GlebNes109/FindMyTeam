@@ -1,6 +1,6 @@
 // App.jsx
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route, useNavigate, useLocation} from 'react-router-dom';
 import Navbar from './components/NavBar.jsx';
 import MainPage from './pages/MainPage.jsx';
 import LoginPage from "./pages/LoginPage.jsx";
@@ -12,13 +12,15 @@ import RegistrationEventPage from "./pages/RegistrationEventPage.jsx";
 import TeamPage from "./pages/TeamPage.jsx";
 import ParticipantPage from "./pages/ParticipantPage.jsx";
 import {setAuthFailureHandler} from "./authHandler.js";
+import AuthPage from "./pages/AuthPage.jsx";
 
 function AppRoutesWithAuthHandler() {
     const navigate = useNavigate();
+    const location = useLocation()
 
     useEffect(() => {
         setAuthFailureHandler(() => {
-            navigate('/signin');
+            navigate(`/auth?redirect=${encodeURIComponent(location.pathname)}`);
         });
     }, [navigate]);
 
@@ -31,6 +33,7 @@ function AppRoutesWithAuthHandler() {
                 <Route path="/signup" element={<RegPage />} />
                 <Route path="/home" element={<HomePage />} />
                 <Route path="/events" element={<EventsPage />} />
+                <Route path="/auth" element={<AuthPage />} />
                 <Route path="/event/:eventId" element={<EventPage />} />
                 <Route path="/event/:event_id/register" element={<RegistrationEventPage />} />
                 <Route path="/team/:teamId" element={<TeamPage />} />
