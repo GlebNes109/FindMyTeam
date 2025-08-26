@@ -104,9 +104,34 @@ function MainPage() {
                         e.currentTarget.pause();
                         e.currentTarget.currentTime = e.currentTarget.duration; // фиксируемся на последнем кадре
                     }}
+                    sx={{
+                        display: { xs: "none", md: "block" },
+                    }}
                 >
 
                     <source src="/video_2.mp4" type="video/mp4" />
+                </video>
+
+                <video
+                    muted
+                    playsInline
+                    autoPlay
+                    loop
+                    style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        zIndex: 0,
+                    }}
+                    // показывается только на телефоне
+                    sx={{
+                        display: { xs: "block", md: "none" },
+                    }}
+                >
+                    <source src="/video_mobile.mp4" type="video/mp4" />
                 </video>
                 <Container maxWidth="md" sx={{  position: "relative", zIndex: 1, display: "grid", placeItems: "center" }}>
                     <Box>
