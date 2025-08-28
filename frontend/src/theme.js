@@ -6,17 +6,19 @@ const theme = extendTheme({
         dark: {
             palette: {
                 mode: 'dark',
-                primary: { main: teal[300] },
-                secondary: { main: cyan[500] },
-                background: { default: '#1C1B1F', paper: '#1C1B1F' }, // M3 dark background
+                primary: { main: '#FFDD2D' },      // жёлтый Т-банка
+                secondary: { main: '#FFFFFF' },    // белый
+                background: { default: '#121212', paper: '#1C1B1F' }, // тёмный фон
+                text: { primary: '#FFFFFF', secondary: '#B3B3B3' },
             },
         },
         light: {
             palette: {
                 mode: 'light',
-                primary: { main: teal[700] },
-                secondary: { main: cyan[600] },
-                background: { default: '#FFFBFE', paper: '#FFFBFE' }, // M3 light background
+                primary: {main: '#FFDD2D'},      // жёлтый Т-банка
+                secondary: {main: '#000000'},    // чёрный
+                background: {default: '#FFFFFF', paper: '#FFFBFE'}, // белый фон
+                text: {primary: '#000000', secondary: '#333333'},
             },
         },
     },

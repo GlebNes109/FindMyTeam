@@ -13,6 +13,8 @@ import TeamPage from "./pages/TeamPage.jsx";
 import ParticipantPage from "./pages/ParticipantPage.jsx";
 import {setAuthFailureHandler} from "./authHandler.js";
 import AuthPage from "./pages/AuthPage.jsx";
+import theme from './theme';
+import {CssVarsProvider} from "@mui/material";
 
 function AppRoutesWithAuthHandler() {
     const navigate = useNavigate();
@@ -45,9 +47,12 @@ function AppRoutesWithAuthHandler() {
 
 function App() {
     return (
+        <CssVarsProvider theme={theme}>
+
         <Router>
             <AppRoutesWithAuthHandler />
         </Router>
+        </CssVarsProvider>
     );
 }
 

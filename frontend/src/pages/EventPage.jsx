@@ -253,8 +253,8 @@ function EventPage() {
                                         cursor: 'pointer',
                                         '&:last-child td, &:last-child th': { border: 0 },
                                         borderBottom: index < eventData.event_teams.length - 1 ? "1px solid #424242" : "none",
-                                        backgroundColor: myTeam?.id === team.id ? 'rgba(100, 255, 218, 0.1)' : 'inherit',
-                                        borderLeft: myTeam?.id === team.id ? '4px solid #64ffda' : 'none',
+                                        backgroundColor: myTeam?.id === team.id ? 'rgba(254, 221, 44, 0.1)' : 'inherit',
+                                        borderLeft: myTeam?.id === team.id ? '4px solid #fedd2c' : 'none',
                                     }}
                                     onClick={() => navigate(`/team/${team.id}`)}
                                 >
@@ -270,9 +270,9 @@ function EventPage() {
                                                 <Chip
                                                     key={i}
                                                     label={`${member.login} [${member.track.name}]`}
-                                                    color={member.event_role === "PARTICIPANT" ? "primary" : "success"}
+                                                    color={member.event_role === "PARTICIPANT" ? "primary" : "secondary"}
                                                     size="small"
-                                                    sx={{ color: "white"}}
+                                                    sx={{ color: "black"}}
                                                 />
                                             ))}
                                             {team.vacancies.map((vacancy, i) => (

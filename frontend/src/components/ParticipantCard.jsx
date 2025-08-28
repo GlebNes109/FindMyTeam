@@ -76,7 +76,7 @@ const ParticipantCard = ({ participantData, setParticipantData, myTeam, navigate
                         <Button
                             variant="contained"
                             size="small"
-                            color="success"
+                            color="primary"
                             onClick={() => navigate(`/team/${myTeam.id}`)}
                         >
                             Моя команда

@@ -133,8 +133,8 @@ export default function EventsPage() {
                                                     {event.event_tracks.map((track) => (
                                                         <Chip
                                                             sx={{
-                                                                backgroundColor: (theme) => theme.palette.primary.main,
-                                                                color: "white",
+                                                                backgroundColor: 'secondary.main',
+                                                                color: "black",
                                                                 border: 0,
                                                             }}
                                                             key={track.id}
