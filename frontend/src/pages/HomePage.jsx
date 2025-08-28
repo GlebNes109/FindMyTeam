@@ -189,7 +189,12 @@ function HomePage() {
                     </Button>
                 </Box>
             ) : (
-                <Grid container spacing={3}>
+                <Grid
+                    container
+                    spacing={3}
+                    sx={{
+                        px: { xs: 1, sm: 0 } // небольшой паддинг на мобилке
+                    }}>
                     {participants.map((participant) => {
                         const event = eventDetails[participant.event_id];
                         if (!event) {
@@ -214,6 +219,7 @@ function HomePage() {
                                             xs: "100%",   // на мобильных карточка занимает всю ширину
                                             sm: 270,
                                         },
+                                        minWidth: 120,
                                         height: 250,          // фиксированная высота карточки
                                         display: "flex",
                                         flexDirection: "column",
@@ -253,13 +259,13 @@ function HomePage() {
                                                 }
                                                 color={
                                                     participant.event_role === "PARTICIPANT"
-                                                        ? "secondary"
+                                                        ? "primary"
                                                         : "primary"
                                                 }
                                                 size="small"
                                             />
                                             {participant.track && (
-                                                <Chip label={participant.track.name} color="info" size="small" />
+                                                <Chip label={participant.track.name} color="secondary" size="small" />
                                             )}
                                         </Stack>
 

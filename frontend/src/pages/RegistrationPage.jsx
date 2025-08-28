@@ -51,7 +51,9 @@ const RegistrationPage = () => {
             }
             const data = await response.json();
             setAccessToken(data.access_token);
-            navigate("/events");
+            const params = new URLSearchParams(location.search);
+            const redirectTo = params.get("redirect") || "/home";
+            navigate(redirectTo, { replace: true });
         } catch {
             setErrorMessage("Ошибка при попытке входа");
         }
@@ -109,7 +111,7 @@ const RegistrationPage = () => {
 
                     <Button
                         variant="text"
-                        onClick={() => navigate("/signin")}
+                        onClick={() => navigate(`/signin?redirect=${encodeURIComponent(location.pathname)}`)}
                         sx={{ textTransform: "none" }}
                     >
                         Уже есть аккаунт?

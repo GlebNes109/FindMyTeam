@@ -79,90 +79,105 @@ function MainPage() {
             <Box
                 sx={{
                     ...sectionSx,
-                    px: 2,
                     position: "relative",
                     color: "white",
                     textAlign: "center",
                     overflow: "hidden",
+                    height: "100vh",     // секция на всю высоту экрана
                 }}
             >
-                {/* Видео фон */}
-                <video
-                    muted
-                    playsInline
-                    style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        zIndex: 0,
-                    }}
-                    autoPlay
-                    onEnded={(e) => {
-                        e.currentTarget.pause();
-                        e.currentTarget.currentTime = e.currentTarget.duration; // фиксируемся на последнем кадре
-                    }}
+                {/* Видео: десктоп */}
+                <Box
                     sx={{
+                        position: "absolute",
+                        inset: 0,           // top:0 right:0 bottom:0 left:0
+                        zIndex: 0,
                         display: { xs: "none", md: "block" },
+                        pointerEvents: "none",
                     }}
                 >
+                    <video
+                        muted
+                        playsInline
+                        autoPlay
+                        style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            display: "block",
+                        }}
+                    >
+                        <source src="/video_2.mp4" type="video/mp4" />
+                    </video>
+                </Box>
 
-                    <source src="/video_2.mp4" type="video/mp4" />
-                </video>
-
-                <video
-                    muted
-                    playsInline
-                    autoPlay
-                    loop
-                    style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        zIndex: 0,
-                    }}
-                    // показывается только на телефоне
+                {/* Видео: мобилка */}
+                <Box
                     sx={{
+                        position: "absolute",
+                        inset: 0,
+                        zIndex: 0,
                         display: { xs: "block", md: "none" },
+                        pointerEvents: "none",
                     }}
                 >
-                    <source src="/video_mobile.mp4" type="video/mp4" />
-                </video>
-                <Container maxWidth="md" sx={{  position: "relative", zIndex: 1, display: "grid", placeItems: "center" }}>
-                    <Box>
-                        <Typography
-                            variant={isXs ? "h4" : "h3"}
-                            gutterBottom
-                            sx={{
-                                color: teal[100],
-                                fontWeight: 800,
-                                letterSpacing: ".02em",
-                                textShadow:
-                                    "0 0 5px rgba(0,229,255,.7), 0 0 24px rgba(0,229,255,.35)",
-                            }}
-                        >
-                            Добро пожаловать в FindMyTeam
-                        </Typography>
+                    <video
+                        muted
+                        playsInline
+                        autoPlay
+                        loop
+                        style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            display: "block",
+                        }}
+                    >
+                        <source src="/video_mobile.mp4" type="video/mp4" />
+                    </video>
+                </Box>
 
-                        <Typography
-                            variant={isXs ? "body1" : "h6"}
-                            mb={3}
-                            sx={{
-                                color: "rgba(255,255,255,0.9)",
-                                textShadow: "0 0 6px rgba(0,0,0,.45)",
-                            }}
-                        >
-                            Начните собирать свою команду уже сегодня!
-                        </Typography>
+                {/* Контент поверх видео */}
+                <Box
+                    sx={{
+                        position: "absolute",
+                        inset: 0,
+                        zIndex: 1,
+                        display: "grid",
+                        placeItems: "center",     // идеальное центрирование
+                        px: 2,                    // боковые поля для мобайла
+                    }}
+                >
+                    <Container maxWidth="md">
+                        <Box sx={{ textAlign: "center" }}>
+                            <Typography
+                                variant={isXs ? "h4" : "h3"}
+                                gutterBottom
+                                sx={{
+                                    color: "primary.main",
+                                    fontWeight: 800,
+                                    letterSpacing: ".02em",
+                                    // textShadow: "0 0 5px rgba(0,229,255,.7), 0 0 24px rgba(0,229,255,.35)",
+                                }}
+                            >
+                                Добро пожаловать в FindMyTeam
+                            </Typography>
 
-                        <AuthButtons loggedIn={isLoggedIn} />
-                    </Box>
-                </Container>
+                            <Typography
+                                variant={isXs ? "body1" : "h6"}
+                                mb={3}
+                                sx={{
+                                    color: "rgba(255,255,255,0.9)",
+                                    textShadow: "0 0 6px rgba(0,0,0,.45)",
+                                }}
+                            >
+                                Начните собирать свою команду уже сегодня!
+                            </Typography>
+
+                            <AuthButtons loggedIn={isLoggedIn} />
+                        </Box>
+                    </Container>
+                </Box>
             </Box>
 
             {/* События */}
@@ -193,12 +208,21 @@ function MainPage() {
                         </Typography>
                     ) : (
                         <>
-                            <Grid container spacing={3} justifyContent="center">
+                            <Grid container spacing={3} justifyContent="center"
+                                  sx={{ display: { xs: 'none', sm: 'flex' } }}
+                            >
                                 {events.slice(0, 4).map((event) => (
-                                    <Grid item xs={12} sm={6} md={4} lg={3} key={event.id}>
+                                    <Grid item
+                                          xs={12}
+                                          sm={6}
+                                          md={4}
+                                          lg={3}
+                                          key={event.id}
+                                          sx={{ display: 'flex' }}>
                                         <Card
                                             onClick={() => navigate(`/event/${event.id}`)}
                                             sx={{
+                                                width: "100%",
                                                 height: "100%",
                                                 display: "flex",
                                                 flexDirection: "column",
@@ -211,9 +235,10 @@ function MainPage() {
                                                     boxShadow: 6,
                                                 },
                                                 cursor: "pointer",
+                                                flexGrow: 1,
                                             }}
                                         >
-                                            <CardContent sx={{ flexGrow: 1 }}>
+                                            <CardContent sx={{width:'100%'}}>
                                                 <Typography variant="h6" gutterBottom fontWeight={700}>
                                                     {event.name}
                                                 </Typography>
@@ -239,7 +264,7 @@ function MainPage() {
 
                                                 <Box mt={1}>
                                                     <Typography variant="subtitle2">Треки:</Typography>
-                                                    <Stack direction="row" spacing={1} flexWrap="wrap">
+                                                    <Stack direction="row" spacing={1} flexWrap="wrap" rowGap={1}>
                                                         {(event.event_tracks || []).map((track) => (
                                                             <Chip
                                                                 key={track.id}
@@ -269,7 +294,86 @@ function MainPage() {
                                     </Grid>
                                 ))}
                             </Grid>
+                            <Stack
+                                spacing={3}
+                                sx={{ display: { xs: 'flex', sm: 'none' } }} // <-- КЛЮЧЕВОЕ ИЗМЕНЕНИЕ
+                            >
+                                {events.slice(0, 4).map((event) => (
+                                    <Card
+                                        onClick={() => navigate(`/event/${event.id}`)}
+                                        sx={{
+                                            width: "100%",
+                                            height: "100%",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            bgcolor: "background.paper",
+                                            color: "text.primary",
+                                            borderRadius: 2,
+                                            transition: "transform .2s, box-shadow .2s",
+                                            "&:hover": {
+                                                transform: "translateY(-4px)",
+                                                boxShadow: 6,
+                                            },
+                                            cursor: "pointer",
+                                            flexGrow: 1,
+                                        }}
+                                    >
+                                        <CardContent sx={{width:'100%'}}>
+                                            <Typography variant="h6" gutterBottom fontWeight={700}>
+                                                {event.name}
+                                            </Typography>
+                                            <Typography
+                                                variant="body2"
+                                                color="text.secondary"
+                                                sx={{
+                                                    display: "-webkit-box",
+                                                    WebkitLineClamp: 3,
+                                                    WebkitBoxOrient: "vertical",
+                                                    overflow: "hidden",
+                                                    mb: 1,
+                                                }}
+                                            >
+                                                {event.description}
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ mt: 0.5 }}>
+                                                <b>Дата начала:</b> {event.start_date}
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                <b>Дата окончания:</b> {event.end_date}
+                                            </Typography>
 
+                                            <Box mt={1}>
+                                                <Typography variant="subtitle2">Треки:</Typography>
+                                                <Stack direction="row" spacing={1} flexWrap="wrap" rowGap={1}>
+                                                    {(event.event_tracks || []).map((track) => (
+                                                        <Chip
+                                                            key={track.id}
+                                                            label={track.name}
+                                                            size="small"
+                                                            variant="outlined"
+                                                            sx={{ mb: 0.5 }}
+                                                        />
+                                                    ))}
+                                                </Stack>
+                                            </Box>
+                                        </CardContent>
+
+                                        <Box p={2}>
+                                            <Button
+                                                fullWidth
+                                                variant="contained"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/event/${event.id}/register`);
+                                                }}
+                                            >
+                                                Я участвую
+                                            </Button>
+                                        </Box>
+                                    </Card>
+
+                            ))}
+                        </Stack>
                             <Box mt={4} display="flex" justifyContent="center">
                                 <Button
                                     variant="contained"
@@ -285,11 +389,11 @@ function MainPage() {
                 </Container>
             </Box>
 
-            {/* Как это работает*/}
+            {/* Какие мероприятия мы поддерживаем */}
             <Box
                 sx={{
                     ...sectionSx,
-                    bgcolor: "background.default",
+                    bgcolor: "background.paper",
                 }}
             >
                 <Container maxWidth="lg">
@@ -299,65 +403,62 @@ function MainPage() {
                         gutterBottom
                         sx={{ fontWeight: 700, mb: 4 }}
                     >
-                        Как это работает
+                        Единый сервис для всех олимпиад и хакатонов
                     </Typography>
 
                     <Grid container spacing={3} justifyContent="center">
                         {[
                             {
-                                icon: <EventIcon />,
-                                title: "1. Выбери событие",
-                                text: "Просматривай список мероприятий и выбирай интересные тебе.",
+                                logo: "prod.png",
+                                title: "",
+                                color: '#003f28'
                             },
                             {
-                                icon: <GroupAddIcon />,
-                                title: "2. Найди команду",
-                                text: "Откликайся на вакансии или создай свою команду.",
+                                logo: "dano.png",
+                                title: "",
+                                color: '#323332'
                             },
                             {
-                                icon: <EmojiEventsIcon />,
-                                title: "3. Участвуй и побеждай",
-                                text: "Работайте вместе и побеждайте на соревнованиях.",
+                                logo: "deadline.png",
+                                title: "",
+                                color: '#141414'
                             },
-                        ].map((step, idx) => (
+                        ].map((event, idx) => (
                             <Grid item xs={12} sm={6} md={4} key={idx}>
                                 <Stack
                                     alignItems="center"
+                                    justifyContent="center"
                                     spacing={2}
                                     sx={{
                                         p: 3,
                                         borderRadius: 2,
-                                        bgcolor: grey[800],
+                                        bgcolor: event.color,
                                         border: (t) =>
-                                            `1px solid ${t.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
+                                            `1px solid ${
+                                                t.palette.mode === "dark"
+                                                    ? "rgba(255,255,255,0.08)"
+                                                    : "rgba(0,0,0,0.08)"} `,
                                         height: "100%",
                                         textAlign: "center",
                                     }}
                                 >
+                                    {/* Логотип */}
                                     <Box
+                                        component="img"
+                                        src={event.logo}
+                                        //alt={event.title}
                                         sx={{
-                                            width: 52,
-                                            height: 52,
-                                            borderRadius: "50%",
-                                            display: "grid",
-                                            placeItems: "center",
-                                            bgcolor: "primary.main",
-                                            color: "primary.contrastText",
-                                            boxShadow: (t) => `0 0 18px ${t.palette.primary.main}66`,
+                                            width: {xs: "100%", sm: 300},
+                                            height: {sm: "auto", xs: "auto"}
                                         }}
-                                    >
-                                        {step.icon}
-                                    </Box>
-                                    <Typography variant="h6" fontWeight={700}>
-                                        {step.title}
-                                    </Typography>
-                                    <Typography color="text.secondary">{step.text}</Typography>
+                                    />
                                 </Stack>
                             </Grid>
                         ))}
                     </Grid>
                 </Container>
             </Box>
+
 
             {/* FAQ */}
             <Box
