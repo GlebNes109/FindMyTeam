@@ -3,8 +3,6 @@ import React, { useEffect } from 'react';
 import {BrowserRouter as Router, Routes, Route, useNavigate, useLocation} from 'react-router-dom';
 import Navbar from './components/NavBar.jsx';
 import MainPage from './pages/MainPage.jsx';
-import LoginPage from "./pages/LoginPage.jsx";
-import RegPage from "./pages/RegistrationPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import EventsPage from "./pages/EventsPage.jsx";
 import EventPage from "./pages/EventPage.jsx";
@@ -31,8 +29,6 @@ function AppRoutesWithAuthHandler() {
             <Navbar />
             <Routes>
                 <Route path="/" element={<MainPage />} />
-                <Route path="/signin" element={<LoginPage />} />
-                <Route path="/signup" element={<RegPage />} />
                 <Route path="/home" element={<HomePage />} />
                 <Route path="/events" element={<EventsPage />} />
                 <Route path="/auth" element={<AuthPage />} />
