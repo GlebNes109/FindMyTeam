@@ -80,6 +80,7 @@ export default function EventsPage() {
 
     return (
         <>
+            <Toolbar/>
             <Container sx={{ mt: 4 }}>
                 {loading ? (
                     <Stack spacing={3}>
