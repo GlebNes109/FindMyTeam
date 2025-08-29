@@ -1,10 +1,8 @@
 // App.jsx
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route, useNavigate, useLocation} from 'react-router-dom';
 import Navbar from './components/NavBar.jsx';
 import MainPage from './pages/MainPage.jsx';
-import LoginPage from "./pages/LoginPage.jsx";
-import RegPage from "./pages/RegistrationPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import EventsPage from "./pages/EventsPage.jsx";
 import EventPage from "./pages/EventPage.jsx";
@@ -12,13 +10,17 @@ import RegistrationEventPage from "./pages/RegistrationEventPage.jsx";
 import TeamPage from "./pages/TeamPage.jsx";
 import ParticipantPage from "./pages/ParticipantPage.jsx";
 import {setAuthFailureHandler} from "./authHandler.js";
+import AuthPage from "./pages/AuthPage.jsx";
+import theme from './theme';
+import {CssVarsProvider} from "@mui/material";
 
 function AppRoutesWithAuthHandler() {
     const navigate = useNavigate();
+    const location = useLocation()
 
     useEffect(() => {
         setAuthFailureHandler(() => {
-            navigate('/signin');
+            navigate(`/auth?redirect=${encodeURIComponent(location.pathname)}`);
         });
     }, [navigate]);
 
@@ -27,10 +29,9 @@ function AppRoutesWithAuthHandler() {
             <Navbar />
             <Routes>
                 <Route path="/" element={<MainPage />} />
-                <Route path="/signin" element={<LoginPage />} />
-                <Route path="/signup" element={<RegPage />} />
                 <Route path="/home" element={<HomePage />} />
                 <Route path="/events" element={<EventsPage />} />
+                <Route path="/auth" element={<AuthPage />} />
                 <Route path="/event/:eventId" element={<EventPage />} />
                 <Route path="/event/:event_id/register" element={<RegistrationEventPage />} />
                 <Route path="/team/:teamId" element={<TeamPage />} />
@@ -42,9 +43,12 @@ function AppRoutesWithAuthHandler() {
 
 function App() {
     return (
+        <CssVarsProvider theme={theme}>
+
         <Router>
             <AppRoutesWithAuthHandler />
         </Router>
+        </CssVarsProvider>
     );
 }
 

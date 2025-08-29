@@ -9,7 +9,14 @@ class EventsDB(SQLModel, table=True):
     start_date: str
     end_date: str
     # Связь один ко многим
-    event_tracks: List["EventTracksDB"] = Relationship(back_populates="event")
+    event_tracks: List["EventTracksDB"] = Relationship(
+        back_populates="event",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"} # каскадное удаление
+    )
+    participants: List["ParticipantsDB"] = Relationship(
+        back_populates="event",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
 
 class EventTracksDB(SQLModel, table=True):
     id: str = Field(primary_key=True)

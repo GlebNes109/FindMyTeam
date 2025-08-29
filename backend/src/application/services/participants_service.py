@@ -161,3 +161,10 @@ class ParticipantsService:
             return await self.repository.update(update_participant)
         else:
             raise AccessDeniedError
+
+    async def delete_participant(self, participant_id, user_id):
+        participant = await self.repository.get(participant_id)
+        if participant.user_id == user_id:
+            await self.repository.delete(participant_id)
+        else:
+            raise AccessDeniedError

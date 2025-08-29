@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, Column, ForeignKey
 from typing import List, Optional
 
 from infrastructure.db.db_models.participants import ParticipantsDB
@@ -8,7 +8,9 @@ class TeamsDB(SQLModel, table=True):
     id: str = Field(primary_key=True)
     name: str
     event_id: str = Field(foreign_key="eventsdb.id")
-    teamlead_id: str = Field(foreign_key="participantsdb.id")
+    teamlead_id: str = Field(
+        sa_column=Column(ForeignKey("participantsdb.id", ondelete="CASCADE"))
+    )
     description: str
 
     vacancies: List["TeamVacanciesDB"] = Relationship(back_populates="team")
@@ -17,8 +19,12 @@ class TeamsDB(SQLModel, table=True):
 
 class TeamMembersDB(SQLModel, table=True):
     id: str = Field(primary_key=True)
-    team_id: str = Field(foreign_key="teamsdb.id")
-    participant_id: str = Field(foreign_key="participantsdb.id")
+    team_id: str = Field(
+        sa_column=Column(ForeignKey("teamsdb.id", ondelete="CASCADE"))
+    )
+    participant_id: str = Field(
+        sa_column=Column(ForeignKey("participantsdb.id", ondelete="CASCADE"))
+    )
 
     team: "TeamsDB" = Relationship(back_populates="members")
     participant: "ParticipantsDB" = Relationship(back_populates="teams")
@@ -26,7 +32,9 @@ class TeamMembersDB(SQLModel, table=True):
 
 class TeamVacanciesDB(SQLModel, table=True):
     id: str = Field(primary_key=True)
-    team_id: str = Field(foreign_key="teamsdb.id")
+    team_id: str = Field(
+        sa_column=Column(ForeignKey("teamsdb.id", ondelete="CASCADE"))
+    )
     event_track_id: str = Field(foreign_key="eventtracksdb.id")
     description: str
 
@@ -37,6 +45,8 @@ class TeamVacanciesDB(SQLModel, table=True):
 class TeamVacanciesSkillsDB(SQLModel, table=True):
     id: str = Field(primary_key=True)
     skill: str
-    vacancy_id: str = Field(foreign_key="teamvacanciesdb.id")
+    vacancy_id: str = Field(
+        sa_column=Column(ForeignKey("teamvacanciesdb.id", ondelete="CASCADE"))
+    )
 
     vacancy: "TeamVacanciesDB" = Relationship(back_populates="skills")

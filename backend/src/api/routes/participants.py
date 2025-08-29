@@ -27,6 +27,11 @@ async def create_participants(update_participant: ParticipantsUpdateApi, user_id
     update_participant_domain = ParticipantsUpdate(**update_participant.model_dump())
     return await service.patch_participant(update_participant_domain, user_id)
 
+@router.delete("/{ParticipantsId}", summary="Удаление участника", description="-")
+async def get_participants(ParticipantsId: str, service: ParticipantsService = Depends(get_participants_service), user_id = Depends(get_user_id)):
+    await service.delete_participant(ParticipantsId, user_id)
+    return Response(status_code=204)
+
 '''@router.get("", summary="Получение данных об участнике", description="-")
 async def create_participants(new_participant: ParticipantsCreateAPI, user_id: str = Depends(get_user_id), service: ParticipantsService = Depends(get_participants_service)):
     return await service.get_participant(new_participant, user_id)'''
