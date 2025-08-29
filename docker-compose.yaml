@@ -13,6 +13,9 @@ services:
     depends_on:
       - db
     restart: always
+    volumes:
+      - ./backend/src/infrastructure/db/alembic:/app/backend/src/infrastructure/db/alembic
+
 
   db:
     image: postgres:15

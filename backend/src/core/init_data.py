@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 async def add_super_admin(hash_creator: HashCreator, session: AsyncSession):
         # SQLModel.metadata.create_all(engine)
-        res = await session.execute(
+        '''res = await session.execute(
             select(UsersDB).where(UsersDB.role == "SUPER_ADMIN")
         )
         obj = res.scalar_one_or_none()
@@ -30,8 +30,10 @@ async def add_super_admin(hash_creator: HashCreator, session: AsyncSession):
             await session.commit()
             print("добавлен")
         await session.close()
-        # print("добавлен")
+        # print("добавлен")'''
+        pass
 
 async def create_tables():
     async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)
+        pass
+        # await conn.run_sync(SQLModel.metadata.create_all)
