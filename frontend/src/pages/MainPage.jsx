@@ -8,7 +8,7 @@ import {
     Chip,
     Container,
     Grid,
-    Link,
+    Link, Skeleton,
     Stack,
     Toolbar,
     Typography,
@@ -31,12 +31,21 @@ function MainPage() {
 
     const [events, setEvents] = useState([]);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [loading, setLoading] = useState(true);
+
 
     useEffect(() => {
+        setLoading(true);
+        try {
         apiFetch("/events")
             .then((res) => res.json())
             .then((data) => setEvents(data || []))
-            .catch((err) => console.error("Ошибка загрузки событий:", err));
+            .catch((err) => console.error("Ошибка загрузки событий:", err))
+
+        }
+        finally {
+            setLoading(false);
+        }
     }, [navigate]);
 
     useEffect(() => {
@@ -70,6 +79,18 @@ function MainPage() {
                 </ButtonGroup> )}
 
         </Box>
+    );
+
+    const renderSkeletonCard = () => (
+        <Card sx={{ mt: 3, borderRadius: 3 }}>
+            <CardContent>
+                <Skeleton variant="text" width="60%" height={30} />
+                <Skeleton variant="text" width="80%" />
+                <Skeleton variant="rectangular" width="100%" height={80} sx={{ mt: 2, borderRadius: 1 }} />
+                <Skeleton variant="text" width="40%" sx={{ mt: 2 }} />
+                <Skeleton variant="rectangular" width={120} height={36} sx={{ mt: 2, borderRadius: 2 }} />
+            </CardContent>
+        </Card>
     );
 
     return (
@@ -203,10 +224,14 @@ function MainPage() {
                         Последние события
                     </Typography>
 
-                    {events.length === 0 ? (
-                        <Typography textAlign="center" color="grey.400">
-                            Нет доступных событий
-                        </Typography>
+                    {loading ? (
+                        <Stack spacing={3}>
+                            {Array.from({ length: 3 }).map((_, idx) => (
+                                <Box key={idx}>{renderSkeletonCard()}</Box>
+                            ))}
+                        </Stack>
+                    ) : events.length === 0 ? (
+                        <Typography>Нет доступных событий</Typography>
                     ) : (
                         <>
                             <Grid container spacing={3} justifyContent="center"
