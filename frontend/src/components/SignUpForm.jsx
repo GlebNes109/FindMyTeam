@@ -124,6 +124,7 @@ const SignUpForm = ({ onSuccess, switchToLogin }) => {
                     Зарегистрироваться
                 </Button>
                 {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+                <Alert severity="warning">Буквы в пароле должны быть только латиницей A-Z. Пароль должен содержать минимум 8 символов, включая заглавную и строчную букву, цифру и специальный символ.</Alert>
             </Stack>
         </Box>
     );
