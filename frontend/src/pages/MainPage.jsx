@@ -433,7 +433,7 @@ function MainPage() {
                         component="img"
                         src="logo_yellow.png"
                         sx={{
-                            width: { xs: "40%", sm: "240px" }, // меньше на мобилке
+                            width: { xs: "35%", sm: "240px" }, // меньше на мобилке
                             height: "auto"
                         }}
                     />
@@ -443,7 +443,15 @@ function MainPage() {
                         variant="h4"
                         align="center"
                         gutterBottom
-                        sx={{ fontWeight: 700, mb: 4 }}
+                        sx={{
+                            fontWeight: 700,
+                            mb: 4,
+                            fontSize: {
+                                xs: "1.5rem",
+                                sm: "2rem",
+                                md: "2.5rem",
+                            },
+                        }}
                     >
                         Единый сервис для всех олимпиад и хакатонов
                     </Typography>
