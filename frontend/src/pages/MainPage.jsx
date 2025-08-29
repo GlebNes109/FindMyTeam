@@ -157,6 +157,7 @@ function MainPage() {
                                     color: "primary.main",
                                     fontWeight: 800,
                                     letterSpacing: ".02em",
+
                                     // textShadow: "0 0 5px rgba(0,229,255,.7), 0 0 24px rgba(0,229,255,.35)",
                                 }}
                             >
@@ -195,7 +196,7 @@ function MainPage() {
                         gutterBottom
                         sx={{
                             fontWeight: 700,
-                            textShadow: "0 0 8px rgba(0,229,255,.35)",
+                            // textShadow: "0 0 8px rgba(254, 221, 44,.35)",
                             mb: 4,
                         }}
                     >
@@ -396,6 +397,22 @@ function MainPage() {
                     bgcolor: "background.paper",
                 }}
             >
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        mb: 2
+                    }}
+                >
+                    <Box
+                        component="img"
+                        src="logo_yellow.png"
+                        sx={{
+                            width: { xs: "40%", sm: "240px" }, // меньше на мобилке
+                            height: "auto"
+                        }}
+                    />
+                </Box>
                 <Container maxWidth="lg">
                     <Typography
                         variant="h4"
@@ -411,17 +428,20 @@ function MainPage() {
                             {
                                 logo: "prod.png",
                                 title: "",
-                                color: '#003f28'
+                                color: '#003f28',
+                                url: "https://prodcontest.ru/"
                             },
                             {
                                 logo: "dano.png",
                                 title: "",
-                                color: '#323332'
+                                color: '#323332',
+                                url: "https://dano.hse.ru/"
                             },
                             {
                                 logo: "deadline.png",
                                 title: "",
-                                color: '#141414'
+                                color: '#141414',
+                                url: "https://event.centraluniversity.ru/casecontest"
                             },
                         ].map((event, idx) => (
                             <Grid item xs={12} sm={6} md={4} key={idx}>
@@ -438,20 +458,28 @@ function MainPage() {
                                                 t.palette.mode === "dark"
                                                     ? "rgba(255,255,255,0.08)"
                                                     : "rgba(0,0,0,0.08)"} `,
-                                        height: "100%",
+                                        height: { xs: "140px", sm: "100%" },
                                         textAlign: "center",
                                     }}
                                 >
                                     {/* Логотип */}
                                     <Box
-                                        component="img"
-                                        src={event.logo}
-                                        //alt={event.title}
-                                        sx={{
-                                            width: {xs: "100%", sm: 300},
-                                            height: {sm: "auto", xs: "auto"}
-                                        }}
-                                    />
+                                        component="a"
+                                        href={event.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        sx={{ display: "block", width: "100%" }}
+                                    >
+                                        <Box
+                                            component="img"
+                                            src={event.logo}
+                                            //alt={event.title}
+                                            sx={{
+                                                width: {xs: "100%", sm: 300},
+                                                height: {sm: "auto", xs: "auto"}
+                                            }}
+                                        />
+                                    </Box>
                                 </Stack>
                             </Grid>
                         ))}

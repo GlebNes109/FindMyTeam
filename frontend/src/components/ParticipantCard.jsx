@@ -14,13 +14,34 @@ import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import ReactMarkdown from "react-markdown";
 import { apiFetch } from "../apiClient";
+import {useParams} from "react-router-dom";
 
-const ParticipantCard = ({ participantData, setParticipantData, myTeam, navigate, eventTracks }) => {
+const ParticipantCard = ({ participantData, setParticipantData, myTeam, navigate, eventTracks, eventId }) => {
     const [editMode, setEditMode] = useState(false);
     const [editData, setEditData] = useState({
         track_id: participantData?.track?.id || "",
         resume: participantData?.resume || ""
     });
+    const handleLeave = async () => {
+        try {
+            const res = await apiFetch(`/participants/${participantData.id}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                }
+            });
+
+            if (res.ok) {
+                // обнулить данные участника, чтобы отобразилось "не зарегистрирован"
+                setParticipantData(null);
+            } else {
+                console.error("Ошибка DELETE:", await res.text());
+            }
+        } catch (err) {
+            console.error("Ошибка при отказе от участия:", err);
+        }
+    };
+
 
     const handleSave = async () => {
         try {
@@ -58,16 +79,25 @@ const ParticipantCard = ({ participantData, setParticipantData, myTeam, navigate
             <Card sx={{ mt: 4, bgcolor: "background.paper", borderRadius: 3 }} variant="outlined">
                 <CardContent>
                     <Typography color="text.secondary">
-                        Вы не зарегистрированы на это мероприятие. Если вы регистрировались, зайдите из личного кабинета.
+                        Вы не зарегистрированы на это мероприятие.
                     </Typography>
+                    <Button
+                        variant="contained"
+                        size="small"
+                        color="primary"
+                        onClick={() => navigate(`/event/${eventId}/register`)}
+                        sx={{my: 2}}
+                    >
+                        Зарегистрироваться!
+                    </Button>
                 </CardContent>
             </Card>
         );
     }
 
     return (
-        <Card sx={{ mt: 4, bgcolor: "background.paper", borderRadius: 3 }} variant="outlined">
-            <CardContent>
+        <Card sx={{ mt: 4, bgcolor: "background.paper", borderRadius: 3, display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 250 }} variant="outlined">
+            <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 <Stack direction="row" spacing={2} alignItems="center" mb={2}>
                     <Typography variant="h6">
                         Вы участвуете в этом мероприятии
@@ -125,6 +155,16 @@ const ParticipantCard = ({ participantData, setParticipantData, myTeam, navigate
                         </Typography>
                     </>
                 )}
+                <Button
+                    variant="outlined"
+                    size="small"
+                    color="error"
+                    onClick={handleLeave}
+                    sx={{my: 2, maxWidth: 300}}
+
+                >
+                    Отказаться от участия в мероприятии
+                </Button>
             </CardContent>
         </Card>
     );

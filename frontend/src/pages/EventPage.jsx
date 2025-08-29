@@ -20,11 +20,15 @@ import {
     ListItemText,
     ListItemSecondaryAction,
     Badge,
-    Alert, Toolbar, Container, TableRow, TableCell, TableHead, TableBody, Table, useTheme,
+    Alert, Toolbar, Container, TableRow, TableCell, TableHead, TableBody, Table, useTheme, useMediaQuery,
 } from "@mui/material";
 import {grey} from "@mui/material/colors";
 import ParticipantsList from "../components/ParticipantsList.jsx";
 import {getAccessToken} from "../tokenStore.js";
+import GroupsIcon from "@mui/icons-material/Groups";
+import PeopleIcon from "@mui/icons-material/People";
+import ReplyIcon from "@mui/icons-material/Reply";
+import MailIcon from "@mui/icons-material/Mail";
 import {apiFetch} from "../apiClient.js";
 import ParticipantCard from "../components/ParticipantCard.jsx";
 
@@ -47,6 +51,7 @@ function EventPage() {
         requests: false,
     });
     const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     const isTeamlead = useMemo(() => {
         return participantData?.event_role === 'TEAMLEAD';
@@ -223,6 +228,13 @@ function EventPage() {
         invites: isTeamlead ? "Мои приглашения" : "Приглашения мне",
     };
 
+    const tabIcons = {
+        teams: <GroupsIcon />,
+        participants: <PeopleIcon />,
+        responses: <ReplyIcon />,
+        invites: <MailIcon />,
+    };
+
     return (
         <>
             <Toolbar />
@@ -231,9 +243,18 @@ function EventPage() {
             <Typography variant="h4" mb={2}>{eventData.name}</Typography>
             <Typography mb={3}>{eventData.description}</Typography>
 
-            <Tabs value={activeTab} onChange={(e, val) => handleTabChange(val)} variant="scrollable" scrollButtons="auto" sx={{ mb: 4 }}>
+            <Tabs value={activeTab} onChange={(e, val) => handleTabChange(val)} variant="scrollable" scrollButtons="auto" sx={{ mb: 4, minHeight: 64,
+                "& .MuiTab-root": {
+                    minHeight: 64,
+                    fontSize: "1rem"},}}>
                 {Object.entries(tabLabels).map(([key, label]) => (
-                    <Tab key={key} label={label} value={key} />
+                    <Tab
+                        key={key}
+                        value={key}
+                        label={!isMobile ? label : undefined}
+                        icon={isMobile ? tabIcons[key] : undefined}
+                        iconPosition="start"
+                    />
                 ))}
             </Tabs>
 
@@ -486,6 +507,7 @@ function EventPage() {
                 navigate={navigate}
                 eventTracks={eventData.event_tracks}
                 onUpdated={loadEventAndTeams} // чтобы обновляло данные после PATCH
+                eventId={eventData.id}
             />
 
             <SelectVacancyModal

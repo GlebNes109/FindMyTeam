@@ -57,7 +57,7 @@ function RegistrationEventPage() {
                 }*/
             })
             .catch(err => console.error("Ошибка загрузки событий:", err));
-    }, [event_track, event_id]);
+    }, [event_id]);
 
     const addVacancy = () => {
         setVacancies([...vacancies, { event_track_id: "", description: "" }]);
