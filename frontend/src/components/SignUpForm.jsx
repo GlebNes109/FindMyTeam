@@ -10,12 +10,54 @@ const SignUpForm = ({ onSuccess, switchToLogin }) => {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
+    // это сделано очень плохо, логика дублируется тут и на бэке. Это необходимо переделать обязательно
+    const validateForm = () => {
+        if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+            setErrorMessage("Введите корректный адрес электронной почты");
+            return false;
+        }
+        if (login.length < 4 || login.length > 30) {
+            setErrorMessage("Логин должен содержать от 4 до 30 символов");
+            return false;
+        }
+        if (password !== confirmPassword) {
+            setErrorMessage("Пароли не совпадают");
+            return false;
+        }
+        if (password.length < 8) {
+            setErrorMessage("Пароль должен содержать минимум 8 символов");
+            return false;
+        }
+        if (!/[A-Z]/.test(password)) {
+            setErrorMessage("Пароль должен содержать хотя бы одну заглавную букву");
+            return false;
+        }
+        if (!/[a-z]/.test(password)) {
+            setErrorMessage("Пароль должен содержать хотя бы одну строчную букву");
+            return false;
+        }
+        if (!/[0-9]/.test(password)) {
+            setErrorMessage("Пароль должен содержать хотя бы одну цифру");
+            return false;
+        }
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+            setErrorMessage("Пароль должен содержать хотя бы один спецсимвол");
+            return false;
+        }
+
+        setErrorMessage("");
+        return true;
+    };
+    // это сделано очень плохо, логика дублируется тут и на бэке. Это необходимо переделать обязательно
 
     const RegisterRequest = async () => {
         if (password !== confirmPassword) {
             setErrorMessage("Пароли отличаются");
             return;
         }
+
+        if (!validateForm()) return;
+
 
         try {
             const response = await apiFetch("/users/signup", {
