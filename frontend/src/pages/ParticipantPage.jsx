@@ -10,7 +10,7 @@ import {
     Typography,
     Toolbar,
     useTheme,
-    Container
+    Container, CircularProgress
 } from "@mui/material";
 import {grey} from "@mui/material/colors";
 import ReactMarkdown from "react-markdown";
@@ -30,11 +30,16 @@ function ParticipantPage() {
     }, [params.participantId]);
 
     if (!participant) {
-        return (
-            <Box p={4}>
-                <Typography variant="h6">Загрузка ... </Typography>
-            </Box>
-        );
+        return (<Box
+            sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: "200px",
+            }}
+        >
+            <CircularProgress />
+        </Box>)
     }
 
     return (

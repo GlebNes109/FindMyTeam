@@ -20,7 +20,17 @@ import {
     ListItemText,
     ListItemSecondaryAction,
     Badge,
-    Alert, Toolbar, Container, TableRow, TableCell, TableHead, TableBody, Table, useTheme, useMediaQuery,
+    Alert,
+    Toolbar,
+    Container,
+    TableRow,
+    TableCell,
+    TableHead,
+    TableBody,
+    Table,
+    useTheme,
+    useMediaQuery,
+    CircularProgress,
 } from "@mui/material";
 import {grey} from "@mui/material/colors";
 import ParticipantsList from "../components/ParticipantsList.jsx";
@@ -219,7 +229,16 @@ function EventPage() {
         })
     }
 
-    if (!eventData) return <div className="container py-5"><p>Загрузка...</p></div>;
+    if (!eventData) return (<Box
+        sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "200px",
+        }}
+    >
+        <CircularProgress />
+    </Box>);
 
     const tabLabels = {
         teams: "Команды",

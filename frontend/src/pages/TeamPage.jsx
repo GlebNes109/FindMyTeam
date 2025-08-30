@@ -18,7 +18,7 @@ import {
     FormControl,
     Dialog,
     DialogActions,
-    DialogTitle, DialogContent, DialogContentText, Chip
+    DialogTitle, DialogContent, DialogContentText, Chip, CircularProgress
 } from "@mui/material";
 import { grey } from "@mui/material/colors";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -212,11 +212,16 @@ function TeamPage() {
     };
 
     if (!team) {
-        return (
-            <Box p={4}>
-                <Typography variant="h6">Загрузка ...</Typography>
-            </Box>
-        );
+        return (<Box
+            sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: "200px",
+            }}
+        >
+            <CircularProgress />
+        </Box>)
     }
 
     const handleSaveVacancy = async () => {

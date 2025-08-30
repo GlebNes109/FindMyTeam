@@ -10,7 +10,7 @@ import {
     CardContent,
     Grid,
     Container,
-    Badge, useTheme, Divider, Toolbar,
+    Badge, useTheme, Divider, Toolbar, CircularProgress,
 } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -86,7 +86,16 @@ function HomePage() {
     };
 
     if (!data) {
-        return <p>Загрузка...</p>;
+        return (<Box
+            sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: "200px",
+            }}
+        >
+            <CircularProgress />
+        </Box>)
     }
 
 
