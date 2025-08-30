@@ -53,6 +53,7 @@ function EventPage() {
     const [incomingRequests, setIncomingRequests] = useState([]);
     const [outgoingRequests, setOutgoingRequests] = useState([]);
     const [selectedParticipant, setSelectedParticipant] = useState(null);
+    const [requestsError, setRequestsError] = useState(false);
     const [isVacancyModalOpen, setIsVacancyModalOpen] = useState(false);
     const navigate = useNavigate()
     const [loadedTabs, setLoadedTabs] = useState({
@@ -146,6 +147,8 @@ function EventPage() {
                 apiFetch(outgoingUrl),
             ]);
 
+            if (!incomingRes.ok || !outgoingRes.ok) throw new Error("Ошибка загрузки запросов");
+
             const [incoming, outgoing] = await Promise.all([
                 incomingRes.json(),
                 outgoingRes.json(),
@@ -156,6 +159,7 @@ function EventPage() {
             setLoadedTabs(prev => ({ ...prev, responses: true, invites: true }));
         } catch (error) {
             console.error("Ошибка при загрузке заявок:", error);
+            setRequestsError(true); // ставим флаг ошибки
         }
     };
 
@@ -262,16 +266,18 @@ function EventPage() {
             <Typography variant="h4" mb={2}>{eventData.name}</Typography>
             <Typography mb={3}>{eventData.description}</Typography>
 
-            <Tabs value={activeTab} onChange={(e, val) => handleTabChange(val)} variant="scrollable" scrollButtons="auto" sx={{ mb: 4, minHeight: 64,
+            <Tabs value={activeTab} onChange={(e, val) => handleTabChange(val)}
+                  variant={isMobile ? "fullWidth" : "scrollable"}
+                  scrollButtons="auto" sx={{ mb: 4, minHeight: 64,
                 "& .MuiTab-root": {
                     minHeight: 64,
-                    fontSize: "1rem"},}}>
+                    fontSize: { xs: "0.8rem", sm: "1rem" }},}}>
                 {Object.entries(tabLabels).map(([key, label]) => (
                     <Tab
                         key={key}
                         value={key}
-                        label={!isMobile ? label : undefined}
-                        icon={isMobile ? tabIcons[key] : undefined}
+                        label={label}
+                        icon={isMobile ? undefined : tabIcons[key]}
                         iconPosition="start"
                     />
                 ))}
@@ -282,6 +288,7 @@ function EventPage() {
                     <CardContent>
                         <Table sx={{ minWidth: '100%'}}>
                         <TableHead sx={{ borderBottom: "1px solid #e0e0e0" }}>
+                            <TableCell sx={{ fontWeight: "bold", color: "white", width: "60px" }}>№</TableCell>
                             <TableCell sx={{ fontWeight: "bold", color: "white" }}>Команда</TableCell>
                             <TableCell sx={{ fontWeight: "bold", color: "white" }}>Участники</TableCell>
                         </TableHead>
@@ -298,6 +305,8 @@ function EventPage() {
                                     }}
                                     onClick={() => navigate(`/team/${team.id}`)}
                                 >
+                                    <TableCell sx={{ color: "white" }}>{index + 1}</TableCell>
+
                                     {/* первая колонка */}
                                     <TableCell component="th" scope="row" sx={{ fontWeight: "medium", color: "white" }}>
                                         {team.name}
@@ -340,6 +349,12 @@ function EventPage() {
                     <Typography color="text.secondary">Нет доступных участников</Typography>
                 ) : (
                     <Box display="flex" flexDirection="column" gap={3}>
+                        {/* сообщение, если команда есть, но вакансий нет */}
+                        {isTeamlead && myVacancies.length === 0 && (
+                            <Typography color="error" variant="body2">
+                                Вы не можете приглашать участников — в вашей команде нет вакансий
+                            </Typography>
+                        )}
                         {freeParticipants.map((p, i) => {
                             const action = isTeamlead ? (
                                 myVacancies.length > 0 ? (
@@ -355,7 +370,7 @@ function EventPage() {
                                     </Button>
                                 ) : (
                                     <Button variant="outlined" size="small" disabled fullWidth>
-                                        Нет вакансий
+                                        Вы не можете приглашать участников - в вашей команде нет вакансий
                                     </Button>
                                 )
                             ) : null;
@@ -370,7 +385,10 @@ function EventPage() {
 
             {activeTab === "responses" && (
                 <Box sx={{ mt: 3 }}>
-                    {incomingRequests.length === 0 ? (
+                    {requestsError ? (
+                            <Alert severity="error">Не удалось загрузить приглашения. Попробуйте позже.</Alert>
+                    ) :
+                        incomingRequests.length === 0 ? (
                         <Typography color="text.secondary">Отклики — пока пусто</Typography>
                     ) : (
                         <List>

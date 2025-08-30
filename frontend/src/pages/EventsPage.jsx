@@ -98,7 +98,16 @@ export default function EventsPage() {
                             value={filter}
                             exclusive
                             onChange={handleFilterChange}
-                            sx={{ mb: 3 }}
+                            sx={{
+                                mb: 3,
+                                "& .MuiToggleButton-root.Mui-selected": {
+                                    color: "primary.contrastText",
+                                    backgroundColor: "primary.main",
+                                },
+                                "& .MuiToggleButton-root.Mui-selected:hover": {
+                                    backgroundColor: "primary.dark",
+                                },
+                            }}
                         >
                             <ToggleButton value="all">Все</ToggleButton>
                             <ToggleButton value="mine">Мои</ToggleButton>

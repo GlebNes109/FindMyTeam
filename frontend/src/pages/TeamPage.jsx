@@ -336,19 +336,29 @@ function TeamPage() {
                 </Box>
 
                 <Stack spacing={3}>
-                    {vacancies.map((vacancy, index) => (
-                        <TeamVacancy
-                            key={vacancy.id || index}
-                            vacancy={vacancy}
-                            index={index}
-                            onRemove={(info) => setConfirmRemoveVacancy({ open: true, ...info })}
-                            isTeamLead={isTeamLead}
-                            participant={participant}
-                        />
-                    ))}
+                    <Typography variant="h6">Вакансии</Typography>
+                    <Divider sx={{ mb: 3 }}/>
+                    {vacancies.length > 0 ? (
+                        vacancies.map((vacancy, index) => (
+                            <TeamVacancy
+                                key={vacancy.id || index}
+                                vacancy={vacancy}
+                                index={index}
+                                onRemove={(info) => setConfirmRemoveVacancy({ open: true, ...info })}
+                                isTeamLead={isTeamLead}
+                                participant={participant}
+                            />
+                        ))
+                    ) : (
+                        <Typography color="text.secondary" sx={{ fontStyle: "italic" }}>
+                            В команде сейчас нет вакансий
+                        </Typography>
+                    )}
                 </Stack>
 
                 <Box display="flex" flexDirection="column" gap={3} mt={4}>
+                    <Typography variant="h6">Участники</Typography>
+                    <Divider sx={{ mb: 3 }}/>
                     {team.members.map((member) => (
                         <ParticipantsList
                             key={member.id}
