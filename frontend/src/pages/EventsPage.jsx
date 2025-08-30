@@ -81,17 +81,14 @@ export default function EventsPage() {
     return (
         <>
             <Toolbar/>
-            <Container sx={{ mt: 4 }}>
-                {loading ? (
-                    <Stack spacing={3}>
-                        {Array.from({ length: 3 }).map((_, idx) => (
-                            <Box key={idx}>{renderSkeletonCard()}</Box>
-                        ))}
-                    </Stack>
-                ) : filteredEvents.length === 0 ? (
-                    <Typography>Нет доступных событий</Typography>
-                ) : (
-                    <Box>
+            <Container sx={{
+                mt: 4,
+                display: "flex",
+                flexDirection: "column",
+                minHeight: "80vh",
+            }}>
+                <Box
+                >
                         <Typography variant="h5" gutterBottom>
                             Все события
                         </Typography>
@@ -107,11 +104,19 @@ export default function EventsPage() {
                             <ToggleButton value="mine">Мои</ToggleButton>
                             <ToggleButton value="not_mine">Остальные</ToggleButton>
                         </ToggleButtonGroup>
+                </Box>
 
-                        <Stack spacing={3}>
-                            {filteredEvents.map((event) => {
-                                const participation = participationMap[event.id];
-                                const isParticipating = !!participation;
+                <Stack spacing={3}>
+                            {loading ? (
+                                Array.from({ length: 3 }).map((_, idx) => (
+                                    <Box key={idx}>{renderSkeletonCard()}</Box>
+                                ))
+                            ) : filteredEvents.length === 0 ? (
+                                <Typography>Нет доступных событий</Typography>
+                            ) : (
+                                filteredEvents.map((event) => {
+                                    const participation = participationMap[event.id];
+                                    const isParticipating = !!participation;
 
                                 return (
                                     <Card
@@ -209,10 +214,8 @@ export default function EventsPage() {
                                         </CardContent>
                                     </Card>
                                 );
-                            })}
+                            }))}
                         </Stack>
-                    </Box>
-                )}
             </Container>
         </>
     );
