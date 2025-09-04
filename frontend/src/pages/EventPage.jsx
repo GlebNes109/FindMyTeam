@@ -41,6 +41,7 @@ import ReplyIcon from "@mui/icons-material/Reply";
 import MailIcon from "@mui/icons-material/Mail";
 import {apiFetch} from "../apiClient.js";
 import ParticipantCard from "../components/ParticipantCard.jsx";
+import {useToast} from "../components/ToastProvider.jsx";
 
 function EventPage() {
     const { eventId } = useParams();
@@ -63,7 +64,7 @@ function EventPage() {
     });
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
+    const { showToast } = useToast();
     const isTeamlead = useMemo(() => {
         return participantData?.event_role === 'TEAMLEAD';
     }, [participantData]);
@@ -180,14 +181,27 @@ function EventPage() {
     };
 
     /*функция для приглашения новых участников в свою команду - если participant который просматривает страницу является teamlead*/
-    function CreateNewTeamRequest(vacancy_id, participant_to_invite_id) {
-        const res = apiFetch('/team_requests', {
+    async function CreateNewTeamRequest(vacancy_id, participant_to_invite_id) {
+        const res = await apiFetch('/team_requests', {
             method: 'POST',
             body: JSON.stringify({
                 vacancy_id: vacancy_id,
                 participant_id: participant_to_invite_id
             })
-        })
+        });
+        if (!res.ok) {
+            if (res.status === 409) {
+                showToast('error', 'Отклик или приглашение уже существует');
+            }
+            else if (res.status === 400) {
+                showToast('error', 'Несоответствие трека вакансии и трека участника');
+            }
+            else {
+                showToast('error', 'Неизвестная ошибка. Скоро все исправим.');
+            }
+        } else {
+            showToast('success', 'Приглашение отправлено!');
+        }
         }
     // console.log(eventData)
     const participantsInTeams = useMemo(() => {
@@ -481,7 +495,7 @@ function EventPage() {
                                     }
                                 >
                                     <ListItemText
-                                        primary={`Приглашение #${invite.id.slice(0, 8)}`}
+                                        primary={`Приглашение #${invite.id.slice(0, 6)}`}
                                         secondary={
                                             <>
                                                 <Typography variant="body">На трек: {invite.vacancy.track.name}</Typography>
