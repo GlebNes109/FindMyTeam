@@ -62,14 +62,13 @@ class TeamRequestsService:
         # проверка что participant не состоит в командах
         teams = await self.teams_service.get_teams(team.event_id)
         for team in teams:
-            for participant in team.members:
-                if participant.id == team_requests_create.participant_id:
-                    raise BadRequestError
+            if participant.id in team.members_ids:
+                raise ObjectAlreadyExistsError
 
         # проверка, есть ли уже приглашения или отклики НА ЭТУ ВАКАНСИЮ
         check1 = await self.repository.get_all_with_params(approved_by_teamlead=True, approved_by_participant=None, participant_id=team_requests_create.participant_id, vacancies_ids=[team_requests_create.vacancy_id])
         check2 = await self.repository.get_all_with_params(approved_by_participant=True, approved_by_teamlead=None, participant_id=team_requests_create.participant_id, vacancies_ids=[team_requests_create.vacancy_id])
-        print(check1, check2)
+        # print(check1, check2)
 
         if check1 or check2:
             raise ObjectAlreadyExistsError
@@ -177,7 +176,7 @@ class TeamRequestsService:
 
         if user_id != participant.user_id and not participant.is_teamlead() and teamlead.user_id == user_id:
             request.approved_by_teamlead = approve
-        # TODO исправить баг когда юзер один, а участники разные
+
         elif participant.user_id == user_id and not participant.is_teamlead():
             request.approved_by_participant = approve
 

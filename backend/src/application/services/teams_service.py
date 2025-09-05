@@ -11,6 +11,8 @@ from domain.exceptions import AccessDeniedError
 
 from domain.exceptions import ObjectNotFoundError, BadRequestError
 
+from domain.models.teams import TeamsRead
+
 if TYPE_CHECKING: # чтобы не было циклического импорта
     from .participants_service import ParticipantsService
 
@@ -35,7 +37,10 @@ class TeamsService:
         else:
             return False
 
-    async def get_teams(self, event_id) -> list[TeamsDetailsRead]:
+    async def get_teams(self, event_id) -> list[TeamsRead]:
+        return await self.repository.get_all_by_event_id(event_id)
+
+    async def get_detailed_teams(self, event_id) -> list[TeamsDetailsRead]:
         teams = await self.repository.get_all_by_event_id(event_id)
 
         # Сбор всех ID участников из всех команд
@@ -84,8 +89,11 @@ class TeamsService:
 
     async def create_member(self, create_member: TeamMembersCreate) -> TeamMembersRead:
         team = await self.get_team(create_member.team_id)
-        if create_member.participant_id in team.members_ids:
-            raise ObjectAlreadyExistsError #в команде уже есть участник такой
+        # проверка что этого участника еще нет в других командах
+        teams = await self.repository.get_all_by_event_id(team.event_id)
+        for team in teams:
+            if create_member.participant_id in team.members_ids:
+                raise ObjectAlreadyExistsError # в команде уже есть участник такой
         return await self.repository.create_member(create_member)
 
     async def get_team_by_teamlead_id(self, teamlead_id):
