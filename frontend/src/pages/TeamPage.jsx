@@ -31,7 +31,7 @@ import ParticipantsList from "../components/ParticipantsList.jsx";
 import {useToast} from "../components/ToastProvider.jsx";
 
 
-const TeamVacancy = ({ vacancy, index, participant, onRemove, isTeamLead }) =>  {
+const TeamVacancy = ({ vacancy, index, participant, onRemove, isTeamLead , inTeam}) =>  {
     const [expanded, setExpanded] = useState(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
     const contentRef = useRef(null);
@@ -70,6 +70,7 @@ const TeamVacancy = ({ vacancy, index, participant, onRemove, isTeamLead }) =>  
     };
 
     const canRespond = // может ли откликнуться
+        (!inTeam) &&
         participant &&
         participant.event_role === "PARTICIPANT" &&
         participant.track?.id === vacancy.track?.id;
@@ -355,6 +356,7 @@ function TeamPage() {
                                 onRemove={(info) => setConfirmRemoveVacancy({ open: true, ...info })}
                                 isTeamLead={isTeamLead}
                                 participant={participant}
+                                inTeam={inTeam}
                             />
                         ))
                     ) : (

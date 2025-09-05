@@ -235,16 +235,39 @@ function EventPage() {
         handleTabChange(activeTab);
     }, []);
 
-    function AcceptRequest(request_id) {
-        const res = apiFetch(`/team_requests/${request_id}/accept`, {
+    async function AcceptRequest(request_id) {
+        const res = await apiFetch(`/team_requests/${request_id}/accept`, {
             method: 'PUT',
         })
+        if (!res.ok) {
+            if (res.status === 409) {
+                showToast('error', isTeamlead ? 'Этот пользователь уже в другой команде' : 'Вы уже в другой команде');
+            }
+            else if (res.status === 400) {
+                showToast('error', 'Несоответствие трека вакансии и трека участника');
+            }
+            else {
+                showToast('error', 'Неизвестная ошибка. Скоро все исправим.');
+            }
+        } else {
+            showToast('success', 'Подтверждение успешно, теперь вы в команде!');
+            setOutgoingRequests(prev => prev.filter(invite => invite.id !== request_id));
+            setIncomingRequests(prev => prev.filter(invite => invite.id !== request_id));
+        }
     }
 
-    function RejectRequest(request_id) {
-        const res = apiFetch(`/team_requests/${request_id}/reject`, {
+    async function RejectRequest(request_id) {
+        const res = await apiFetch(`/team_requests/${request_id}/reject`, {
             method: 'PUT',
         })
+        if (!res.ok) {
+            console.log(res.status, res.statusText);
+            showToast('error', 'Неизвестная ошибка. Скоро все исправим.');
+        } else {
+            showToast('success', 'Отклонено');
+            setOutgoingRequests(prev => prev.filter(invite => invite.id !== request_id));
+            setIncomingRequests(prev => prev.filter(invite => invite.id !== request_id));
+        }
     }
 
     if (!eventData) return (<Box
