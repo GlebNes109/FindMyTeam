@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Cookie, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Cookie, Response, Request
 from fastapi.responses import JSONResponse
 
 from api.dto.user import UserCreateAPI, UserReadAPI, UserUpdateAPI, TokenRead
@@ -8,6 +8,13 @@ from domain.exceptions import ObjectAlreadyExistsError, AccessDeniedError, Objec
 from domain.models.user import TokenPair, UsersUpdate
 from legacy.db_models.api_models import NewUser, SigninUser, PatchUser
 
+from infrastructure.oauth.oauth_provider_factory import OAuthProviderFactory
+
+from api.dependencies import get_oauth_provider_factory
+
+from api.dto.user import OAuthCode
+
+from core.config import settings
 
 router = APIRouter()
 
@@ -61,3 +68,28 @@ def logout(response: Response):
         samesite="strict"
     )
     return {"message": "Logged out | вы вышли"}
+
+
+@router.get("/auth/{provider}/login")
+async def login(provider: str, request: Request, factory: OAuthProviderFactory = Depends(get_oauth_provider_factory)):
+    provider_instance = factory.get(provider)
+
+    if not provider_instance.client:
+        return {"error": f"Provider {provider} not found"}
+
+    # redirect_uri = request.url_for("oauth_callback", provider=provider)
+    redirect_uri = f"{settings.frontend_url}/oauth/callback"
+    # момент аутентификации в гугле (на странице гугла)
+    return await provider_instance.client.authorize_redirect(request, redirect_uri, state=provider)
+
+
+@router.post("/auth/{provider}/callback")
+async def oauth_callback(
+    code: OAuthCode,
+    provider: str,
+    service: UsersService = Depends(get_user_service),
+):
+    data = await service.login_with_oauth(provider, code.code)
+    response = JSONResponse(content=data.model_dump())
+    response.set_cookie("refresh_token", data.refresh_token, httponly=True, secure=True, samesite="strict")
+    return response

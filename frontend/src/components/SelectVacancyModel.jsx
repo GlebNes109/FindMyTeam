@@ -40,6 +40,7 @@ const SelectVacancyModal = ({ isOpen, onClose, vacancies, onSubmit, participant 
                         {vacancies.map((v) => (
                             <MenuItem key={v.id} value={v.id}>
                                 {v.track.name}
+                                {` [вакансия #${v.id.slice(0, 6)}]`}
                             </MenuItem>
                         ))}
                     </Select>
