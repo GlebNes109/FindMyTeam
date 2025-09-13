@@ -4,12 +4,20 @@ from domain.interfaces.token_creator import TokenCreator
 from domain.models.user import UsersCreate, TokenPair, UsersRead, UsersUpdate
 from domain.interfaces.repositories.user_repository import UserRepository
 
+from domain.interfaces.oauth_provider import OAuthProvider
+
+from domain.models.user import OAuthAccountCreate
+
+from infrastructure.oauth.oauth_provider_factory import OAuthProviderFactory
+
+
 
 class UsersService:
-    def __init__(self, repository: UserRepository, token_creator: TokenCreator, hash_creator: HashCreator):
+    def __init__(self, repository: UserRepository, token_creator: TokenCreator, hash_creator: HashCreator, provider_factory: OAuthProviderFactory):
         self.repository = repository
         self.token_creator = token_creator
         self.hash_creator = hash_creator
+        self.provider_factory = provider_factory
 
     async def create_user(self, new_user_api) -> TokenPair:
         # print(new_user_api)
@@ -71,3 +79,35 @@ class UsersService:
             access_token=new_access,
             refresh_token=new_refresh,
             user_id=user_id)
+
+    async def login_with_oauth(self, provider_name: str, code: str) -> TokenPair:
+        # Получение нужного провайдера из фабрики
+        provider = self.provider_factory.get(provider_name)
+        # Получение данных пользователя от внешнего провайдера
+        user_data = await provider.get_user_info(code)
+        print(user_data["provider"], user_data["id"])
+        # Попытка найти пользователя
+        try:
+            user = await self.repository.get_by_provider_id(user_data["provider"], user_data["id"])
+
+        except ObjectNotFoundError:
+            # Если пользователя нет, он создается
+            new_user = OAuthAccountCreate(
+                login=user_data["name"],
+                email=user_data["email"],
+                tg_nickname=None, # потом при изменении юзера можно добавить
+                provider=user_data["provider"],
+                provider_id=user_data["id"],
+            )
+            user = await self.repository.create_with_oauth(new_user)
+
+        # Генерация JWT
+        access_token = await self.token_creator.create_access_token(user.id)
+        refresh_token = await self.token_creator.create_refresh_token(user.id)
+        # print(access_token, refresh_token, user.id)
+
+        return TokenPair(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            user_id=user.id
+        )

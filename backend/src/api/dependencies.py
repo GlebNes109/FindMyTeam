@@ -34,6 +34,17 @@ from infrastructure.db.db_models.user import UsersDB
 from infrastructure.hash_creator_impl import sha256HashCreator
 from infrastructure.token_creator_impl import JWTTokenCreator
 
+from domain.interfaces.oauth_provider import OAuthProvider
+
+from infrastructure.oauth.oauth_provider_factory import OAuthProviderFactory
+
+from infrastructure.oauth.oauth_provider_google import GoogleOAuthProvider
+
+from infrastructure.oauth.registry import oauth
+
+
+# from infrastructure.oauth.oauth_provider_google import GoogleOAuthProvider
+
 
 def get_user_repository(
     session: AsyncSession = Depends(get_session),
@@ -51,7 +62,11 @@ def get_participants_repository(
         session=session,
         model=ParticipantsDB,
         read_schema=ParticipantsBasicRead
-    ) # TODO все репозитории в одной зависимости?
+    )
+
+def get_oauth_provider_factory() -> OAuthProviderFactory:
+    return OAuthProviderFactory(oauth)
+
 
 def get_hash_creator() -> HashCreator:
     return sha256HashCreator()
@@ -63,8 +78,9 @@ def get_user_service(
     token_creator: TokenCreator= Depends(get_token_creator),
     hash_creator: HashCreator = Depends(get_hash_creator),
     repo: UserRepository = Depends(get_user_repository),
+    provider_factory: OAuthProviderFactory = Depends(get_oauth_provider_factory)
     ) -> UsersService:
-    return UsersService(repo, token_creator, hash_creator)
+    return UsersService(repo, token_creator, hash_creator, provider_factory)
 
 def get_events_repository(
     session: AsyncSession = Depends(get_session),

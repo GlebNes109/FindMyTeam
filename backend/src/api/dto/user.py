@@ -49,8 +49,8 @@ class AuthUserAPI(StrictBaseModel):
 class UserReadAPI(StrictBaseModel):
     id: str
     login: str
-    email: str
-    tg_nickname: str
+    email: Optional[str] = None
+    tg_nickname: Optional[str] = None
     role: str
     @classmethod
     def from_user_read(cls, user_read: UsersRead) -> "UserReadAPI":
@@ -71,3 +71,6 @@ class UserUpdateAPI(StrictBaseModel):
 class TokenRead(BaseModel):
     access_token: str
     user_id: str
+
+class OAuthCode(BaseModel):
+    code: str
