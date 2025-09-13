@@ -120,7 +120,7 @@ const SignUpForm = ({ onSuccess, switchToLogin }) => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                 />
-                <Button variant="contained" fullWidth onClick={RegisterRequest}>
+                <Button variant="outlined" fullWidth onClick={RegisterRequest}>
                     Зарегистрироваться
                 </Button>
                 {errorMessage && <Alert severity="error">{errorMessage}</Alert>}

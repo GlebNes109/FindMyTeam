@@ -49,7 +49,7 @@ const SignInForm = ({ onSuccess, switchToRegister }) => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
-                <Button variant="contained" fullWidth onClick={LoginRequest}>
+                <Button variant="outlined" fullWidth onClick={LoginRequest}>
                     Войти
                 </Button>
                 {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
