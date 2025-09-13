@@ -24,7 +24,7 @@ async def add_event(new_event: EventsCreateAPI, admin_id: str = Depends(get_user
 
 @router.get("/{EventId}/teams", summary="Получение команд", description="Доступно для юзеров и админов")
 async def get_events(EventId: str, service: TeamsService = Depends(get_teams_service)):
-    return await service.get_teams(EventId)
+    return await service.get_detailed_teams(EventId)
 
 @router.get("/{EventId}/participants", summary="Получение участников мероприятия", description="Доступно для юзеров и админов")
 async def get_events(EventId: str, service: ParticipantsService = Depends(get_participants_service)):

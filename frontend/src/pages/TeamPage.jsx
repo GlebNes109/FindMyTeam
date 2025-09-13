@@ -28,13 +28,16 @@ import ReactMarkdown from "react-markdown";
 import { useParams, useLocation } from "react-router-dom";
 import {apiFetch} from "../apiClient.js";
 import ParticipantsList from "../components/ParticipantsList.jsx";
+import {useToast} from "../components/ToastProvider.jsx";
 
 
-const TeamVacancy = ({ vacancy, index, participant, onRemove, isTeamLead }) =>  {
+const TeamVacancy = ({ vacancy, index, participant, onRemove, isTeamLead , inTeam}) =>  {
     const [expanded, setExpanded] = useState(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
     const contentRef = useRef(null);
     const collapsedSize = 150;
+    const { showToast } = useToast();
+
 
     useEffect(() => {
         if (contentRef.current) {
@@ -52,9 +55,14 @@ const TeamVacancy = ({ vacancy, index, participant, onRemove, isTeamLead }) =>  
                 })
             });
             if (!res.ok) {
-                alert("Ошибка при отправке отклика");
+                if (res.status === 409) {
+                    showToast('error', 'Отклик или приглашение уже существует');
+                }
+                else {
+                    showToast('error', 'Неизвестная ошибка. Скоро все исправим.');
+                }
             } else {
-                alert("Отклик отправлен!");
+                showToast('success', 'Отклик отправлен!');
             }
         } catch (e) {
             console.error(e);
@@ -62,6 +70,7 @@ const TeamVacancy = ({ vacancy, index, participant, onRemove, isTeamLead }) =>  
     };
 
     const canRespond = // может ли откликнуться
+        (!inTeam) &&
         participant &&
         participant.event_role === "PARTICIPANT" &&
         participant.track?.id === vacancy.track?.id;
@@ -347,6 +356,7 @@ function TeamPage() {
                                 onRemove={(info) => setConfirmRemoveVacancy({ open: true, ...info })}
                                 isTeamLead={isTeamLead}
                                 participant={participant}
+                                inTeam={inTeam}
                             />
                         ))
                     ) : (

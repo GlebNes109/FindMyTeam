@@ -13,6 +13,7 @@ import {setAuthFailureHandler} from "./authHandler.js";
 import AuthPage from "./pages/AuthPage.jsx";
 import theme from './theme';
 import {CssVarsProvider} from "@mui/material";
+import {OAuthCallback} from "./oauthCallbackRoute.jsx";
 
 function AppRoutesWithAuthHandler() {
     const navigate = useNavigate();
@@ -36,6 +37,8 @@ function AppRoutesWithAuthHandler() {
                 <Route path="/event/:event_id/register" element={<RegistrationEventPage />} />
                 <Route path="/team/:teamId" element={<TeamPage />} />
                 <Route path="/participant/:participantId" element={<ParticipantPage />} />
+                <Route path="/oauth/callback" element={<OAuthCallback />} />
+
             </Routes>
         </>
     );

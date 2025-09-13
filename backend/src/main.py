@@ -35,7 +35,9 @@ app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://findmyteam.ru"
+        "http://findmyteam.ru",
+        "http://localhost:5173",
+        "http://localhost"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -52,6 +54,7 @@ app.include_router(team_requests.router, prefix="/team_requests", tags=["Team re
 
 @app.exception_handler(RequestValidationError)
 async def raise_validation_error(request: Request, exc: RequestValidationError):
+    # print(exc)
     return JSONResponse("ошибка в данных запроса", 400)
 
 @app.exception_handler(AppException)

@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     algorithm: str
     admin_password: str
     admin_login: str
+    client_id_google: str
+    client_secret_google: str
+    frontend_url: str
     class Config:
         env_file = ".env"
 

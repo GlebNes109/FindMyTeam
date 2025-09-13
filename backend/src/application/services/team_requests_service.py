@@ -11,6 +11,9 @@ from domain.models.teamrequests import TeamRequestsCreate, TeamRequestsPartialCr
 from domain.models.teams import TeamMembersCreate
 from typing import List
 
+from domain.exceptions import ObjectAlreadyExistsError
+
+
 class TeamRequestsService:
     def __init__(self, repository: TeamRequestsRepository, teams_service: TeamsService, participants_service: ParticipantsService, event_service: EventsService):
         self.repository = repository
@@ -31,7 +34,7 @@ class TeamRequestsService:
 
         # если отклик -> user_id соотвествует указанному participant
         if user_id == participant.user_id and participant.event_role == EventRole.PARTICIPANT: # отклик - participant это и есть юзер.
-            teams_create = TeamRequestsCreate(
+            team_requests_create = TeamRequestsCreate(
                 # approved_by_teamlead=False,
                 approved_by_participant=True,
                 **team_request_partial_create.model_dump()
@@ -39,7 +42,7 @@ class TeamRequestsService:
 
         # если приглашение -> user_id соотвествует тимлиду в команде, в которой вакансия
         elif user_id != participant.user_id and participant.event_role == EventRole.PARTICIPANT and teamlead.user_id == user_id: # приглашение - participant не является юзером, однако user в числе прочих регистраций зареган на этот ивент как тимлид
-            teams_create = TeamRequestsCreate(
+            team_requests_create = TeamRequestsCreate(
                 # approved_by_teamlead=False,
                 approved_by_teamlead=True,
                 **team_request_partial_create.model_dump()
@@ -56,10 +59,23 @@ class TeamRequestsService:
         if team.event_id != participant.event_id:
             raise BadRequestError
 
-        team_request = await self.repository.create(teams_create)
+        # проверка что participant не состоит в командах
+        teams = await self.teams_service.get_teams(team.event_id)
+        for team in teams:
+            if participant.id in team.members_ids:
+                raise ObjectAlreadyExistsError
+
+        # проверка, есть ли уже приглашения или отклики НА ЭТУ ВАКАНСИЮ
+        check1 = await self.repository.get_all_with_params(approved_by_teamlead=True, approved_by_participant=None, participant_id=team_requests_create.participant_id, vacancies_ids=[team_requests_create.vacancy_id])
+        check2 = await self.repository.get_all_with_params(approved_by_participant=True, approved_by_teamlead=None, participant_id=team_requests_create.participant_id, vacancies_ids=[team_requests_create.vacancy_id])
+        # print(check1, check2)
+
+        if check1 or check2:
+            raise ObjectAlreadyExistsError
+
+        team_request = await self.repository.create(team_requests_create)
         return team_request
         # TODO по возможности вынести логику в domain модель
-     # TODO сделать проверку что participant не состоит в командах (можно приглашать)
 
     async def get_team_requests(self,
             participant_id: str,
@@ -160,7 +176,7 @@ class TeamRequestsService:
 
         if user_id != participant.user_id and not participant.is_teamlead() and teamlead.user_id == user_id:
             request.approved_by_teamlead = approve
-        # TODO исправить баг когда юзер один, а участники разные
+
         elif participant.user_id == user_id and not participant.is_teamlead():
             request.approved_by_participant = approve
 
