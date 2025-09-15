@@ -82,6 +82,6 @@ class ParticipantsBasicRead(BaseModel):
 
 class ParticipantsDetailsRead(ParticipantsRead):
     login: str
-    email: str
-    tg_nickname: str
+    email: Optional[str] = None
+    tg_nickname: Optional[str] = None
     role: Role
