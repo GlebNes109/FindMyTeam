@@ -41,18 +41,20 @@ function ParticipantsList({ participant, action}) {
                     <Typography variant="h6">{participant.login}</Typography>
                     <Chip label={participant.track.name} color={"secondary"}/>
                 </Stack>
-                <Typography mb={2}>
-                    Telegram:&nbsp;
-                    <Link
-                        href={`https://t.me/${participant.tg_nickname.replace(/^@/, "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        underline="hover"
-                    >
-                        {participant.tg_nickname}
-                    </Link>
-                </Typography>
-                <Typography mb={2}>Email: {participant.email}</Typography>
+                {participant.tg_nickname && (
+                    <Typography mb={2}>
+                        Telegram:&nbsp;
+                        <Link
+                            href={`https://t.me/${participant.tg_nickname.replace(/^@/, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            underline="hover"
+                        >
+                            {participant.tg_nickname}
+                        </Link>
+                    </Typography>
+                )}
+                {participant.email && (<Typography mb={2}>Email: {participant.email}</Typography>)}
                 <Divider sx={{ mb: 3 }}/>
                 <Collapse in={expanded} collapsedSize={collapsedSize}>
                     <Card sx={{ bgcolor: grey[900], p: 4, borderRadius: 3 }}>
