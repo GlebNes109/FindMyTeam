@@ -15,6 +15,7 @@ from infrastructure.db.db_models.events import EventTracksDB
 from infrastructure.db.db_models.participants import ParticipantsDB
 from infrastructure.db.db_models.teams import TeamsDB, TeamMembersDB, TeamVacanciesDB
 from sqlalchemy.exc import IntegrityError, NoResultFound
+import sqlalchemy as sa
 from asyncpg.exceptions import UniqueViolationError
 
 from infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
@@ -259,3 +260,62 @@ class TeamsRepositoryImpl(
         )
         await self.session.commit()
         return True
+
+    async def get_event_vacancies(self, event_id: Any):
+        stmt = select(TeamVacanciesDB).where(TeamVacanciesDB.event_id == event_id)
+        result = await self.session.execute(stmt)
+        try:
+            objs = result.scalars().all()
+            vacancies_read = []
+            for obj in objs:
+                vacancy = VacanciesBasicRead(
+                    id=obj.id,
+                    track_id=obj.event_track_id,
+                    description=obj.description,
+                    team_id=obj.team_id
+                )
+                vacancies_read.append(vacancy)
+            return vacancies_read
+        except NoResultFound:
+            raise ObjectNotFoundError
+
+    async def get_event_vacancies_sorted(self, event_id: Any, track_weight: int, keywords: list[str], track_id: Any):
+        ts_query = " | ".join(set(keywords)) if keywords else ""
+        query = (
+            sa.select(
+                TeamVacanciesDB,
+                (
+                    # вес за совпадение по треку
+                        sa.case(
+                            *(TeamVacanciesDB.track_id == track_id, track_weight),
+                            else_=0
+                        )
+                        +
+                        # вес за совпадение по резюме
+                        sa.func.ts_rank_cd(
+                            sa.func.setweight(sa.func.to_tsvector("russian", TeamVacanciesDB.description),
+                                              sa.text("'A'::\"char\"")),
+                            sa.func.plainto_tsquery("russian", ts_query) if ts_query else sa.text("NULL")
+                        )
+                ).label("score")
+            )
+            .where(TeamVacanciesDB.event_id == event_id)
+            .order_by(sa.desc("score"))
+        )
+
+        result = await self.session.execute(query)
+        try:
+            objs = result.scalars().all()
+            vacancies_read = []
+            for obj in objs:
+                vacancy = VacanciesBasicRead(
+                    id=obj.id,
+                    track_id=obj.event_track_id,
+                    description=obj.description,
+                    team_id=obj.team_id
+                )
+                vacancies_read.append(vacancy)
+            return vacancies_read
+        except NoResultFound:
+            raise ObjectNotFoundError
+
