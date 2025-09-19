@@ -106,8 +106,14 @@ function EventPage() {
         if (!eventId || loadedTabs.participants) return;
 
         try {
-            const res = await apiFetch(`/events/${eventId}/participants`, {
-            });
+            let res = null;
+            if (isTeamlead) {
+                res = await apiFetch(`/events/${eventId}/participants?relevant_sort=true&team_id=${myTeam.id}`, {});
+            }
+            else {
+                res = await apiFetch(`/events/${eventId}/participants?relevant_sort=false`, {});
+            }
+
             const participants = await res.json();
 
             setEventData(prev => ({ ...prev, event_participants: participants }));
