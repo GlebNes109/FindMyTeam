@@ -46,7 +46,7 @@ function AppRoutesWithAuthHandler() {
 
 function App() {
     return (
-        <CssVarsProvider theme={theme}>
+        <CssVarsProvider theme={theme} defaultMode="dark">
 
         <Router>
             <AppRoutesWithAuthHandler />

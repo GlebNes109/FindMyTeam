@@ -42,6 +42,10 @@ from infrastructure.oauth.oauth_provider_google import GoogleOAuthProvider
 
 from infrastructure.oauth.registry import oauth
 
+from domain.interfaces.sorter import Sorter
+
+from infrastructure.sorter_impl import SorterImpl
+
 
 # from infrastructure.oauth.oauth_provider_google import GoogleOAuthProvider
 
@@ -67,6 +71,23 @@ def get_participants_repository(
 def get_oauth_provider_factory() -> OAuthProviderFactory:
     return OAuthProviderFactory(oauth)
 
+def get_teams_repository(
+    session: AsyncSession = Depends(get_session),
+    ) -> TeamsRepositoryImpl:
+    return TeamsRepositoryImpl(
+        session=session,
+        model=TeamsDB,
+        read_schema=TeamsBasicRead
+    )
+
+def get_sorter(
+        teams_repo: TeamsRepository = Depends(get_teams_repository),
+        participant_repo: ParticipantsRepository = Depends(get_participants_repository)
+) -> Sorter:
+    return SorterImpl(
+        teams_repo,
+        participant_repo
+    )
 
 def get_hash_creator() -> HashCreator:
     return sha256HashCreator()
@@ -78,7 +99,8 @@ def get_user_service(
     token_creator: TokenCreator= Depends(get_token_creator),
     hash_creator: HashCreator = Depends(get_hash_creator),
     repo: UserRepository = Depends(get_user_repository),
-    provider_factory: OAuthProviderFactory = Depends(get_oauth_provider_factory)
+    provider_factory: OAuthProviderFactory = Depends(get_oauth_provider_factory),
+    sorter: Sorter = Depends(get_sorter)
     ) -> UsersService:
     return UsersService(repo, token_creator, hash_creator, provider_factory)
 
@@ -116,15 +138,6 @@ async def get_user_id(token: str = Depends(get_token), repository: UserRepositor
             detail="Пользователь не авторизован"
         )
 
-def get_teams_repository(
-    session: AsyncSession = Depends(get_session),
-    ) -> TeamsRepositoryImpl:
-    return TeamsRepositoryImpl(
-        session=session,
-        model=TeamsDB,
-        read_schema=TeamsBasicRead
-    )
-
 def get_teams_requests_repository(
     session: AsyncSession = Depends(get_session),
     ) -> TeamRequestsRepositoryImpl:
@@ -138,16 +151,18 @@ def get_participants_service(
     repo: ParticipantsRepository = Depends(get_participants_repository),
     teams_repo: TeamsRepository = Depends(get_teams_repository),
     event_service: EventsService = Depends(get_event_service),
-    user_service: UsersService = Depends(get_user_service)
+    user_service: UsersService = Depends(get_user_service),
+    sorter: Sorter = Depends(get_sorter)
     ) -> ParticipantsService:
-    return ParticipantsService(repo, teams_repo, event_service, user_service)
+    return ParticipantsService(repo, teams_repo, event_service, user_service, sorter)
 
 def get_teams_service(
     repo: TeamsRepository = Depends(get_teams_repository),
     event_service: EventsService = Depends(get_event_service),
-    participants_service: ParticipantsService = Depends(get_participants_service)
-    ) -> TeamsService:
-    return TeamsService(repo, event_service, participants_service)
+    participants_service: ParticipantsService = Depends(get_participants_service),
+    sorter: Sorter = Depends(get_sorter)
+) -> TeamsService:
+    return TeamsService(repo, event_service, participants_service, sorter)
 
 def get_team_requests_service(
     repo: TeamRequestsRepository = Depends(get_teams_requests_repository),

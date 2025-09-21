@@ -17,6 +17,13 @@ class VacanciesRead(BaseModel):
     description: str
     team_id: str
 
+class VacanciesDetailsRead(BaseModel):
+    id: str
+    track: EventTracksRead
+    description: str
+    team_id: str
+    team_name: str
+
 class VacanciesBasicRead(BaseModel):
     id: str
     track_id: str

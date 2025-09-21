@@ -1,8 +1,9 @@
+import asyncio
 from typing import TYPE_CHECKING
 
 from application.services.events_service import EventsService
 from domain.interfaces.repositories.teams_repository import TeamsRepository
-from domain.models.teams import VacanciesRead, TeamMembersCreate, TeamMembersRead, TeamsDetailsRead
+from domain.models.teams import VacanciesRead, TeamMembersCreate, TeamMembersRead, TeamsDetailsRead, VacanciesDetailsRead
 from domain.exceptions import ObjectAlreadyExistsError
 
 from domain.models.teams import TeamsUpdate
@@ -13,14 +14,17 @@ from domain.exceptions import ObjectNotFoundError, BadRequestError
 
 from domain.models.teams import TeamsRead
 
+from domain.interfaces.sorter import Sorter
+
 if TYPE_CHECKING: # чтобы не было циклического импорта
     from .participants_service import ParticipantsService
 
 class TeamsService:
-    def __init__(self, repository: TeamsRepository, event_service: EventsService, participant_service: "ParticipantsService"):
+    def __init__(self, repository: TeamsRepository, event_service: EventsService, participant_service: "ParticipantsService", sorter: Sorter):
         self.repository = repository
         self.event_service = event_service
         self.participants_service = participant_service
+        self.sorter = sorter
 
     async def add_team(self, team_read):
         return await self.repository.create(team_read)
@@ -152,3 +156,34 @@ class TeamsService:
                 await self.repository.delete(team_id)  # когда тимлид выходит, вся команда удаляется )
             else:
                 await self.repository.delete_team_member(team_id, participant_id)
+
+    async def get_event_vacancies(self, event_id, relevant_sort=False, participant_id=None):
+        if relevant_sort and participant_id:
+            vacancies = await self.sorter.sort_vacancies(event_id, participant_id)
+        else:
+            vacancies = self.repository.get_event_vacancies(event_id)
+
+        # сначала собираются таски, потом выполняются в асинхроне все одновременно
+        track_tasks = [self.event_service.get_track(vacancy.track_id) for vacancy in vacancies]
+
+        # выполнение всех собранных корутин асинхронно (gather собирает список в том же порядке)
+        tracks = await asyncio.gather(*track_tasks)
+
+        teams_tasks = [self.get_team(vacancy.team_id) for vacancy in vacancies]
+
+        # выполнение всех собранных корутин асинхронно (gather собирает список в том же порядке)
+        teams = await asyncio.gather(*teams_tasks)
+
+        # маппинг в модели
+        vacancies_detailed = [
+            VacanciesDetailsRead(
+                id=vacancy.id,
+                track=track,
+                team_id=vacancy.team_id,
+                description=vacancy.description,
+                team_name=team.name
+            )
+            for vacancy, track, team in zip(vacancies, tracks, teams)
+        ]
+
+        return vacancies_detailed

@@ -11,13 +11,16 @@ from domain.models.participants import ParticipantsUpdate
 
 from domain.exceptions import AccessDeniedError
 
+from domain.interfaces.sorter import Sorter
+
 
 class ParticipantsService:
-    def __init__(self, repository: ParticipantsRepository, teams_repository: TeamsRepository, event_service: EventsService, users_service: UsersService):
+    def __init__(self, repository: ParticipantsRepository, teams_repository: TeamsRepository, event_service: EventsService, users_service: UsersService, sorter: Sorter):
         self.repository = repository
         self.users_service = users_service
         self.event_service = event_service
         self.teams_repository = teams_repository
+        self.sorter = sorter
 
     async def model_domain_to_create(self, participant_domain):
         try:
@@ -69,8 +72,12 @@ class ParticipantsService:
         participants_read = [await self.model_domain_to_create(participant) for participant in participants]
         return participants_read
 
-    async def get_event_participants_by_event_id(self, event_id):
-        participants = await self.repository.get_all_for_event(event_id, limit=1000, offset=0)
+    async def get_event_participants(self, event_id, relevant_sort=False, team_id=None):
+        if relevant_sort and team_id:
+            participants = await self.sorter.sort_participants(event_id, team_id)
+        else:
+            participants = await self.repository.get_all_for_event(event_id, limit=1000, offset=0)
+
         user_ids = [participant.user_id for participant in participants]
         participants_read = [await self.model_domain_to_create(participant) for participant in participants]
         user_read = await self.users_service.get_users_by_ids(user_ids)
