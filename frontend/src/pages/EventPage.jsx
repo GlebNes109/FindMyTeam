@@ -35,6 +35,7 @@ import {
 import {grey} from "@mui/material/colors";
 import ParticipantsList from "../components/ParticipantsList.jsx";
 import {getAccessToken} from "../tokenStore.js";
+import LiveHelpIcon from '@mui/icons-material/LiveHelp';
 import GroupsIcon from "@mui/icons-material/Groups";
 import PeopleIcon from "@mui/icons-material/People";
 import ReplyIcon from "@mui/icons-material/Reply";
@@ -42,6 +43,7 @@ import MailIcon from "@mui/icons-material/Mail";
 import {apiFetch} from "../apiClient.js";
 import ParticipantCard from "../components/ParticipantCard.jsx";
 import {useToast} from "../components/ToastProvider.jsx";
+import TeamVacancy from "../components/TeamVacancy.jsx";
 
 function EventPage() {
     const { eventId } = useParams();
@@ -56,6 +58,7 @@ function EventPage() {
     const [selectedParticipant, setSelectedParticipant] = useState(null);
     const [requestsError, setRequestsError] = useState(false);
     const [isVacancyModalOpen, setIsVacancyModalOpen] = useState(false);
+    const [vacancies, setVacancies] = useState([]);
     const navigate = useNavigate()
     const [loadedTabs, setLoadedTabs] = useState({
         teams: false,
@@ -67,6 +70,7 @@ function EventPage() {
     const { showToast } = useToast();
     const isTeamlead = useMemo(() => {
         return participantData?.event_role === 'TEAMLEAD';
+
     }, [participantData]);
 
     const handleOpenVacancyModal = (participant) => {
@@ -142,12 +146,17 @@ function EventPage() {
         fetchParticipantData();
     }, [participant_id]);
 
+    const loadVacancies = async () => {
+        const res = await apiFetch(`/events/${eventId}/vacancies?relevant_sort=true&participant_id=${participant_id}`, {});
+        const data = await res.json();
+        setVacancies(data);
+    }
+
     const loadRequests = async () => {
         if (!participant_id || loadedTabs.responses) return;
         const token = localStorage.getItem("token");
         const incomingUrl = `/team_requests/${isTeamlead ? 'incoming' : 'outgoing'}?participant_id=${participant_id}`;
         const outgoingUrl = `/team_requests/${isTeamlead ? 'outgoing' : 'incoming'}?participant_id=${participant_id}`;
-
         try {
             const [incomingRes, outgoingRes] = await Promise.all([
                 apiFetch(incomingUrl),
@@ -172,6 +181,10 @@ function EventPage() {
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
+
+        if (tab === 'vacancies' && !loadedTabs.vacancies) {
+            loadVacancies();
+        }
 
         if (tab === 'teams' && !loadedTabs.teams) {
             loadEventAndTeams();
@@ -289,6 +302,7 @@ function EventPage() {
 
     const tabLabels = {
         teams: "Команды",
+        vacancies: "Вакансии",
         participants: isTeamlead ? "Участники (можно пригласить)" : "Участники (просмотр)",
         responses: isTeamlead ? "Отклики в мою команду" : "Мои отклики",
         invites: isTeamlead ? "Мои приглашения" : "Приглашения мне",
@@ -296,10 +310,13 @@ function EventPage() {
 
     const tabIcons = {
         teams: <GroupsIcon />,
+        vacancies: <LiveHelpIcon />,
         participants: <PeopleIcon />,
         responses: <ReplyIcon />,
         invites: <MailIcon />,
     };
+
+    const inTeam = myTeam ? true : false
 
     return (
         <>
@@ -314,17 +331,54 @@ function EventPage() {
                   scrollButtons="auto" sx={{ mb: 4, minHeight: 64,
                 "& .MuiTab-root": {
                     minHeight: 64,
-                    fontSize: { xs: "0.8rem", sm: "1rem" }},}}>
+                    minWidth: "auto",
+                    fontSize: { xs: "0.7rem", sm: "1rem" }},}}>
                 {Object.entries(tabLabels).map(([key, label]) => (
                     <Tab
                         key={key}
                         value={key}
-                        label={label}
-                        icon={isMobile ? undefined : tabIcons[key]}
+                        // label={label}
+                        label={isMobile ? (activeTab === key && isMobile ? label : null) : label}
+                        icon={isMobile ? (activeTab !== key ? tabIcons[key] : null) : tabIcons[key]}
                         iconPosition="start"
                     />
                 ))}
             </Tabs>
+
+            {activeTab === "vacancies" && (
+                <Stack spacing={3}>
+                    <Typography variant="h6">Вакансии</Typography>
+                    <Divider sx={{ mb: 3 }}/>
+                    {vacancies.length > 0 ? (
+                        vacancies.map((vacancy, index) => (
+                            <TeamVacancy
+                                key={vacancy.id || index}
+                                vacancy={vacancy}
+                                index={index}
+                                // onRemove={(info) => setConfirmRemoveVacancy({ open: true, ...info })}
+                                participant={participantData}
+                                inTeam={inTeam}
+                                action={
+                                    <>
+                                        Команда&nbsp;
+                                        <Link
+                                            component={RouterLink}
+                                            to={`/team/${vacancy.team_id}`}
+                                            underline="hover"
+                                        >
+                                            {vacancy.team_name}
+                                        </Link>
+                                    </>
+                                }
+                            />
+                        ))
+                    ) : (
+                        <Typography color="text.secondary" sx={{ fontStyle: "italic" }}>
+                            Вакансий нет
+                        </Typography>
+                    )}
+                </Stack>
+            )}
 
             {activeTab === "teams" && (
                 <Card variant="outlined" sx={{ mb: 4, bgcolor: "#303030" , borderRadius: 3}}>
