@@ -150,6 +150,7 @@ function EventPage() {
         const res = await apiFetch(`/events/${eventId}/vacancies?relevant_sort=true&participant_id=${participant_id}`, {});
         const data = await res.json();
         setVacancies(data);
+        setLoadedTabs(prev => ({ ...prev, vacancies: true }));
     }
 
     const loadRequests = async () => {
