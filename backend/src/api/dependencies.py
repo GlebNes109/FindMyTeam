@@ -44,7 +44,7 @@ from infrastructure.oauth.registry import oauth
 
 from domain.interfaces.sorter import Sorter
 
-from backend.src.infrastructure.sorter_impl import SorterImpl
+from infrastructure.sorter_impl import SorterImpl
 
 
 # from infrastructure.oauth.oauth_provider_google import GoogleOAuthProvider

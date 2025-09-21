@@ -11,7 +11,7 @@ from domain.models.participants import ParticipantsUpdate
 
 from domain.exceptions import AccessDeniedError
 
-from backend.src.domain.interfaces.sorter import Sorter
+from domain.interfaces.sorter import Sorter
 
 
 class ParticipantsService:
