@@ -159,15 +159,15 @@ def get_participants_service(
 def get_teams_service(
     repo: TeamsRepository = Depends(get_teams_repository),
     event_service: EventsService = Depends(get_event_service),
-    participants_service: ParticipantsService = Depends(get_participants_service)
-    ) -> TeamsService:
-    return TeamsService(repo, event_service, participants_service)
+    participants_service: ParticipantsService = Depends(get_participants_service),
+    sorter: Sorter = Depends(get_sorter)
+) -> TeamsService:
+    return TeamsService(repo, event_service, participants_service, sorter)
 
 def get_team_requests_service(
     repo: TeamRequestsRepository = Depends(get_teams_requests_repository),
     event_service: EventsService = Depends(get_event_service),
     teams_service: TeamsService = Depends(get_teams_service),
-    participants_service: ParticipantsService = Depends(get_participants_service),
-    sorter: Sorter = Depends(get_sorter)
+    participants_service: ParticipantsService = Depends(get_participants_service)
 ) -> TeamRequestsService:
-    return TeamRequestsService(repo, teams_service, participants_service, event_service, sorter)
+    return TeamRequestsService(repo, teams_service, participants_service, event_service)
