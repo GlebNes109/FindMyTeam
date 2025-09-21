@@ -287,7 +287,7 @@ class TeamsRepositoryImpl(
                 (
                     # вес за совпадение по треку
                         sa.case(
-                            *(TeamVacanciesDB.track_id == track_id, track_weight),
+                            (TeamVacanciesDB.event_track_id == track_id, track_weight),
                             else_=0
                         )
                         +
@@ -299,7 +299,9 @@ class TeamsRepositoryImpl(
                         )
                 ).label("score")
             )
-            .where(TeamVacanciesDB.event_id == event_id)
+            .select_from(TeamVacanciesDB)
+            .join(TeamsDB, TeamVacanciesDB.team_id == TeamsDB.id)
+            .where(TeamsDB.event_id == event_id)
             .order_by(sa.desc("score"))
         )
 

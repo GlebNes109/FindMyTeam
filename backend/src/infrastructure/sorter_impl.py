@@ -39,7 +39,7 @@ class SorterImpl(Sorter):
 
 
     async def sort_vacancies(self, event_id , participant_id) -> list[VacanciesBasicRead]:
-        participant = self.participants_repository.get(participant_id)
+        participant = await self.participants_repository.get(participant_id)
         track_weight = 1
         keywords = participant.resume.lower().split()
         track_id = participant.track_id

@@ -91,6 +91,6 @@ class ParticipantsRepositoryImpl(
         )
 
         res = await self.session.execute(query)
-        rows = res.scalars.all()
+        rows = res.scalars().all()
 
-        return [ParticipantsBasicRead.model_validate(row.ParticipantsDB, from_attributes=True) for row in rows]
+        return [ParticipantsBasicRead.model_validate(row, from_attributes=True) for row in rows]
