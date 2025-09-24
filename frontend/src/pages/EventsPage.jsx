@@ -197,7 +197,7 @@ export default function EventsPage() {
                                                     }}
                                                 >
                                                     Вы уже участвуете <br />
-                                                    {participation.role === "TEAMLEAD"
+                                                    {participation.event_role === "TEAMLEAD"
                                                         ? "Тимлид"
                                                         : "Участник"}
                                                     {" • "}
