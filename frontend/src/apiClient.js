@@ -37,7 +37,7 @@ export async function apiFetch(url, options = {}, retry = true) {
         } catch (err) {
             clearAccessToken();
 
-            if (typeof handleAuthFailure === "function") {
+            if (!options.suppressAuthFailure && typeof handleAuthFailure === "function") {
                 handleAuthFailure(err);
             }
 
