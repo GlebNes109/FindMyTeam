@@ -28,7 +28,7 @@ export default function EventsPage() {
 
                 let partsData = [];
                 try {
-                    const partsRes = await apiFetch("/participants");
+                    const partsRes = await apiFetch("/participants", { suppressAuthFailure: true });
                     partsData = await partsRes.json();
                 } catch (err) {
                     if (err.code === "UNABLE_TO_UPDATE_TOKEN" || err.status === 401) {
