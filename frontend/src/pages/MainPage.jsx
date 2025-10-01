@@ -34,6 +34,40 @@ function MainPage() {
     const [loading, setLoading] = useState(true);
 
 
+    const [participations, setParticipations] = useState([]);
+
+    useEffect(() => {
+        async function fetchData() {
+            setLoading(true);
+            try {
+                const eventsRes = await apiFetch("/events");
+                const eventsData = await eventsRes.json();
+
+                let partsData = [];
+                try {
+                    const partsRes = await apiFetch("/participants", { suppressAuthFailure: true });
+                    partsData = await partsRes.json();
+                } catch (err) {
+                    if (err.code === "UNABLE_TO_UPDATE_TOKEN" || err.status === 401) {
+                        partsData = [];
+                    } else {
+                        console.error("Ошибка при загрузке участников:", err);
+                    }
+                }
+
+                setEvents(eventsData);
+                setParticipations(partsData);
+            } catch (err) {
+                console.error("Ошибка загрузки:", err);
+            } finally {
+                setLoading(false); // окончание загрузки
+            }
+        }
+        fetchData();
+    }, []);
+
+
+
     useEffect(() => {
         setLoading(true);
         try {
@@ -64,6 +98,11 @@ function MainPage() {
         // overflowY: "auto",
         py: { xs: 6, md: 8 },
     };
+
+    const participationMap = participations.reduce((acc, p) => {
+        acc[p.event_id] = p;
+        return acc;
+    }, {});
 
     // Кнопки вплотную/ на xs — вертикально вплотную, на sm — горизонтально вплотную
     const AuthButtons = ({ loggedIn }) => (
@@ -237,8 +276,11 @@ function MainPage() {
                             <Grid container spacing={3} justifyContent="center"
                                   sx={{ display: { xs: 'none', sm: 'flex' } }}
                             >
-                                {events.slice(0, 4).map((event) => (
-                                    <Grid item
+                                {events.slice(0, 4).map((event) => {
+                                const participation = participationMap[event.id];
+                                const isParticipating = !!participation;
+                                    return (
+                                        <Grid item
                                           xs={12}
                                           sm={6}
                                           md={4}
@@ -246,7 +288,11 @@ function MainPage() {
                                           key={event.id}
                                           sx={{ display: 'flex' }}>
                                         <Card
-                                            onClick={() => navigate(`/event/${event.id}`)}
+                                            onClick={() =>
+                                                navigate(`/event/${event.id}`, {
+                                                    state: participation ? { participant_id: participation.id } : undefined
+                                                })
+                                            }
                                             sx={{
                                                 width: "100%",
                                                 height: "100%",
@@ -318,11 +364,11 @@ function MainPage() {
                                             </Box>
                                         </Card>
                                     </Grid>
-                                ))}
+                                )})}
                             </Grid>
                             <Stack
                                 spacing={3}
-                                sx={{ display: { xs: 'flex', sm: 'none' } }} // <-- КЛЮЧЕВОЕ ИЗМЕНЕНИЕ
+                                sx={{ display: { xs: 'flex', sm: 'none' } }}
                             >
                                 {events.slice(0, 4).map((event) => (
                                     <Card
