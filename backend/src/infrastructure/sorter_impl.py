@@ -20,7 +20,7 @@ class SorterImpl(Sorter):
     async def sort_participants(self, event_id , team_id) -> list[ParticipantsBasicRead]:
         team = await self.teams_repository.get_read_model(team_id)
         if not team.vacancies:
-            return self.participants_repository.get_all_for_event(event_id, limit=1000, offset=0)
+            return await self.participants_repository.get_all_for_event(event_id, limit=1000, offset=0)
         # выставление весов трекам. Чем больше вакансий с треком, тем больше будет вес
         track_weights = {}
         for vacancy in team.vacancies:
