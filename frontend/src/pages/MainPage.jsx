@@ -464,8 +464,8 @@ function MainPage() {
             {/* Какие мероприятия мы поддерживаем */}
             <Box
                 sx={{
-                    ...sectionSx,
-                    bgcolor: "background.paper",
+                    py: 7,
+                    bgcolor: "background.papaer",
                 }}
             >
                 <Box
@@ -566,59 +566,8 @@ function MainPage() {
                 </Container>
             </Box>
 
-
-            {/* FAQ */}
-            <Box
-                sx={{
-                    ...sectionSx,
-                    bgcolor: grey[700],
-                }}
-            >
-                <Container>
-                    <Typography
-                        variant="h4"
-                        align="center"
-                        gutterBottom
-                        sx={{ fontWeight: 700, mb: 4 }}
-                    >
-                        Часто задаваемые вопросы
-                    </Typography>
-
-                    <Grid container spacing={4}>
-                        <Grid item xs={12} md={6}>
-                            <Typography
-                                variant="h6"
-                                gutterBottom
-                                sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                            >
-                                <HelpOutlineIcon color="primary" /> Как создать команду?
-                            </Typography>
-                            <Typography color="text.secondary">
-                                На странице регистрации на мероприятие выберите роль «Тимлид». После этого вы сможете
-                                создать команду, в которой вы будете тимлидом. Вакансии можно создать на этапе
-                                создания команды или позже. Поддерживается markdown в описании вакансии.
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <Typography
-                                variant="h6"
-                                gutterBottom
-                                sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                            >
-                                <HelpOutlineIcon color="primary" /> Как откликнуться на вакансию?
-                            </Typography>
-                            <Typography color="text.secondary">
-                                В таблице команд выберите нужную и перейдите на страницу с деталями. Там вы можете
-                                откликнуться на вакансию. Нельзя откликнуться, если уже состоите в другой команде
-                                или треки вакансии и ваш не совпадают.
-                            </Typography>
-                        </Grid>
-                    </Grid>
-                </Container>
-            </Box>
-
-            {/* Footer*/}
-            <Box sx={{ bgcolor: "grey.900", color: "white", py: 4 }}>
+            {/* Footer */}
+            <Box sx={{ bgcolor: "grey.800", color: "white", py: 4 }}>
                 <Container>
                     <Stack
                         direction={{ xs: "column", sm: "row" }}
@@ -627,17 +576,6 @@ function MainPage() {
                         alignItems={{ xs: "flex-start", sm: "center" }}
                     >
                         <Typography variant="body2">© 2025 FindMyTeam</Typography>
-                        <Stack direction="row" spacing={2}>
-                            <Link href="#" underline="hover" color="inherit">
-                                О нас
-                            </Link>
-                            <Link href="#" underline="hover" color="inherit">
-                                Контакты
-                            </Link>
-                            <Link href="#" underline="hover" color="inherit">
-                                Политика конфиденциальности
-                            </Link>
-                        </Stack>
                     </Stack>
                 </Container>
             </Box>
