@@ -56,13 +56,21 @@ function ParticipantsList({ participant, action}) {
                 )}
                 {participant.email && (<Typography mb={2}>Email: {participant.email}</Typography>)}
                 <Divider sx={{ mb: 3 }}/>
-                <Collapse in={expanded} collapsedSize={collapsedSize}>
+                {isOverflowing ? (
+                    <Collapse in={expanded} collapsedSize={collapsedSize}>
+                        <Card sx={{ bgcolor: grey[900], p: 4, borderRadius: 3 }}>
+                            <Box ref={contentRef} sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                                <ReactMarkdown>{participant.resume || "—"}</ReactMarkdown>
+                            </Box>
+                        </Card>
+                    </Collapse>
+                ) : (
                     <Card sx={{ bgcolor: grey[900], p: 4, borderRadius: 3 }}>
                         <Box ref={contentRef} sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                             <ReactMarkdown>{participant.resume || "—"}</ReactMarkdown>
                         </Box>
                     </Card>
-                </Collapse>
+                )}
 
                 {isOverflowing && (
                     <Button

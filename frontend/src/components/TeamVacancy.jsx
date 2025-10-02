@@ -95,13 +95,20 @@ const TeamVacancy = ({ vacancy, index, participant, onRemove, isTeamLead , inTea
 
                 <Divider sx={{ mb: 3 }}/>
 
-                <Collapse in={expanded} collapsedSize={collapsedSize}>
+                {isOverflowing ? (
+                    <Collapse in={expanded} collapsedSize={collapsedSize}>
                     <Card sx={{ bgcolor: grey[900], p: 4, borderRadius: 3 }}>
                         <Box ref={contentRef} sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                             <ReactMarkdown>{vacancy.description || "—"}</ReactMarkdown>
                         </Box>
                     </Card>
-                </Collapse>
+                </Collapse>) : (
+                    <Card sx={{ bgcolor: grey[900], p: 4, borderRadius: 3 }}>
+                    <Box ref={contentRef} sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                    <ReactMarkdown>{vacancy.description || "—"}</ReactMarkdown>
+                    </Box>
+                    </Card>
+                    )}
 
                 {isOverflowing && (
                     <Button
