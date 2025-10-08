@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from api.dependencies import get_user_id, get_event_service, get_user_service, get_teams_service, \
     get_participants_service
@@ -27,9 +27,10 @@ async def get_events(EventId: str, service: TeamsService = Depends(get_teams_ser
     return await service.get_detailed_teams(EventId)
 
 @router.get("/{EventId}/participants", summary="Получение участников мероприятия", description="Доступно для юзеров и админов")
-async def get_events(EventId: str, service: ParticipantsService = Depends(get_participants_service), relevant_sort: bool = False, team_id: str | None = None):
+async def get_events(EventId: str, service: ParticipantsService = Depends(get_participants_service), relevant_sort: bool = False, team_id: str | None = None, page: int = Query(2, ge=1, le=100),
+    per_page: int = Query(0, ge=0)):
     return await service.get_event_participants(EventId, relevant_sort,
-                                                team_id)  # использован participants сервис, так как участники - его зона ответственности
+                                                team_id, page, per_page)  # использован participants сервис, так как участники - его зона ответственности
 
 @router.get("/{EventId}/vacancies", summary="Получение вакансий мероприятия", description="Получение вакансий с релевантной сортировкой для участников без команды")
 async def get_event_vacancies(EventId: str, service: TeamsService = Depends(get_teams_service), relevant_sort: bool = False, participant_id: str | None = None):

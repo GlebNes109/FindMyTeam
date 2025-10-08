@@ -72,11 +72,13 @@ class ParticipantsService:
         participants_read = [await self.model_domain_to_create(participant) for participant in participants]
         return participants_read
 
-    async def get_event_participants(self, event_id, relevant_sort=False, team_id=None):
+    async def get_event_participants(self, event_id, relevant_sort=False, team_id=None, page=1, per_page=10):
+        limit = per_page
+        offset = page * per_page
         if relevant_sort and team_id:
-            participants = await self.sorter.sort_participants(event_id, team_id)
+            participants = await self.sorter.sort_participants(event_id, team_id, limit=limit, offset=offset)
         else:
-            participants = await self.repository.get_all_for_event(event_id, limit=1000, offset=0)
+            participants = await self.repository.get_all_for_event(event_id, limit=limit, offset=offset)
 
         user_ids = [participant.user_id for participant in participants]
         participants_read = [await self.model_domain_to_create(participant) for participant in participants]
