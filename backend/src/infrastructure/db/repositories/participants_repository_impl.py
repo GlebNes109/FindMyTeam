@@ -63,7 +63,7 @@ class ParticipantsRepositoryImpl(
             self,
             event_id: str,
             track_weights: dict[str, int],
-            keywords: list[str]
+            keywords: list[str], limit, offset
     ) -> list[ParticipantsBasicRead]:
         # tsquery (по ключевым словам)
         ts_query = " | ".join(set(keywords)) if keywords else ""
@@ -87,7 +87,7 @@ class ParticipantsRepositoryImpl(
                 ).label("score")
             )
             .where(ParticipantsDB.event_id == event_id)
-            .order_by(sa.desc("score"))
+            .order_by(sa.desc("score")).limit(limit).offset(offset)
         )
 
         res = await self.session.execute(query)

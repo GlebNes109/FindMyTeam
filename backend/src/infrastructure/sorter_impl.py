@@ -35,12 +35,12 @@ class SorterImpl(Sorter):
                 keywords.extend(words)
 
         return await self.participants_repository.get_by_event_id_sorted(event_id=event_id, track_weights=track_weights,
-                                                                         keywords=keywords)
+                                                                         keywords=keywords, limit=limit, offset=offset)
 
 
-    async def sort_vacancies(self, event_id , participant_id) -> list[VacanciesBasicRead]:
+    async def sort_vacancies(self, event_id , participant_id, limit, offset) -> list[VacanciesBasicRead]:
         participant = await self.participants_repository.get(participant_id)
         track_weight = 1
         keywords = participant.resume.lower().split()
         track_id = participant.track_id
-        return await self.teams_repository.get_event_vacancies_sorted(event_id, track_weight, keywords, track_id)
+        return await self.teams_repository.get_event_vacancies_sorted(event_id, track_weight, keywords, track_id, limit, offset)

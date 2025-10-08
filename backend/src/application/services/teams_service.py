@@ -157,11 +157,13 @@ class TeamsService:
             else:
                 await self.repository.delete_team_member(team_id, participant_id)
 
-    async def get_event_vacancies(self, event_id, relevant_sort=False, participant_id=None):
+    async def get_event_vacancies(self, event_id, relevant_sort=False, participant_id=None, page=1, per_page=10):
+        limit = per_page
+        offset = page * per_page
         if relevant_sort and participant_id:
-            vacancies = await self.sorter.sort_vacancies(event_id, participant_id)
+            vacancies = await self.sorter.sort_vacancies(event_id, participant_id, limit, offset)
         else:
-            vacancies = self.repository.get_event_vacancies(event_id)
+            vacancies = self.repository.get_event_vacancies(event_id, limit, offset)
 
         # сначала собираются таски, потом выполняются в асинхроне все одновременно
         track_tasks = [self.event_service.get_track(vacancy.track_id) for vacancy in vacancies]

@@ -33,6 +33,6 @@ async def get_events(EventId: str, service: ParticipantsService = Depends(get_pa
                                                 team_id, page, per_page)  # использован participants сервис, так как участники - его зона ответственности
 
 @router.get("/{EventId}/vacancies", summary="Получение вакансий мероприятия", description="Получение вакансий с релевантной сортировкой для участников без команды")
-async def get_event_vacancies(EventId: str, service: TeamsService = Depends(get_teams_service), relevant_sort: bool = False, participant_id: str | None = None):
+async def get_event_vacancies(EventId: str, service: TeamsService = Depends(get_teams_service), relevant_sort: bool = False, participant_id: str | None = None, page: int = Query(2, ge=1, le=100), per_page: int = Query(0, ge=0)):
     return await service.get_event_vacancies(
-        EventId, relevant_sort, participant_id)  # использован teams сервис, так как вакансии - его зона ответственности
+        EventId, relevant_sort, participant_id, page, per_page)  # использован teams сервис, так как вакансии - его зона ответственности
