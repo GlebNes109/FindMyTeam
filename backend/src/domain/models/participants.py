@@ -85,3 +85,10 @@ class ParticipantsDetailsRead(ParticipantsRead):
     email: Optional[str] = None
     tg_nickname: Optional[str] = None
     role: Role
+
+class ParticipantsWithPagination(BaseModel):
+    items: list[ParticipantsDetailsRead]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
