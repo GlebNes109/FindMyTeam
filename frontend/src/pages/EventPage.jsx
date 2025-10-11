@@ -30,11 +30,9 @@ import {
     Table,
     useTheme,
     useMediaQuery,
-    CircularProgress,
+    CircularProgress, InputLabel, MenuItem, FormControl, Select, Pagination
 } from "@mui/material";
-import {grey} from "@mui/material/colors";
 import ParticipantsList from "../components/ParticipantsList.jsx";
-import {getAccessToken} from "../tokenStore.js";
 import LiveHelpIcon from '@mui/icons-material/LiveHelp';
 import GroupsIcon from "@mui/icons-material/Groups";
 import PeopleIcon from "@mui/icons-material/People";
@@ -72,6 +70,12 @@ function EventPage() {
         return participantData?.event_role === 'TEAMLEAD';
 
     }, [participantData]);
+    const [pageParticipants, setPageParticipants] = useState(1);
+    const [perPageParticipants, setPerPageParticipants] = useState(10);
+    const [totalPagesParticipants, setTotalPagesParticipants] = useState(1);
+    const [pageVacancies, setPageVacancies] = useState(1);
+    const [perPageVacancies, setPerPageVacancies] = useState(10);
+    const [totalPagesVacancies, setTotalPagesVacancies] = useState(1);
 
     const handleOpenVacancyModal = (participant) => {
         setSelectedParticipant(participant);
@@ -107,25 +111,32 @@ function EventPage() {
     };
 
     const loadParticipants = async () => {
-        if (!eventId || loadedTabs.participants) return;
-
         try {
             let res = null;
-            if (isTeamlead) {
-                res = await apiFetch(`/events/${eventId}/participants?relevant_sort=true&team_id=${myTeam.id}`, {});
-            }
-            else {
-                res = await apiFetch(`/events/${eventId}/participants?relevant_sort=false`, {});
-            }
+            const baseUrl = `/events/${eventId}/participants`;
+            const params = `?relevant_sort=${isTeamlead}&page=${pageParticipants}&per_page=${perPageParticipants}`;
+            const teamParam = isTeamlead ? `&team_id=${myTeam.id}` : "";
 
-            const participants = await res.json();
+            res = await apiFetch(`${baseUrl}${params}${teamParam}`, {});
+            let res_json = await res.json();
+            let participants = res_json.items;
+            setTotalPagesParticipants(res_json.total_pages);
 
             setEventData(prev => ({ ...prev, event_participants: participants }));
             setLoadedTabs(prev => ({ ...prev, participants: true }));
+
         } catch (error) {
             console.error("Ошибка при загрузке участников:", error);
         }
     };
+
+    useEffect(() => {
+        loadParticipants();
+    }, [pageParticipants, perPageParticipants]);
+
+    useEffect(() => {
+        loadVacancies();
+    }, [pageVacancies, perPageVacancies]);
 
 
     useEffect(() => {
@@ -147,15 +158,16 @@ function EventPage() {
     }, [participant_id]);
 
     const loadVacancies = async () => {
-        const res = await apiFetch(`/events/${eventId}/vacancies?relevant_sort=true&participant_id=${participant_id}`, {});
+        const isRelevantSort = !!participant_id
+        const res = await apiFetch(`/events/${eventId}/vacancies?relevant_sort=${isRelevantSort}&participant_id=${participant_id}&page=${pageVacancies}&per_page=${perPageVacancies}`, {});
         const data = await res.json();
-        setVacancies(data);
+        setVacancies(data.items);
+        setTotalPagesVacancies(data.total_pages);
         setLoadedTabs(prev => ({ ...prev, vacancies: true }));
     }
 
     const loadRequests = async () => {
         if (!participant_id || loadedTabs.responses) return;
-        const token = localStorage.getItem("token");
         const incomingUrl = `/team_requests/${isTeamlead ? 'incoming' : 'outgoing'}?participant_id=${participant_id}`;
         const outgoingUrl = `/team_requests/${isTeamlead ? 'outgoing' : 'incoming'}?participant_id=${participant_id}`;
         try {
@@ -176,7 +188,7 @@ function EventPage() {
             setLoadedTabs(prev => ({ ...prev, responses: true, invites: true }));
         } catch (error) {
             console.error("Ошибка при загрузке заявок:", error);
-            setRequestsError(true); // ставим флаг ошибки
+            setRequestsError(true);
         }
     };
 
@@ -224,21 +236,6 @@ function EventPage() {
         }
         }
     // console.log(eventData)
-    const participantsInTeams = useMemo(() => {
-        if (!eventData?.event_teams) return new Set();
-        return new Set(
-            eventData.event_teams.flatMap(team =>
-                team.members?.map(m => m.id) || []
-            )
-        );
-    }, [eventData]);
-
-    const freeParticipants = useMemo(() => {
-        if (!eventData?.event_participants) return [];
-        return eventData.event_participants.filter(
-            p => !participantsInTeams.has(p.id)
-        );
-    }, [eventData, participantsInTeams]);
 
     const myTeam = useMemo(() => {
         if (!eventData?.event_teams || !participantData) return null;
@@ -378,6 +375,42 @@ function EventPage() {
                             Вакансий нет
                         </Typography>
                     )}
+
+                    <Box display="flex" flexDirection="column" justifyContent="space-between" alignItems="center" mt={2}>
+                        {/* Кнопки переключения страниц */}
+
+                        <Stack spacing={2} alignItems="center" mb={2}>
+                            <Pagination
+                                count={totalPagesVacancies}
+                                page={pageVacancies}
+                                onChange={(e, value) => setPageVacancies(value)}
+                                color="primary"
+                                size="medium"
+                                // variant="contained"
+                                shape="rounded"
+                            />
+                        </Stack>
+
+                        {/* Селектор количества элементов */}
+                        <Box display="flex" alignItems="center" gap={1}>
+                            <FormControl size="small" sx={{ minWidth: 170 }}>
+                                <InputLabel id="per-page-label">Элементов на странице</InputLabel>
+                                <Select
+                                    labelId="per-page-label"
+                                    value={perPageVacancies}
+                                    label="Элементов на странице"
+                                    onChange={(e) => {
+                                        setPerPageVacancies(Number(e.target.value));
+                                    }}
+                                >
+                                    {[2, 5, 10, 20].map((n) => (
+                                        <MenuItem key={n} value={n}>{n}</MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+
+                        </Box>
+                    </Box>
                 </Stack>
             )}
 
@@ -391,7 +424,7 @@ function EventPage() {
                             <TableCell sx={{ fontWeight: "bold", color: "white" }}>Участники</TableCell>
                         </TableHead>
                         <TableBody sx={{justify: "center" }}>
-                            {eventData.event_teams.map((team, index) => (
+                            {eventData.event_teams && eventData.event_teams.map((team, index) => (
                                 <TableRow
                                         key={team.id}
                                     sx={{
@@ -443,7 +476,7 @@ function EventPage() {
             )}
 
             {activeTab === "participants" && (
-                freeParticipants.length === 0 ? (
+                eventData.event_participants.length === 0 ? (
                     <Typography color="text.secondary">Нет доступных участников</Typography>
                 ) : (
                     <Box display="flex" flexDirection="column" gap={3}>
@@ -453,7 +486,7 @@ function EventPage() {
                                 Вы не можете приглашать участников — в вашей команде нет вакансий
                             </Typography>
                         )}
-                        {freeParticipants.map((p, i) => {
+                        {eventData.event_participants.map((p, i) => {
                             const action = isTeamlead ? (
                                 myVacancies.length > 0 ? (
                                     <Button
@@ -477,7 +510,43 @@ function EventPage() {
                                 <ParticipantsList key={i} participant={p} action={action} />
                             );
                         })}
+                        <Box display="flex" flexDirection="column" justifyContent="space-between" alignItems="center" mt={2}>
+                            {/* Кнопки переключения страниц */}
+
+                            <Stack spacing={2} alignItems="center" mb={2}>
+                                <Pagination
+                                    count={totalPagesParticipants}
+                                    page={pageParticipants}
+                                    onChange={(e, value) => setPageParticipants(value)}
+                                    color="primary"
+                                    size="medium"
+                                    // variant="contained"
+                                    shape="rounded"
+                                />
+                            </Stack>
+
+                            {/* Селектор количества элементов */}
+                            <Box display="flex" alignItems="center" gap={1}>
+                                <FormControl size="small" sx={{ minWidth: 170 }}>
+                                    <InputLabel id="per-page-label">Элементов на странице</InputLabel>
+                                    <Select
+                                        labelId="per-page-label"
+                                        value={perPageParticipants}
+                                        label="Элементов на странице"
+                                        onChange={(e) => {
+                                            setPerPageParticipants(Number(e.target.value));
+                                            setPageParticipants(1);
+                                        }}
+                                    >
+                                        {[2, 5, 10, 20].map((n) => (
+                                            <MenuItem key={n} value={n}>{n}</MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+
+                            </Box>
                         </Box>
+                    </Box>
                 )
             )}
 
