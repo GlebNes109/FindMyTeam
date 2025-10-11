@@ -1,7 +1,7 @@
 import uuid
 from typing import Any
 
-from sqlmodel import select, delete
+from sqlmodel import select, delete, func
 from sqlalchemy.orm import selectinload
 
 from domain.exceptions import ObjectAlreadyExistsError, ObjectNotFoundError
@@ -261,8 +261,8 @@ class TeamsRepositoryImpl(
         await self.session.commit()
         return True
 
-    async def get_event_vacancies(self, event_id: Any):
-        stmt = select(TeamVacanciesDB).where(TeamVacanciesDB.event_id == event_id)
+    async def get_event_vacancies(self, event_id: Any, limit, offset):
+        stmt = select(TeamVacanciesDB).join(TeamsDB, TeamVacanciesDB.team_id == TeamsDB.id).where(TeamsDB.event_id == event_id).limit(limit).offset(offset)
         result = await self.session.execute(stmt)
         try:
             objs = result.scalars().all()
@@ -279,7 +279,7 @@ class TeamsRepositoryImpl(
         except NoResultFound:
             raise ObjectNotFoundError
 
-    async def get_event_vacancies_sorted(self, event_id: Any, track_weight: int, keywords: list[str], track_id: Any):
+    async def get_event_vacancies_sorted(self, event_id: Any, track_weight: int, keywords: list[str], track_id: Any, limit, offset):
         ts_query = " | ".join(set(keywords)) if keywords else ""
         query = (
             sa.select(
@@ -302,7 +302,7 @@ class TeamsRepositoryImpl(
             .select_from(TeamVacanciesDB)
             .join(TeamsDB, TeamVacanciesDB.team_id == TeamsDB.id)
             .where(TeamsDB.event_id == event_id)
-            .order_by(sa.desc("score"))
+            .order_by(sa.desc("score")).limit(limit).offset(offset)
         )
 
         result = await self.session.execute(query)
@@ -320,4 +320,10 @@ class TeamsRepositoryImpl(
             return vacancies_read
         except NoResultFound:
             raise ObjectNotFoundError
+
+    async def total_count_for_event(self, event_id) -> int:
+        stmt = select(func.count()).select_from(TeamVacanciesDB).join(TeamsDB, TeamsDB.id == TeamVacanciesDB.team_id).where(TeamsDB.event_id == event_id)
+        result = await self.session.execute(stmt)
+        total_count = result.scalar_one()
+        return total_count
 

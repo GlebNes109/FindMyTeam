@@ -84,8 +84,9 @@ class TeamMembersUpdate(UpdateBaseModel):
     team_id: str
     participant_id: str
 
-"""class TeamsDomainValidate(BaseModel):
-    name: str
-    description: str
-    # event_id: Optional[str] = None
-    vacancies: Optional[list[VacanciesCreate]] = None"""
+class VacanciesWithPagination(BaseModel):
+    items: list[VacanciesDetailsRead]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
