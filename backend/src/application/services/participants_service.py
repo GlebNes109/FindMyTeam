@@ -1,3 +1,5 @@
+import math
+
 from application.services.events_service import EventsService
 from application.services.user_service import UsersService
 from domain.exceptions import ObjectNotFoundError, BadRequestError
@@ -12,6 +14,8 @@ from domain.models.participants import ParticipantsUpdate
 from domain.exceptions import AccessDeniedError
 
 from domain.interfaces.sorter import Sorter
+
+from domain.models.participants import ParticipantsWithPagination
 
 
 class ParticipantsService:
@@ -73,12 +77,15 @@ class ParticipantsService:
         return participants_read
 
     async def get_event_participants(self, event_id, relevant_sort=False, team_id=None, page=1, per_page=10):
+        offset = (page - 1) * per_page
         limit = per_page
-        offset = page * per_page
+        total_count = await self.repository.total_count_for_event(event_id)
         if relevant_sort and team_id:
             participants = await self.sorter.sort_participants(event_id, team_id, limit=limit, offset=offset)
         else:
             participants = await self.repository.get_all_for_event(event_id, limit=limit, offset=offset)
+
+        total_pages = math.ceil(total_count / per_page)
 
         user_ids = [participant.user_id for participant in participants]
         participants_read = [await self.model_domain_to_create(participant) for participant in participants]
@@ -104,7 +111,14 @@ class ParticipantsService:
                 role=user.role
             ))
 
-        return participants_detail_read
+        participants_with_pagination = ParticipantsWithPagination(
+            items=participants_detail_read,
+            total=total_count,
+            page=page,
+            per_page=per_page,
+            total_pages=total_pages
+        )
+        return participants_with_pagination
 
     async def get_participant(self, participant_id):
         participant = await self.repository.get(participant_id)

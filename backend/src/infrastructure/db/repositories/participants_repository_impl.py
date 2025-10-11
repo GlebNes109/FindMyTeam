@@ -1,6 +1,6 @@
 import uuid
+from sqlalchemy import select, func
 
-from sqlmodel import select
 from sqlalchemy import literal
 from typing import Any
 from sqlalchemy.exc import IntegrityError
@@ -11,6 +11,10 @@ from infrastructure.db.db_models.participants import ParticipantsDB
 from infrastructure.db.repositories.base_repository_impl import BaseRepositoryImpl
 import sqlalchemy as sa
 from domain.exceptions import ObjectAlreadyExistsError
+
+from infrastructure.db.db_models.teams import TeamsDB
+
+from infrastructure.db.db_models.teams import TeamMembersDB
 
 
 class ParticipantsRepositoryImpl(
@@ -47,7 +51,11 @@ class ParticipantsRepositoryImpl(
         return [self.read_schema.model_validate(obj, from_attributes=True) for obj in objs]
 
     async def get_all_for_event(self, event_id: Any, limit: int, offset: int) -> list[ParticipantsBasicRead]:
-        stmt = select(ParticipantsDB).where(ParticipantsDB.event_id == event_id).limit(limit).offset(offset)
+        stmt = select(ParticipantsDB).where(ParticipantsDB.event_id == event_id, ParticipantsDB.id.not_in(
+        select(TeamMembersDB.participant_id)
+        .join(TeamsDB, TeamMembersDB.team_id == TeamsDB.id)
+        .where(TeamsDB.event_id == event_id)
+    )).limit(limit).offset(offset)
         result = await self.session.execute(stmt)
         objs = result.scalars().all()
         return [self.read_schema.model_validate(obj, from_attributes=True) for obj in objs]
@@ -86,7 +94,11 @@ class ParticipantsRepositoryImpl(
                         )
                 ).label("score")
             )
-            .where(ParticipantsDB.event_id == event_id)
+            .where(ParticipantsDB.event_id == event_id, ParticipantsDB.id.not_in(
+        select(TeamMembersDB.participant_id)
+        .join(TeamsDB, TeamMembersDB.team_id == TeamsDB.id)
+        .where(TeamsDB.event_id == event_id)
+    ))
             .order_by(sa.desc("score")).limit(limit).offset(offset)
         )
 
@@ -94,3 +106,13 @@ class ParticipantsRepositoryImpl(
         rows = res.scalars().all()
 
         return [ParticipantsBasicRead.model_validate(row, from_attributes=True) for row in rows]
+
+    async def total_count_for_event(self, event_id) -> int:
+        stmt = select(func.count()).select_from(ParticipantsDB).where(ParticipantsDB.event_id == event_id, ParticipantsDB.id.not_in(
+        select(TeamMembersDB.participant_id)
+        .join(TeamsDB, TeamMembersDB.team_id == TeamsDB.id)
+        .where(TeamsDB.event_id == event_id)
+    ))
+        result = await self.session.execute(stmt)
+        total_count = result.scalar_one()
+        return total_count
