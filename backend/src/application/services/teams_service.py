@@ -1,4 +1,5 @@
 import asyncio
+import math
 from typing import TYPE_CHECKING
 
 from application.services.events_service import EventsService
@@ -15,6 +16,8 @@ from domain.exceptions import ObjectNotFoundError, BadRequestError
 from domain.models.teams import TeamsRead
 
 from domain.interfaces.sorter import Sorter
+
+from domain.models.teams import VacanciesWithPagination
 
 if TYPE_CHECKING: # чтобы не было циклического импорта
     from .participants_service import ParticipantsService
@@ -158,12 +161,15 @@ class TeamsService:
                 await self.repository.delete_team_member(team_id, participant_id)
 
     async def get_event_vacancies(self, event_id, relevant_sort=False, participant_id=None, page=1, per_page=10):
+        offset = (page - 1) * per_page
         limit = per_page
-        offset = page * per_page
+        total_count = await self.repository.total_count_for_event(event_id)
+        total_pages = math.ceil(total_count / per_page)
         if relevant_sort and participant_id:
             vacancies = await self.sorter.sort_vacancies(event_id, participant_id, limit, offset)
         else:
-            vacancies = self.repository.get_event_vacancies(event_id, limit, offset)
+            vacancies = await self.repository.get_event_vacancies(event_id, limit, offset)
+
 
         # сначала собираются таски, потом выполняются в асинхроне все одновременно
         track_tasks = [self.event_service.get_track(vacancy.track_id) for vacancy in vacancies]
@@ -188,4 +194,11 @@ class TeamsService:
             for vacancy, track, team in zip(vacancies, tracks, teams)
         ]
 
-        return vacancies_detailed
+        vacancies_with_pagination = VacanciesWithPagination(
+            items=vacancies_detailed,
+            total=total_count,
+            page=page,
+            per_page=per_page,
+            total_pages=total_pages
+        )
+        return vacancies_with_pagination

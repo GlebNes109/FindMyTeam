@@ -1,7 +1,7 @@
 import uuid
 from typing import Any
 
-from sqlmodel import select, delete
+from sqlmodel import select, delete, func
 from sqlalchemy.orm import selectinload
 
 from domain.exceptions import ObjectAlreadyExistsError, ObjectNotFoundError
@@ -262,7 +262,7 @@ class TeamsRepositoryImpl(
         return True
 
     async def get_event_vacancies(self, event_id: Any, limit, offset):
-        stmt = select(TeamVacanciesDB).where(TeamVacanciesDB.event_id == event_id).limit(limit).offset(offset)
+        stmt = select(TeamVacanciesDB).join(TeamsDB, TeamVacanciesDB.team_id == TeamsDB.id).where(TeamsDB.event_id == event_id).limit(limit).offset(offset)
         result = await self.session.execute(stmt)
         try:
             objs = result.scalars().all()
@@ -320,4 +320,10 @@ class TeamsRepositoryImpl(
             return vacancies_read
         except NoResultFound:
             raise ObjectNotFoundError
+
+    async def total_count_for_event(self, event_id) -> int:
+        stmt = select(func.count()).select_from(TeamVacanciesDB).join(TeamsDB, TeamsDB.id == TeamVacanciesDB.team_id).where(TeamsDB.event_id == event_id)
+        result = await self.session.execute(stmt)
+        total_count = result.scalar_one()
+        return total_count
 
