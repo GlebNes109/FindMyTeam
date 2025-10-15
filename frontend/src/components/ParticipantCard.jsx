@@ -76,9 +76,10 @@ const ParticipantCard = ({ participantData, setParticipantData, myTeam, navigate
 
     if (!participantData) {
         return (
-            <Card sx={{ mt: 4, bgcolor: "background.paper", borderRadius: 3 }} variant="outlined">
+            <Card sx={{my: 2, bgcolor: "background.paper", borderRadius: 3 }} variant="outlined">
                 <CardContent>
-                    <Typography color="text.secondary">
+                    <Typography color="text.secondary"                         sx={{my: 1}}
+                    >
                         Вы не зарегистрированы на это мероприятие.
                     </Typography>
                     <Button
@@ -86,7 +87,7 @@ const ParticipantCard = ({ participantData, setParticipantData, myTeam, navigate
                         size="small"
                         color="primary"
                         onClick={() => navigate(`/event/${eventId}/register`)}
-                        sx={{my: 2}}
+                        sx={{my: 1}}
                     >
                         Зарегистрироваться!
                     </Button>
