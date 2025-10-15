@@ -17,10 +17,10 @@ class SorterImpl(Sorter):
         self.teams_repository = teams_repository
         self.participants_repository = participants_repository
 
-    async def sort_participants(self, event_id , team_id) -> list[ParticipantsBasicRead]:
+    async def sort_participants(self, event_id , team_id, limit, offset) -> list[ParticipantsBasicRead]:
         team = await self.teams_repository.get_read_model(team_id)
         if not team.vacancies:
-            return await self.participants_repository.get_all_for_event(event_id, limit=1000, offset=0)
+            return await self.participants_repository.get_all_for_event(event_id, limit=limit, offset=offset)
         # выставление весов трекам. Чем больше вакансий с треком, тем больше будет вес
         track_weights = {}
         for vacancy in team.vacancies:
@@ -35,12 +35,12 @@ class SorterImpl(Sorter):
                 keywords.extend(words)
 
         return await self.participants_repository.get_by_event_id_sorted(event_id=event_id, track_weights=track_weights,
-                                                                         keywords=keywords)
+                                                                         keywords=keywords, limit=limit, offset=offset)
 
 
-    async def sort_vacancies(self, event_id , participant_id) -> list[VacanciesBasicRead]:
+    async def sort_vacancies(self, event_id , participant_id, limit, offset) -> list[VacanciesBasicRead]:
         participant = await self.participants_repository.get(participant_id)
         track_weight = 1
         keywords = participant.resume.lower().split()
         track_id = participant.track_id
-        return await self.teams_repository.get_event_vacancies_sorted(event_id, track_weight, keywords, track_id)
+        return await self.teams_repository.get_event_vacancies_sorted(event_id, track_weight, keywords, track_id, limit, offset)
