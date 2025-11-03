@@ -13,11 +13,13 @@ class EventsAdmin(ModelView, model=EventsDB):
     name_plural = "Мероприятия"  # множественное число
     column_list = [EventsDB.id, EventsDB.name, EventsDB.start_date, EventsDB.end_date]
     column_searchable_list = [EventsDB.name, EventsDB.description]
+    form_columns = [EventsDB.name, EventsDB.description, EventsDB.start_date, EventsDB.end_date]
 
 class EventTracksAdmin(ModelView, model=EventTracksDB):
     name = "Направление / трек"
     name_plural = "Направления / Треки"
     column_list = [EventTracksDB.id, EventTracksDB.event_id, EventTracksDB.name]
+    form_columns = ["name", "event"]
 
 class TeamsAdmin(ModelView, model=TeamsDB):
     name = "Команда"
