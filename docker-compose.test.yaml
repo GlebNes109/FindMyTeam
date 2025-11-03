@@ -3,6 +3,9 @@ version: "3.8"
 services:
   db:
     image: postgres:15
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: users
     ports:
       - "5432:5432"
     healthcheck:
@@ -15,9 +18,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.test
-    environment:
-      POSTGRES_HOST_AUTH_METHOD: trust
-      POSTGRES_DB: users
     depends_on:
       db:
         condition: service_healthy
