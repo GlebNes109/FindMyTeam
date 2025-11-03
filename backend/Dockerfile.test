@@ -1,13 +1,16 @@
 FROM python:3.13-slim
 
-WORKDIR /app/backend/src
+WORKDIR /app/backend
 
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN pip install pytest pytest-asyncio httpx
 
+COPY . /app/backend
 COPY src /app/backend/src
 
 ENV PYTHONPATH=/app/backend/src
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD bash -c "uvicorn main:app --host 0.0.0.0 --port 8080 & sleep 3 && pytest -q --disable-warnings"
 EXPOSE 8080
+

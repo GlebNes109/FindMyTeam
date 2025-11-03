@@ -24,7 +24,7 @@ from infrastructure.db.session import async_session_maker
 async def lifespan(app: FastAPI):
     async with async_session_maker() as session:
         hash_creator = get_hash_creator()
-        await create_tables()
+        # await create_tables()
         await add_super_admin(hash_creator, session)
     yield
 
