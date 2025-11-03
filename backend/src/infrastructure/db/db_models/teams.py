@@ -1,3 +1,5 @@
+import uuid
+
 from sqlmodel import SQLModel, Field, Relationship, Column, ForeignKey
 from typing import List, Optional
 
@@ -5,7 +7,7 @@ from infrastructure.db.db_models.participants import ParticipantsDB
 
 
 class TeamsDB(SQLModel, table=True):
-    id: str = Field(primary_key=True)
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     name: str
     event_id: str = Field(foreign_key="eventsdb.id")
     teamlead_id: str = Field(
@@ -18,7 +20,7 @@ class TeamsDB(SQLModel, table=True):
 
 
 class TeamMembersDB(SQLModel, table=True):
-    id: str = Field(primary_key=True)
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     team_id: str = Field(
         sa_column=Column(ForeignKey("teamsdb.id", ondelete="CASCADE"))
     )
@@ -31,7 +33,7 @@ class TeamMembersDB(SQLModel, table=True):
 
 
 class TeamVacanciesDB(SQLModel, table=True):
-    id: str = Field(primary_key=True)
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     team_id: str = Field(
         sa_column=Column(ForeignKey("teamsdb.id", ondelete="CASCADE"))
     )
@@ -43,7 +45,7 @@ class TeamVacanciesDB(SQLModel, table=True):
 
 
 class TeamVacanciesSkillsDB(SQLModel, table=True):
-    id: str = Field(primary_key=True)
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     skill: str
     vacancy_id: str = Field(
         sa_column=Column(ForeignKey("teamvacanciesdb.id", ondelete="CASCADE"))
