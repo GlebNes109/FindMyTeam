@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Optional
 
 from sqlmodel import SQLModel, Field, Relationship
@@ -8,7 +9,7 @@ from infrastructure.db.db_models.events import EventsDB
 
 
 class ParticipantsDB(SQLModel, table=True):
-    id: str = Field(primary_key=True)
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     event_id: str = Field(foreign_key="eventsdb.id")
     user_id: str = Field(foreign_key="usersdb.id")
     track_id: str = Field(foreign_key="eventtracksdb.id")
