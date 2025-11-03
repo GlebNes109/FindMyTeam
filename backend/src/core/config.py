@@ -11,8 +11,6 @@ class Settings(BaseSettings):
     postgres_port: int
     postgres_database: str
     server_address: str
-    redis_host: str
-    redis_port: int
     admins: list[str]
     secret_key: str
     algorithm: str
