@@ -22,8 +22,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useNavigate } from "react-router-dom";
 import {apiFetch, refreshAccessToken} from "../apiClient.js";
-import {cyan, grey, teal} from "@mui/material/colors";
-
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 function MainPage() {
     const navigate = useNavigate();
     const theme = useTheme();
@@ -109,8 +108,9 @@ function MainPage() {
         <Box
         >
             {!loggedIn ? ( <ButtonGroup variant="contained" aria-label="Basic button group">
-                <Button sx={{width: 300}} variant="contained" onClick={() => navigate("/auth")}>Начать</Button>
-            </ButtonGroup>
+                <Button variant="outlined" sx={{width: {sm: "120px" }}} onClick={() => navigate("/auth")}>Войти</Button>
+                    <Button variant="contained" onClick={() => navigate("/events")}>Доступные мероприятия</Button>
+                </ButtonGroup>
             ) : (
                 <ButtonGroup variant="contained" aria-label="Authenticated user buttons">
                     <Button variant="contained" onClick={() => navigate("/home")}>Мой профиль</Button>
@@ -240,6 +240,30 @@ function MainPage() {
                     </Container>
                 </Box>
             </Box>
+            <Box
+                sx={{
+                    position: "absolute",
+                    bottom: 20,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    zIndex: 2,
+                    color: "white",
+                    filter: "drop-shadow(0 0 12px rgba(0,0,0,0.8))",
+                    opacity: 0.9,
+                    animation: "bounce 2s infinite",
+                }}
+            >
+                <KeyboardArrowDownIcon sx={{ fontSize: 80 }} />
+            </Box>
+            <style>
+                {`
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+        40% { transform: translateX(-50%) translateY(12px); }
+        60% { transform: translateX(-50%) translateY(6px); }
+      }
+    `}
+            </style>
 
             {/* События */}
             <Box
