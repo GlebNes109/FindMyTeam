@@ -1,9 +1,10 @@
+import uuid
 from typing import List, Optional
 
 from sqlmodel import SQLModel, Field, Relationship
 
 class EventsDB(SQLModel, table=True):
-    id: str = Field(primary_key=True)
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     name: str
     description: str
     start_date: str
@@ -19,7 +20,7 @@ class EventsDB(SQLModel, table=True):
     )
 
 class EventTracksDB(SQLModel, table=True):
-    id: str = Field(primary_key=True)
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     event_id: str = Field(foreign_key="eventsdb.id")
     name: str
 
