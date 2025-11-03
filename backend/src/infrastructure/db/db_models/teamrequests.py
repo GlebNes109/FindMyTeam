@@ -1,10 +1,11 @@
+import uuid
 from typing import Optional
 
 from sqlmodel import Field, SQLModel
 
 
 class TeamRequestsDB(SQLModel, table=True):
-    id: str = Field(primary_key=True)
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     vacancy_id: str
     participant_id: str
     approved_by_teamlead: Optional[bool] = None

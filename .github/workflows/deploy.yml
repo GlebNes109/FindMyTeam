@@ -1,13 +1,29 @@
-name: Deploy to Server
+name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
 
 jobs:
-  deploy:
+  tests:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        run: docker compose -f docker-compose.test.yaml up --build --abort-on-container-exit --exit-code-from backend
+
+      - name: Clean up
+        if: always()
+        run: docker compose -f docker-compose.test.yaml down -v
+
+  deploy:
+    needs: tests
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout repo
@@ -26,4 +42,4 @@ jobs:
 
       - name: Restart container
         run: |
-            ssh deployer@glebnesyutin.fvds.ru "cd /home/deployer/FindMyTeam && docker compose down && docker compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build -d"
+          ssh deployer@glebnesyutin.fvds.ru "cd /home/deployer/FindMyTeam && docker compose down && docker compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build -d"
