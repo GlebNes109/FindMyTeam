@@ -19,6 +19,9 @@ class EventsDB(SQLModel, table=True):
         sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
 
+    def __str__(self):
+        return self.name
+
 class EventTracksDB(SQLModel, table=True):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     event_id: str = Field(foreign_key="eventsdb.id")
