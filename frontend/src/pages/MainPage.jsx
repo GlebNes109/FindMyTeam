@@ -14,15 +14,20 @@ import {
     Typography,
     useMediaQuery,
     useTheme,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
 } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import EventIcon from "@mui/icons-material/Event";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useNavigate } from "react-router-dom";
 import {apiFetch, refreshAccessToken} from "../apiClient.js";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import {grey} from "@mui/material/colors";
 function MainPage() {
     const navigate = useNavigate();
     const theme = useTheme();
@@ -374,18 +379,44 @@ function MainPage() {
                                                 </Box>
                                             </CardContent>
 
-                                            <Box p={2}>
+                                            {isParticipating ? (
+                                                <Typography
+                                                    sx={{
+                                                        mt: 3,
+                                                        p: 1,
+                                                        bgcolor: grey[800],
+                                                        borderRadius: 1,
+                                                        textAlign: "center",
+                                                        color: "white",
+                                                        width: {
+                                                            xs: "100%",
+                                                            sm: 270,
+                                                        }
+                                                    }}
+                                                >
+                                                    Вы уже участвуете <br />
+                                                    {participation.event_role === "TEAMLEAD"
+                                                        ? "Тимлид"
+                                                        : "Участник"}
+                                                    {" • "}
+                                                    {participation.track?.name}
+                                                </Typography>
+                                            ) : (
                                                 <Button
-                                                    fullWidth
                                                     variant="contained"
+                                                    sx={{ mt: 3,
+                                                        width: {
+                                                            xs: "100%",
+                                                            sm: 270,
+                                                        },}}
+
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         navigate(`/event/${event.id}/register`);
                                                     }}
                                                 >
                                                     Я участвую
-                                                </Button>
-                                            </Box>
+                                                </Button>)}
                                         </Card>
                                     </Grid>
                                 )})}
@@ -589,6 +620,192 @@ function MainPage() {
                     </Grid>
                 </Container>
             </Box>
+
+            {/* FAQ / Помощь пользователю */}
+            <Box sx={{ py: 7, bgcolor: "grey.900", color: "text.primary" }}>
+                <Container maxWidth="md">
+                    <Typography
+                        variant="h4"
+                        align="center"
+                        gutterBottom
+                        sx={{ fontWeight: 700, mb: 4 }}
+                    >
+                        Часто задаваемые вопросы (FAQ)
+                    </Typography>
+
+                    <Stack>
+                        <Accordion>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="subtitle1" fontWeight={600}>
+                                    Как начать пользоваться FindMyTeam?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2">
+                                    Перейдите на главную страницу, создайте аккаунт или войдите. После входа вы сможете выбрать мероприятие, зарегистрироваться и указать свою роль — участник или тимлид.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        <Accordion>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="subtitle1" fontWeight={600}>
+                                    Как зарегистрироваться на мероприятие?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2">
+                                    В разделе “Мероприятия” выберите интересующее событие и нажмите “Я участвую”.
+                                    Укажите резюме, выберите трек и роль. Если вы тимлид, создайте команду и добавьте вакансии. Вы также можете добавить или убрать вакансии позже на странице команды. В резюме, описании команд и описании вакансий поддерживается Markdown разметка.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        <Accordion>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="subtitle1" fontWeight={600}>
+                                    Как изменить резюме, трек или роль на мероприятии?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2">
+                                    Для этого перейдите на страницу мероприятия, затем нажмите на иконку "Карандаш" рядом с данными, которые хотите редактировать (данные об участии находятся внизу страницы). Вы можете изменить резюме и трек, а также отказаться от участия в мероприятии.
+                                    Чтобы сменить роль с "Тимлид" на "Участник", выйдете из команды или удалите команду. Если тимлид выходит из команды, команда автоматически удаляется, а тимлид становится обычным участником.
+                                    Чтобы сменить роль с "Участник" на "Тимлид" откажитесь от участия в мероприятии, а затем зарегистрируйтесь заново, выбрав роль "Тимлид" на этапе регистрации. Обратите внимание, что в таком случае все данные об участии в мероприятии (резюме и трек) удалятся.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        <Accordion>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="subtitle1" fontWeight={600}>
+                                    Как собрать команду?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2">
+                                    Тимлид создаёт команду при регистрации, добавляет вакансии и может приглашать участников через вкладку “Участники”.
+                                    Участники могут откликаться на вакансии команд с подходящим треком.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        <Accordion>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="subtitle1" fontWeight={600}>
+                                    Как посмотреть свои мероприятия?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2">
+                                    Перейдите в личный кабинет. Там отображаются все мероприятия, где вы участвуете, с вашими ролями и треками.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        <Accordion>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="subtitle1" fontWeight={600}>
+                                    Что делать, если я не вижу подходящую команду?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2">
+                                    Можно создать собственную команду, если вы тимлид, или подождать, пока откроются новые вакансии.
+                                    Также вы можете откликнуться на несколько подходящих вакансий сразу.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        <Accordion>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="subtitle1" fontWeight={600}>
+                                    Как отправить приглашение?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2">
+                                    Отправить приглашение можно только если вы тимлид и в вашей команде есть открытые вакансии.
+                                    Откройте список участников на странице мероприятия, нажмите на кнопку "пригласить" на карточке участника, а затем выберите вакансию, на которую вы хотите его пригласить.
+                                    Посмотреть приглашения, которые вы отправили можно во вкладке "Мои приглашения" на странице мероприятия.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        <Accordion>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="subtitle1" fontWeight={600}>
+                                    Как принять приглашение в команду?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2">
+                                    Все приглашения отображаются во вкладках “Приглашения мне” на странице мероприятия.
+                                    Вы можете принять или отклонить приглашения в один клик.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        <Accordion>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="subtitle1" fontWeight={600}>
+                                    Как посмотреть участников команды?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2">
+                                    Чтобы посмотреть подробную информацию о команде, откройте вкладку "команды" на странице мероприятий. Далее нажмите на строку с командой, чтобы перейти на страницу этой команды.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        <Accordion>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="subtitle1" fontWeight={600}>
+                                    Как управлять своей командой?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2">
+                                    Управление командной доступно только если вы тимлид в этой команде. Для этого перейдите на страницу с вашей командой. Там вы можете редактировать название и описание команды, вы также можете добавлять и удалять вакансии.
+                                    Для удаления вакансий нажмите на иконку мусорной корзины на карточке вакансии. Для удаления участников из команды нажмите на кнопку "выгнать" на карточке участника.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        <Accordion>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="subtitle1" fontWeight={600}>
+                                    Как откликнуться на вакансию?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2">
+                                    Откликнуться на вакансию можно только если вы участник мероприятия и у вас еще нет команды.
+                                    Чтобы откликнуться на вакансию, откройте вкладку "вакансии" на странице мероприятия. Далее нажмите "откликнуться" на карточке вакансии, которая вам интересна.
+                                    Вы также можете это сделать со страницы команды.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+
+                        <Accordion>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="subtitle1" fontWeight={600}>
+                                    Как редактировать данные в профиле или выйти из аккаунта?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2">
+                                    В личном кабинете вы можете изменить имя, e-mail, пароль и Telegram.
+                                    Там же можно выйти или удалить профиль. Если вы хотите изменить резюме или отказаться от участия в каком-то мероприятии, вы можете сделать это на странице мероприятия.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+                    </Stack>
+                </Container>
+            </Box>
+
 
             {/* Footer */}
             <Box sx={{ bgcolor: "grey.800", color: "white", py: 4 }}>

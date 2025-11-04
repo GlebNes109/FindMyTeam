@@ -74,3 +74,7 @@ class TokenRead(BaseModel):
 
 class OAuthCode(BaseModel):
     code: str
+
+class SigninUser(StrictBaseModel):
+    login: str
+    password: str

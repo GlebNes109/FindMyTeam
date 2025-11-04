@@ -79,7 +79,7 @@ function HomePage() {
             apiFetch("/users", { method: "DELETE" })
                 .then(() => {
                     clearAccessToken();
-                    navigate("/signup");
+                    navigate("/auth");
                 })
                 .catch((error) => console.error("Ошибка удаления:", error));
         }

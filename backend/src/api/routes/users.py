@@ -6,7 +6,6 @@ from api.dependencies import get_user_service, get_user_id, get_hash_creator
 from application.services.user_service import UsersService
 from domain.exceptions import ObjectAlreadyExistsError, AccessDeniedError, ObjectNotFoundError
 from domain.models.user import TokenPair, UsersUpdate
-from legacy.db_models.api_models import NewUser, SigninUser, PatchUser
 
 from infrastructure.oauth.oauth_provider_factory import OAuthProviderFactory
 
@@ -15,6 +14,8 @@ from api.dependencies import get_oauth_provider_factory
 from api.dto.user import OAuthCode
 
 from core.config import settings
+
+from api.dto.user import SigninUser
 
 router = APIRouter()
 
