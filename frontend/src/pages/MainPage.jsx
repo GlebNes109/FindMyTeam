@@ -388,10 +388,7 @@ function MainPage() {
                                                         borderRadius: 1,
                                                         textAlign: "center",
                                                         color: "white",
-                                                        width: {
-                                                            xs: "100%",
-                                                            sm: 270,
-                                                        }
+                                                        width: "100%"
                                                     }}
                                                 >
                                                     Вы уже участвуете <br />
