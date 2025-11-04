@@ -71,10 +71,10 @@ function EventPage() {
 
     }, [participantData]);
     const [pageParticipants, setPageParticipants] = useState(1);
-    const [perPageParticipants, setPerPageParticipants] = useState(10);
+    const [perPageParticipants, setPerPageParticipants] = useState(30);
     const [totalPagesParticipants, setTotalPagesParticipants] = useState(1);
     const [pageVacancies, setPageVacancies] = useState(1);
-    const [perPageVacancies, setPerPageVacancies] = useState(10);
+    const [perPageVacancies, setPerPageVacancies] = useState(30);
     const [totalPagesVacancies, setTotalPagesVacancies] = useState(1);
 
     const handleOpenVacancyModal = (participant) => {
@@ -403,7 +403,7 @@ function EventPage() {
                                         setPerPageVacancies(Number(e.target.value));
                                     }}
                                 >
-                                    {[2, 5, 10, 20].map((n) => (
+                                    {[30, 40, 50, 70].map((n) => (
                                         <MenuItem key={n} value={n}>{n}</MenuItem>
                                     ))}
                                 </Select>
@@ -553,7 +553,7 @@ function EventPage() {
                                             setPageParticipants(1);
                                         }}
                                     >
-                                        {[2, 5, 10, 20].map((n) => (
+                                        {[30, 40, 50, 70].map((n) => (
                                             <MenuItem key={n} value={n}>{n}</MenuItem>
                                         ))}
                                     </Select>
