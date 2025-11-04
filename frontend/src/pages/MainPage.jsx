@@ -802,6 +802,29 @@ function MainPage() {
                                 </Typography>
                             </AccordionDetails>
                         </Accordion>
+                        <Accordion>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography variant="subtitle1" fontWeight={600}>
+                                    Как создавать мероприятия и управлять ими (для организаторов)?
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body2">
+                                    Панель администратора предназначена только для организаторов мероприятий.
+                                    Если вы организатор, нажмите {' '}
+                                    <Link
+                                        href="https://findmyteam.ru/admin"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        sx={{ textDecoration: 'none' }}
+                                    >
+                                        здесь
+                                    </Link>
+                                     . Далее введите логин и пароль от учетной записи администратора. Затем в боковой панели выберите категорию, которую хотите изменить или посмотреть (Мероприятия, треки, команды и тд).
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
                     </Stack>
                 </Container>
             </Box>
