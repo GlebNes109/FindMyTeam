@@ -87,7 +87,7 @@ function EventPage() {
     };
 
     const loadEventAndTeams = async () => {
-        if (!eventId || loadedTabs.teams) return;
+        if (!eventId) return;
         // const token = localStorage.getItem("token");
 
         try {
@@ -111,15 +111,22 @@ function EventPage() {
     };
 
     const loadParticipants = async () => {
-        if (!participant_id || isTeamlead === null || loadedTabs.responses) return;
 
         try {
-            let res = null;
-            const baseUrl = `/events/${eventId}/participants`;
-            const params = `?relevant_sort=${isTeamlead}&page=${pageParticipants}&per_page=${perPageParticipants}`;
-            const teamParam = isTeamlead ? `&team_id=${myTeam.id}` : "";
-            res = await apiFetch(`${baseUrl}${params}${teamParam}`, {});
-            let res_json = await res.json();
+            // let res = null;
+            let baseUrl = `/events/${eventId}/participants?page=${pageParticipants}&per_page=${perPageParticipants}`;
+
+            if (participantData && isTeamlead !== null) {
+                const isRelevantSort = isTeamlead ? 'true' : 'false';
+                const teamParam = isTeamlead && myTeam ? `&team_id=${myTeam.id}` : '';
+                baseUrl += `&relevant_sort=${isRelevantSort}${teamParam}`;
+            }
+
+            const res = await apiFetch(baseUrl);
+            if (!res.ok) throw new Error(`Ошибка ${res.status}`);
+
+            const res_json = await res.json();
+
             let participants = res_json.items;
             setTotalPagesParticipants(res_json.total_pages);
 
@@ -133,11 +140,11 @@ function EventPage() {
 
     useEffect(() => {
         loadParticipants();
-    }, [pageParticipants, perPageParticipants]);
+    }, [pageParticipants, perPageParticipants, participantData, isTeamlead]);
 
     useEffect(() => {
         loadVacancies();
-    }, [pageVacancies, perPageVacancies]);
+    }, [pageVacancies, perPageVacancies, participantData, isTeamlead]);
 
 
     useEffect(() => {
@@ -145,13 +152,19 @@ function EventPage() {
 
         const fetchParticipantData = async () => {
             try {
-                const res = await apiFetch(`/participants/${participant_id}`, );
+                const res = await apiFetch(`/participants/${participant_id}`);
+                if (res.status === 404) {
+                    localStorage.removeItem("CurrentParticipantId");
+                    setParticipantData(null);
+                    return;
+                }
                 if (!res.ok) throw new Error("Не удалось получить участника");
                 const data = await res.json();
                 setParticipantData(data);
                 localStorage.setItem("CurrentParticipantId", participant_id);
             } catch (error) {
                 console.error("Ошибка при получении участника:", error);
+                setParticipantData(null);
             }
         };
 
@@ -159,16 +172,29 @@ function EventPage() {
     }, [participant_id]);
 
     const loadVacancies = async () => {
-        const isRelevantSort = !!participant_id
-        const res = await apiFetch(`/events/${eventId}/vacancies?relevant_sort=${isRelevantSort}&participant_id=${participant_id}&page=${pageVacancies}&per_page=${perPageVacancies}`, {});
-        const data = await res.json();
-        setVacancies(data.items);
-        setTotalPagesVacancies(data.total_pages);
-        setLoadedTabs(prev => ({ ...prev, vacancies: true }));
-    }
+        try {
+            let baseUrl = `/events/${eventId}/vacancies?page=${pageVacancies}&per_page=${perPageVacancies}`;
+
+            if (participant_id) {
+                const isRelevantSort = !!participant_id;
+                baseUrl += `&relevant_sort=${isRelevantSort}&participant_id=${participant_id}`;
+            }
+
+            const res = await apiFetch(baseUrl);
+            if (!res.ok) throw new Error(`Ошибка ${res.status}`);
+
+            const data = await res.json();
+            setVacancies(data.items);
+            setTotalPagesVacancies(data.total_pages);
+            setLoadedTabs(prev => ({ ...prev, vacancies: true }));
+        } catch (e) {
+            console.error("Ошибка при загрузке вакансий:", e);
+        }
+    };
+
 
     const loadRequests = async () => {
-        if (!participant_id || loadedTabs.responses) return;
+        if (!participant_id) return;
         const incomingUrl = `/team_requests/${isTeamlead ? 'incoming' : 'outgoing'}?participant_id=${participant_id}`;
         const outgoingUrl = `/team_requests/${isTeamlead ? 'outgoing' : 'incoming'}?participant_id=${participant_id}`;
         try {
@@ -196,19 +222,19 @@ function EventPage() {
     const handleTabChange = (tab) => {
         setActiveTab(tab);
 
-        if (tab === 'vacancies' && !loadedTabs.vacancies) {
+        if (tab === 'vacancies') {
             loadVacancies();
         }
 
-        if (tab === 'teams' && !loadedTabs.teams) {
+        if (tab === 'teams') {
             loadEventAndTeams();
         }
 
-        if (tab === 'participants' && !loadedTabs.participants) {
+        if (tab === 'participants') {
             loadParticipants();
         }
 
-        if (tab === 'responses' || tab === 'invites' && !loadedTabs.requests) {
+        if (tab === 'responses' || tab === 'invites') {
             loadRequests();
         }
     };

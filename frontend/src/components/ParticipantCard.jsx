@@ -34,6 +34,8 @@ const ParticipantCard = ({ participantData, setParticipantData, myTeam, navigate
             if (res.ok) {
                 // обнулить данные участника, чтобы отобразилось "не зарегистрирован"
                 setParticipantData(null);
+                localStorage.removeItem("CurrentParticipantId");
+                navigate(".", { replace: true, state: {} });
             } else {
                 console.error("Ошибка DELETE:", await res.text());
             }
