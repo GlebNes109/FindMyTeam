@@ -15,7 +15,7 @@ from api.dto.user import OAuthCode
 
 from core.config import settings
 
-from backend.src.api.dto.user import SigninUser
+from api.dto.user import SigninUser
 
 router = APIRouter()
 
