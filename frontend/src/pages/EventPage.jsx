@@ -67,14 +67,14 @@ function EventPage() {
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const { showToast } = useToast();
     const isTeamlead = useMemo(() => {
-        return participantData?.event_role === 'TEAMLEAD';
-
+        if (!participantData) return null;
+        return participantData.event_role === "TEAMLEAD";
     }, [participantData]);
     const [pageParticipants, setPageParticipants] = useState(1);
-    const [perPageParticipants, setPerPageParticipants] = useState(30);
+    const [perPageParticipants, setPerPageParticipants] = useState(10);
     const [totalPagesParticipants, setTotalPagesParticipants] = useState(1);
     const [pageVacancies, setPageVacancies] = useState(1);
-    const [perPageVacancies, setPerPageVacancies] = useState(30);
+    const [perPageVacancies, setPerPageVacancies] = useState(10);
     const [totalPagesVacancies, setTotalPagesVacancies] = useState(1);
 
     const handleOpenVacancyModal = (participant) => {
@@ -111,12 +111,13 @@ function EventPage() {
     };
 
     const loadParticipants = async () => {
+        if (!participant_id || isTeamlead === null || loadedTabs.responses) return;
+
         try {
             let res = null;
             const baseUrl = `/events/${eventId}/participants`;
             const params = `?relevant_sort=${isTeamlead}&page=${pageParticipants}&per_page=${perPageParticipants}`;
             const teamParam = isTeamlead ? `&team_id=${myTeam.id}` : "";
-
             res = await apiFetch(`${baseUrl}${params}${teamParam}`, {});
             let res_json = await res.json();
             let participants = res_json.items;
@@ -403,7 +404,7 @@ function EventPage() {
                                         setPerPageVacancies(Number(e.target.value));
                                     }}
                                 >
-                                    {[30, 40, 50, 70].map((n) => (
+                                    {[5, 10, 20, 30].map((n) => (
                                         <MenuItem key={n} value={n}>{n}</MenuItem>
                                     ))}
                                 </Select>
@@ -553,7 +554,7 @@ function EventPage() {
                                             setPageParticipants(1);
                                         }}
                                     >
-                                        {[30, 40, 50, 70].map((n) => (
+                                        {[5, 10, 20, 30].map((n) => (
                                             <MenuItem key={n} value={n}>{n}</MenuItem>
                                         ))}
                                     </Select>
