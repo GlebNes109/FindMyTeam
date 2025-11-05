@@ -53,10 +53,8 @@ class ParticipantsAdmin(ModelView, model=ParticipantsDB):
     name_plural = "Участники мероприятий"
     column_list = [
         ParticipantsDB.id,
-        ParticipantsDB.event_id,
-        ParticipantsDB.user_id,
-        ParticipantsDB.track_id,
         ParticipantsDB.event_role,
+        ParticipantsDB.resume,
     ]
 
 class UserAdmin(ModelView, model=UsersDB):
