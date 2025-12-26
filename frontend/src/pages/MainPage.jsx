@@ -368,11 +368,16 @@ function MainPage() {
                                                     <Stack direction="row" spacing={1} flexWrap="wrap" rowGap={1}>
                                                         {(event.event_tracks || []).map((track) => (
                                                             <Chip
+                                                                sx={{
+                                                                    backgroundColor: 'secondary.main',
+                                                                    border: 0,
+                                                                    mb: 0.5,
+                                                                    color: "black"
+                                                                }}
                                                                 key={track.id}
                                                                 label={track.name}
                                                                 size="small"
                                                                 variant="outlined"
-                                                                sx={{ mb: 0.5 }}
                                                             />
                                                         ))}
                                                     </Stack>
@@ -414,6 +419,91 @@ function MainPage() {
                                     </Grid>
                                 )})}
                             </Grid>
+                            <Stack
+                                spacing={3}
+                                sx={{ display: { xs: 'flex', sm: 'none' } }}
+                            >
+                                {events.slice(0, 4).map((event) => (
+                                    <Card
+                                        onClick={() => navigate(`/event/${event.id}`)}
+                                        sx={{
+                                            width: "100%",
+                                            height: "100%",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            bgcolor: "background.paper",
+                                            color: "text.primary",
+                                            borderRadius: 2,
+                                            transition: "transform .2s, box-shadow .2s",
+                                            "&:hover": {
+                                                transform: "translateY(-4px)",
+                                                boxShadow: 6,
+                                            },
+                                            cursor: "pointer",
+                                            flexGrow: 1,
+                                        }}
+                                    >
+                                        <CardContent sx={{width:'100%'}}>
+                                            <Typography variant="h6" gutterBottom fontWeight={700}>
+                                                {event.name}
+                                            </Typography>
+                                            <Typography
+                                                variant="body2"
+                                                color="text.secondary"
+                                                sx={{
+                                                    display: "-webkit-box",
+                                                    WebkitLineClamp: 3,
+                                                    WebkitBoxOrient: "vertical",
+                                                    overflow: "hidden",
+                                                    mb: 1,
+                                                }}
+                                            >
+                                                {event.description}
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ mt: 0.5 }}>
+                                                <b>Дата начала:</b> {event.start_date}
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                <b>Дата окончания:</b> {event.end_date}
+                                            </Typography>
+
+                                            <Box mt={1}>
+                                                <Typography variant="subtitle2">Треки:</Typography>
+                                                <Stack direction="row" spacing={1} flexWrap="wrap" rowGap={1}>
+                                                    {(event.event_tracks || []).map((track) => (
+                                                        <Chip
+                                                            key={track.id}
+                                                            label={track.name}
+                                                            size="small"
+                                                            variant="outlined"
+                                                            sx={{
+                                                                backgroundColor: 'secondary.main',
+                                                                border: 0,
+                                                                mb: 0.5,
+                                                                color: "black"
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </Stack>
+                                            </Box>
+                                        </CardContent>
+
+                                        <Box p={2}>
+                                            <Button
+                                                fullWidth
+                                                variant="contained"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/event/${event.id}/register`);
+                                                }}
+                                            >
+                                                Я участвую
+                                            </Button>
+                                        </Box>
+                                    </Card>
+
+                                ))}
+                            </Stack>
                             <Box mt={4} display="flex" justifyContent="center">
                                 <Button
                                     variant="contained"
