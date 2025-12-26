@@ -518,6 +518,9 @@ function EventPage() {
             )}
 
             {activeTab === "participants" && (
+                <Stack spacing={3}>
+                    <Typography variant="h6">Участники</Typography>
+                    <Divider sx={{ mb: 3 }} />{
                 eventData.event_participants.length === 0 ? (
                     <Typography color="text.secondary">Нет доступных участников</Typography>
                 ) : (
@@ -589,7 +592,9 @@ function EventPage() {
                             </Box>
                         </Box>
                     </Box>
-                )
+
+                )}
+                    </Stack>
             )}
 
             {activeTab === "responses" && (
