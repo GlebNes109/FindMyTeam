@@ -9,6 +9,7 @@ class EventsDB(SQLModel, table=True):
     description: str
     start_date: str
     end_date: str
+    is_active: bool = True
     # Связь один ко многим
     event_tracks: List["EventTracksDB"] = Relationship(
         back_populates="event",

@@ -16,8 +16,8 @@ class EventsService:
         event = await self.repository.create(event_create)
         return event
 
-    async def get_events(self, limit=1000, offset=0):
-        all_events = await self.repository.get_all(limit, offset)
+    async def get_events(self, is_active, limit=1000, offset=0):
+        all_events = await self.repository.get_all(limit, offset, is_active)
         return all_events
 
     async def get_event(self, event_id):

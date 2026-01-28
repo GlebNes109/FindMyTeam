@@ -80,9 +80,9 @@ class EventsRepositoryImpl(
             ]
         )
 
-    async def get_all(self, limit: int = 10, offset: int = 0) -> list[EventsRead]:
+    async def get_all(self, limit: int = 10, offset: int = 0, is_active=True) -> list[EventsRead]:
         stmt = (
-            select(EventsDB)
+            select(EventsDB).where(EventsDB.is_active == is_active)
             .options(selectinload(EventsDB.event_tracks))
             .offset(offset)
             .limit(limit)
