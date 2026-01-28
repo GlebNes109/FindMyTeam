@@ -13,7 +13,7 @@ class EventsAdmin(ModelView, model=EventsDB):
     name_plural = "Мероприятия"  # множественное число
     column_list = [EventsDB.id, EventsDB.name, EventsDB.start_date, EventsDB.end_date]
     column_searchable_list = [EventsDB.name, EventsDB.description]
-    form_columns = [EventsDB.name, EventsDB.description, EventsDB.start_date, EventsDB.end_date]
+    form_columns = [EventsDB.name, EventsDB.description, EventsDB.start_date, EventsDB.end_date, EventsDB.is_active]
 
 class EventTracksAdmin(ModelView, model=EventTracksDB):
     name = "Направление / трек"
