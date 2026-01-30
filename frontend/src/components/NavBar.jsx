@@ -82,7 +82,10 @@ function Navbar() {
     );
 
     return (
-        <AppBar position="fixed" elevation={1}>
+        <AppBar position="fixed" elevation={1} sx={{
+    bgcolor: 'primary.main',
+    color: 'primary.contrastText',
+  }}>
             <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography
                     variant="h6"

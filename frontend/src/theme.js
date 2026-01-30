@@ -11,7 +11,18 @@ const theme = extendTheme({
                 text: { primary: '#1a1a1a', secondary: '#4a4a4a' },
             },
         },*/
-        dark: { palette: { mode: 'dark', primary: { main: '#FFDD2D' }, secondary: { main: '#FFFFFF' }, background: { default: '#121212', paper: '#1C1B1F' }, text: { primary: '#FFFFFF', secondary: '#B3B3B3' }, }, },
+        dark: {
+            palette: { mode: 'dark',
+            primary: { main: '#FFDD2D' },
+            secondary: { main: '#FFFFFF' },
+            background: { default: '#121212',
+            paper: '#1C1B1F' },
+            text: {
+                primary: '#FFFFFF',
+                secondary: '#B3B3B3'
+                },
+            },
+        },
 
     },
     typography: {
