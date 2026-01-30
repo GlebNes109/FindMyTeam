@@ -39,7 +39,7 @@ function EventPage() {
     const navigate = useNavigate();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    const { showToast } = useToast();
+    const showToast = useToast();
     const [selectedParticipant, setSelectedParticipant] = useState(null);
     const [isVacancyModalOpen, setIsVacancyModalOpen] = useState(false);
 

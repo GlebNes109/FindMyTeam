@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {Box, CircularProgress} from "@mui/material";
 import {apiFetch} from "./apiClient.js";
 import {setAccessToken} from "./tokenStore.js";
-import {useToast} from "./components/ToastProvider.jsx"; // твой существующий код
+import {useToast} from "./components/ToastProvider.jsx";
 
 export function OAuthCallback() {
     const { search } = useLocation();

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, Query
 
 from api.dependencies import get_user_id, get_event_service, get_user_service, get_teams_service, \
@@ -11,7 +13,7 @@ from application.services.user_service import UsersService
 router = APIRouter()
 
 @router.get("", summary="Получение всех ивентов", description="Доступно для юзеров и админов")
-async def get_events(service: EventsService = Depends(get_event_service), is_active: str = True):
+async def get_events(is_active: Optional[bool] = Query(default=True), service: EventsService = Depends(get_event_service)):
     return await service.get_events(is_active)
 
 @router.get("/{EventId}", summary="Получение всех ивентов", description="Доступно для юзеров и админов")

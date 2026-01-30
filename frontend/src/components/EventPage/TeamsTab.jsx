@@ -22,15 +22,15 @@ function TeamsTab({ eventData, myTeam }) {
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     return (
-        <Card variant="outlined" sx={{ mb: 4, bgcolor: "#303030", borderRadius: 3 }}>
+        <Card variant="outlined" sx={{ mb: 4, bgcolor: "background.paper", borderRadius: 3 }}>
             <CardContent sx={{ p: { xs: 0, sm: 2 } }}>
                 <TableContainer sx={{ overflowX: "auto" }}>
                     <Table sx={{ minWidth: 650 }}>
                         <TableHead>
                             <TableRow>
-                                <TableCell sx={{ fontWeight: "bold", color: "white", width: "60px" }}>№</TableCell>
-                                <TableCell sx={{ fontWeight: "bold", color: "white" }}>Команда</TableCell>
-                                <TableCell sx={{ fontWeight: "bold", color: "white" }}>Участники</TableCell>
+                                <TableCell sx={{ fontWeight: "bold", color: "text.primary", width: "60px" }}>№</TableCell>
+                                <TableCell sx={{ fontWeight: "bold", color: "text.primary" }}>Команда</TableCell>
+                                <TableCell sx={{ fontWeight: "bold", color: "text.primary" }}>Участники</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -42,22 +42,22 @@ function TeamsTab({ eventData, myTeam }) {
                                         cursor: "pointer",
                                         transition: "background-color 0.2s ease, transform 0.1s ease",
                                         "&:hover": {
-                                            backgroundColor: "rgba(255, 255, 255, 0.08)",
+                                            backgroundColor: theme.palette.action.hover,
                                             transform: "scaleY(1.01)",
                                         },
                                         "&:active": {
-                                            backgroundColor: "rgba(255, 255, 255, 0.15)",
+                                            backgroundColor: theme.palette.action.selected,
                                             transform: "scaleY(1.01)"
                                         },
-                                        borderBottom: index < eventData.event_teams.length - 1 ? "1px solid #424242" : "none",
-                                        backgroundColor: myTeam?.id === team.id ? "rgba(254, 221, 44, 0.1)" : "inherit",
-                                        borderLeft: myTeam?.id === team.id ? "4px solid #fedd2c" : "none",
+                                        borderBottom: index < eventData.event_teams.length - 1 ? `1px solid ${theme.palette.divider}` : "none",
+                                        backgroundColor: myTeam?.id === team.id ? theme.palette.action.selected : "inherit",
+                                        borderLeft: myTeam?.id === team.id ? `4px solid ${theme.palette.primary.main}` : "none",
                                     }}
                                     onClick={() => navigate(`/team/${team.id}`)}
                                 >
-                                    <TableCell sx={{ color: "white" }}>{index + 1}</TableCell>
-                                    <TableCell sx={{ fontWeight: "medium", color: "white" }}>{team.name}</TableCell>
-                                    <TableCell sx={{ color: "white" }}>
+                                    <TableCell sx={{ color: "text.primary" }}>{index + 1}</TableCell>
+                                    <TableCell sx={{ fontWeight: "medium", color: "text.primary" }}>{team.name}</TableCell>
+                                    <TableCell sx={{ color: "text.primary" }}>
                                         <Stack
                                             direction="row"
                                             flexWrap="wrap"
@@ -72,7 +72,6 @@ function TeamsTab({ eventData, myTeam }) {
                                                     label={`${member.login} [${member.track.name}]`}
                                                     color={member.event_role === "PARTICIPANT" ? "primary" : "secondary"}
                                                     size="small"
-                                                    sx={{ color: "black" }}
                                                 />
                                             ))}
                                             {team.vacancies.map((vacancy, i) => (
@@ -81,7 +80,7 @@ function TeamsTab({ eventData, myTeam }) {
                                                     label={`Вакансия [${vacancy.track.name}]`}
                                                     variant="outlined"
                                                     size="small"
-                                                    sx={{ color: "white", borderColor: "rgba(255, 255, 255, 0.4)" }}
+                                                    sx={{ color: "text.primary", borderColor: theme.palette.divider }}
                                                 />
                                             ))}
                                         </Stack>
