@@ -11,8 +11,6 @@ import TeamPage from "./pages/TeamPage.jsx";
 import ParticipantPage from "./pages/ParticipantPage.jsx";
 import {setAuthFailureHandler} from "./authHandler.js";
 import AuthPage from "./pages/AuthPage.jsx";
-import theme from './theme';
-import {CssVarsProvider} from "@mui/material";
 import {OAuthCallback} from "./oauthCallbackRoute.jsx";
 
 function AppRoutesWithAuthHandler() {
@@ -46,12 +44,9 @@ function AppRoutesWithAuthHandler() {
 
 function App() {
     return (
-        <CssVarsProvider theme={theme} defaultMode="dark">
-
         <Router>
             <AppRoutesWithAuthHandler />
         </Router>
-        </CssVarsProvider>
     );
 }
 

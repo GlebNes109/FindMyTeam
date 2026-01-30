@@ -7,7 +7,6 @@ import {
     Chip,
     Container,
     Grid,
-    Link,
     Skeleton,
     Stack,
     Typography
@@ -82,7 +81,7 @@ function EventsSection({ events, loading, participationMap }) {
                         <b>Дата окончания:</b> {event.end_date}
                     </Typography>
 
-                    <Box mt={1}>
+                    <Box my={1.5}>
                         <Typography variant="subtitle2">Треки:</Typography>
                         <Stack direction="row" spacing={1} flexWrap="wrap" rowGap={1}>
                             {(event.event_tracks || []).map((track) => (
@@ -101,12 +100,9 @@ function EventsSection({ events, loading, participationMap }) {
                             ))}
                         </Stack>
                     </Box>
-                </CardContent>
-                <Box sx={{ mt: "auto", p: 2 }}>
                     {isParticipating ? (
                         <Typography
                             sx={{
-                                mt: 3,
                                 p: 1,
                                 bgcolor: grey[800],
                                 borderRadius: 1,
@@ -134,7 +130,8 @@ function EventsSection({ events, loading, participationMap }) {
                             Я участвую
                         </Button>
                     )}
-                </Box>
+                </CardContent>
+
             </Card>
         );
     };
