@@ -6,8 +6,15 @@ import {
     CardContent,
     Typography,
     Button,
-    ToggleButton,
-    ToggleButtonGroup, Toolbar, Box, Divider, Stack, Chip, Skeleton
+    Toolbar,
+    Box,
+    Divider,
+    Stack,
+    Chip,
+    Skeleton,
+    Checkbox,
+    FormControlLabel,
+    Paper
 } from "@mui/material";
 import {apiFetch} from "../apiClient.js";
 import {useNavigate} from "react-router-dom";
@@ -16,15 +23,36 @@ import {grey} from "@mui/material/colors";
 export default function EventsPage() {
     const [events, setEvents] = useState([]);
     const [participations, setParticipations] = useState([]);
-    const [filter, setFilter] = useState("all"); // all | mine | not_mine
+    const [showActive, setShowActive] = useState(true);
+    const [showPast, setShowPast] = useState(false);
+    const [showParticipating, setShowParticipating] = useState(true);
+    const [showNotParticipating, setShowNotParticipating] = useState(true);
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+
     useEffect(() => {
         async function fetchData() {
             setLoading(true);
             try {
-                const eventsRes = await apiFetch("/events");
-                const eventsData = await eventsRes.json();
+                const eventsPromises = [];
+                
+                if (showActive) {
+                    eventsPromises.push(
+                        apiFetch("/events?is_active=true").then(res => res.json())
+                    );
+                }
+                
+                if (showPast) {
+                    eventsPromises.push(
+                        apiFetch("/events?is_active=false").then(res => res.json())
+                    );
+                }
+
+                let eventsData = [];
+                if (eventsPromises.length > 0) {
+                    const results = await Promise.all(eventsPromises);
+                    eventsData = results.flat();
+                }
 
                 let partsData = [];
                 try {
@@ -43,17 +71,12 @@ export default function EventsPage() {
             } catch (err) {
                 console.error("Ошибка загрузки:", err);
             } finally {
-                setLoading(false); // окончание загрузки
+                setLoading(false);
             }
         }
         fetchData();
-    }, []);
+    }, [showActive, showPast]);
 
-    const handleFilterChange = (_, newFilter) => {
-        if (newFilter !== null) setFilter(newFilter);
-    };
-
-    // Словарь для быстрого поиска участий
     const participationMap = participations.reduce((acc, p) => {
         acc[p.event_id] = p;
         return acc;
@@ -61,9 +84,18 @@ export default function EventsPage() {
 
     const filteredEvents = events.filter((event) => {
         const isParticipating = !!participationMap[event.id];
-        if (filter === "mine") return isParticipating;
-        if (filter === "not_mine") return !isParticipating;
-        return true; // all
+        
+        if (showParticipating && showNotParticipating) {
+
+        } else if (showParticipating && !showNotParticipating) {
+            if (!isParticipating) return false;
+        } else if (!showParticipating && showNotParticipating) {
+            if (isParticipating) return false;
+        } else {
+            return false;
+        }
+        
+        return true;
     });
 
     const renderSkeletonCard = () => (
@@ -85,37 +117,77 @@ export default function EventsPage() {
                 mt: 4,
                 display: "flex",
                 flexDirection: "column",
-                minHeight: "80vh",
+                alignItems: "flex-start",
             }}>
-                <Box
-                >
-                        <Typography variant="h5" gutterBottom>
-                            Все события
-                        </Typography>
-                        <Divider sx={{ mb: 3 }} />
+                <Box sx={{ flexShrink: 0, width: "100%" }}>
+                    <Typography variant="h5" gutterBottom>
+                        Все события
+                    </Typography>
+                    <Divider sx={{ mb: 3 }} />
 
-                        <ToggleButtonGroup
-                            value={filter}
-                            exclusive
-                            onChange={handleFilterChange}
-                            sx={{
-                                mb: 3,
-                                "& .MuiToggleButton-root.Mui-selected": {
-                                    color: "primary.contrastText",
-                                    backgroundColor: "primary.main",
-                                },
-                                "& .MuiToggleButton-root.Mui-selected:hover": {
-                                    backgroundColor: "primary.dark",
-                                },
-                            }}
-                        >
-                            <ToggleButton value="all">Все</ToggleButton>
-                            <ToggleButton value="mine">Мои</ToggleButton>
-                            <ToggleButton value="not_mine">Остальные</ToggleButton>
-                        </ToggleButtonGroup>
+                    <Paper
+                        elevation={2}
+                        sx={{
+                            p: 2,
+                            mb: 3,
+                        }}
+                    >
+                        <Grid container spacing={4}>
+                            <Grid item xs={12} sm={6}>
+                                <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: "bold", mb: 1 }}>
+                                    Статус мероприятия
+                                </Typography>
+                                <Stack spacing={1}>
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={showActive}
+                                                onChange={(e) => setShowActive(e.target.checked)}
+                                            />
+                                        }
+                                        label="Показывать активные"
+                                    />
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={showPast}
+                                                onChange={(e) => setShowPast(e.target.checked)}
+                                            />
+                                        }
+                                        label="Показывать прошедшие"
+                                    />
+                                </Stack>
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: "bold", mb: 1 }}>
+                                    Участие
+                                </Typography>
+                                <Stack spacing={1}>
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={showParticipating}
+                                                onChange={(e) => setShowParticipating(e.target.checked)}
+                                            />
+                                        }
+                                        label="Мероприятия в которых я участвую"
+                                    />
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={showNotParticipating}
+                                                onChange={(e) => setShowNotParticipating(e.target.checked)}
+                                            />
+                                        }
+                                        label="Мероприятия в которых я не участвую"
+                                    />
+                                </Stack>
+                            </Grid>
+                        </Grid>
+                    </Paper>
                 </Box>
 
-                <Stack spacing={3}>
+                <Stack spacing={3} sx={{ width: "100%", minHeight: "60vh", }}>
                             {loading ? (
                                 Array.from({ length: 3 }).map((_, idx) => (
                                     <Box key={idx}>{renderSkeletonCard()}</Box>
