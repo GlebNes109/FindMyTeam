@@ -11,7 +11,7 @@ const TeamVacancy = ({ vacancy, index, participant, onRemove, isTeamLead , inTea
     const [isOverflowing, setIsOverflowing] = useState(false);
     const contentRef = useRef(null);
     const collapsedSize = 150;
-    const { showToast } = useToast();
+    const showToast = useToast();
 
 
     useEffect(() => {

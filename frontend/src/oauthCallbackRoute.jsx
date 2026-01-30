@@ -8,7 +8,7 @@ import {useToast} from "./components/ToastProvider.jsx";
 export function OAuthCallback() {
     const { search } = useLocation();
     const navigate = useNavigate();
-    const { showToast } = useToast();
+    const showToast = useToast();
 
     useEffect(() => {
         const params = new URLSearchParams(search);
